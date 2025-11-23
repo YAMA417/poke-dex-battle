@@ -8,7 +8,9 @@
     "backend/*"
   ],
   "scripts": {
-    "dev": "npm-run-all --parallel dev:*",
+    "dev": "npm-run-all --parallel dev:shared dev:web dev:api",
+    "dev:frontend": "npm-run-all --parallel dev:shared dev:web",
+    "dev:backend": "npm-run-all --parallel dev:shared dev:api",
     "dev:shared": "npm run dev -w @poke-dex-battle/shared",
     "dev:web": "npm run dev -w web",
     "dev:api": "npm run dev -w api",
@@ -20,9 +22,12 @@
   },
   "devDependencies": {
     "npm-run-all": "^4.1.5",
-    "typescript": "^5.7.2"
+    "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=24.0.0"
+  },
+  "volta": {
+    "node": "24.11.1"
   }
 }

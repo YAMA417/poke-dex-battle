@@ -9,13 +9,13 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@hono/node-server": "^1.19.6",
     "@poke-dex-battle/shared": "*",
-    "hono": "^4.6.12",
-    "@hono/node-server": "^1.13.7"
+    "hono": "^4.10.6"
   },
   "devDependencies": {
-    "@types/node": "^22.10.1",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "@types/node": "^24.10.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
   }
 }
