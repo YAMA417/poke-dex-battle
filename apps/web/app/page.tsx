@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from "@/components/ui/button"
 import { calcActualStats } from '@poke-dex-battle/shared';
 import type { BaseStats, Stats, Nature } from '@poke-dex-battle/shared';
 import Link from 'next/link';
@@ -55,41 +56,56 @@ export default function Home() {
 
       {/* 機能カード */}
       <section className="grid md:grid-cols-3 gap-6">
-        <Link
-          href="/calc"
-          className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
+        <Button
+          asChild
+          variant="ghost"
+          className="h-auto p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow justify-start"
         >
-          <h3 className="text-xl font-semibold mb-2 text-pokemon-blue">
-            ダメージ計算
-          </h3>
-          <p className="text-gray-600">
-            ダブルバトル特有の要素を考慮した詳細なダメージ計算
-          </p>
-        </Link>
+          <Link href="/calc">
+            <div className="w-full text-left">
+              <h3 className="text-xl font-semibold mb-2 text-pokemon-blue">
+                ダメージ計算
+              </h3>
+              <p className="text-gray-600">
+                ダブルバトル特有の要素を考慮した詳細なダメージ計算
+              </p>
+            </div>
+          </Link>
+        </Button>
 
-        <Link
-          href="/parties"
-          className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
+        <Button
+          asChild
+          variant="ghost"
+          className="h-auto p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow justify-start"
         >
-          <h3 className="text-xl font-semibold mb-2 text-pokemon-blue">
-            パーティ管理
-          </h3>
-          <p className="text-gray-600">
-            パーティの作成・編集・管理を効率的に
-          </p>
-        </Link>
+          <Link href="/parties">
+            <div className="w-full text-left">
+              <h3 className="text-xl font-semibold mb-2 text-pokemon-blue">
+                パーティ管理
+              </h3>
+              <p className="text-gray-600">
+                パーティの作成・編集・管理を効率的に
+              </p>
+            </div>
+          </Link>
+        </Button>
 
-        <Link
-          href="/battles"
-          className="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
+        <Button
+          asChild
+          variant="ghost"
+          className="h-auto p-6 bg-white rounded-lg shadow hover:shadow-lg transition-shadow justify-start"
         >
-          <h3 className="text-xl font-semibold mb-2 text-pokemon-blue">
-            対戦履歴
-          </h3>
-          <p className="text-gray-600">
-            対戦記録の保存と統計分析
-          </p>
-        </Link>
+          <Link href="/battles">
+            <div className="w-full text-left">
+              <h3 className="text-xl font-semibold mb-2 text-pokemon-blue">
+                対戦履歴
+              </h3>
+              <p className="text-gray-600">
+                対戦記録の保存と統計分析
+              </p>
+            </div>
+          </Link>
+        </Button>
       </section>
 
       {/* サンプル：共通パッケージの動作確認 */}
