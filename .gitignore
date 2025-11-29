@@ -53,5 +53,8 @@ expo-env.d.ts
 *.mobileprovision
 .metro-health-check*
 
+# .claude
+.claude
+
 # Misc
 *.pem
