@@ -29,8 +29,8 @@
 | Tailwind CSS セットアップ              | [x]  |
 | shadcn/ui セットアップ                 | [x]  |
 | 共通パッケージ作成（packages/shared）  | [x]  |
-| PokéAPI からデータ取得・キャッシュ機能 | [ ]  |
-| IndexedDB（Dexie.js）セットアップ      | [ ]  |
+| PokéAPI からデータ取得・キャッシュ機能 | [x]  |
+| IndexedDB（Dexie.js）セットアップ      | [x]  |
 
 ### ダメージ計算機能
 
