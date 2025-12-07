@@ -1,8 +1,9 @@
 // Types
-export * from './types';
+export * from "./types";
 
 // Utils
-export * from './utils/stat-calc';
+export * from "./utils/damage-calc";
+export * from "./utils/stat-calc";
 
 // Constants
-export * from './constants/types';
+export * from "./constants/types";
