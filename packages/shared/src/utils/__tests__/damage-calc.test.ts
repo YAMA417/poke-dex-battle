@@ -202,4 +202,155 @@ describe("damage-calc", () => {
       console.log("全体技:", doubleResult.maxDamage);
     });
   });
+  describe("特性と持ち物のテスト", () => {
+    it("テクニシャン: 威力60以下の技が1.5倍", () => {
+      const input: DamageCalculationInput = {
+        movePower: 60,
+        moveType: "Normal",
+        moveCategory: "Physical",
+        attackerLevel: 50,
+        attackerAttack: 150,
+        attackerTypes: ["Normal"],
+        defenderDefense: 100,
+        defenderTypes: ["Normal"],
+        condition: {
+          weather: "none",
+          field: "none",
+          attackerStatStages: {
+            attack: 0,
+            defense: 0,
+            specialAttack: 0,
+            specialDefense: 0,
+            speed: 0,
+          },
+          defenderStatStages: {
+            attack: 0,
+            defense: 0,
+            specialAttack: 0,
+            specialDefense: 0,
+            speed: 0,
+          },
+          attackerAbility: "Technician",
+        },
+      };
+
+      const result = calculateDamage(input);
+      console.log("テクニシャン適用:", result.maxDamage);
+
+      expect(result.maxDamage).toBeGreaterThan(0);
+    });
+
+    it("こだわりハチマキ: 物理攻撃1.5倍", () => {
+      const input: DamageCalculationInput = {
+        movePower: 80,
+        moveType: "Normal",
+        moveCategory: "Physical",
+        attackerLevel: 50,
+        attackerAttack: 150,
+        attackerTypes: ["Dragon", "Flying"],
+        defenderDefense: 100,
+        defenderTypes: ["Normal"],
+        condition: {
+          weather: "none",
+          field: "none",
+          attackerStatStages: {
+            attack: 0,
+            defense: 0,
+            specialAttack: 0,
+            specialDefense: 0,
+            speed: 0,
+          },
+          defenderStatStages: {
+            attack: 0,
+            defense: 0,
+            specialAttack: 0,
+            specialDefense: 0,
+            speed: 0,
+          },
+          attackerItem: "Choice Band",
+        },
+      };
+
+      const result = calculateDamage(input);
+      console.log("こだわりハチマキ適用:", result.maxDamage);
+
+      expect(result.maxDamage).toBeGreaterThan(0);
+    });
+
+    it("いのちのたま: 全ての技1.3倍", () => {
+      const input: DamageCalculationInput = {
+        movePower: 80,
+        moveType: "Normal",
+        moveCategory: "Physical",
+        attackerLevel: 50,
+        attackerAttack: 150,
+        attackerTypes: ["Dragon", "Flying"],
+        defenderDefense: 100,
+        defenderTypes: ["Normal"],
+        condition: {
+          weather: "none",
+          field: "none",
+          attackerStatStages: {
+            attack: 0,
+            defense: 0,
+            specialAttack: 0,
+            specialDefense: 0,
+            speed: 0,
+          },
+          defenderStatStages: {
+            attack: 0,
+            defense: 0,
+            specialAttack: 0,
+            specialDefense: 0,
+            speed: 0,
+          },
+          attackerItem: "Life Orb",
+        },
+      };
+
+      const result = calculateDamage(input);
+      console.log("いのちのたま適用:", result.maxDamage);
+
+      expect(result.maxDamage).toBeGreaterThan(0);
+    });
+
+    it("マルチスケイル: HP満タン時ダメージ0.5倍", () => {
+      const input: DamageCalculationInput = {
+        movePower: 80,
+        moveType: "Normal",
+        moveCategory: "Physical",
+        attackerLevel: 50,
+        attackerAttack: 150,
+        attackerTypes: ["Dragon", "Flying"],
+        defenderDefense: 100,
+        defenderTypes: ["Dragon", "Flying"],
+        defenderCurrentHp: 183,
+        defenderMaxHp: 183,
+        condition: {
+          weather: "none",
+          field: "none",
+          attackerStatStages: {
+            attack: 0,
+            defense: 0,
+            specialAttack: 0,
+            specialDefense: 0,
+            speed: 0,
+          },
+          defenderStatStages: {
+            attack: 0,
+            defense: 0,
+            specialAttack: 0,
+            specialDefense: 0,
+            speed: 0,
+          },
+          defenderAbility: "Multiscale",
+        },
+      };
+
+      const result = calculateDamage(input);
+      console.log("マルチスケイル適用:", result.maxDamage);
+
+      expect(result.maxDamage).toBeGreaterThan(0);
+    });
+  });
 });

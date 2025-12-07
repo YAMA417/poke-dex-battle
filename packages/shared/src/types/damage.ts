@@ -37,6 +37,41 @@ export interface BattleCondition {
   defenderItem?: string;
 }
 
+/** 特性の種類（Phase 1: 基本10個） */
+export type Ability =
+  // 攻撃側
+  | "Technician" // テクニシャン
+  | "Iron Fist" // てつのこぶし
+  | "Reckless" // すてみ
+  | "Huge Power" // ちからもち
+  | "Pure Power" // ヨガパワー（ちからもちと同じ効果）
+  // 防御側
+  | "Multiscale" // マルチスケイル
+  | "Solid Rock" // ハードロック
+  | "Filter" // フィルター
+  | "Fluffy" // もふもふ
+  | "Thick Fat"; // あついしぼう
+
+/** 持ち物の種類（Phase 1: 基本10個） */
+export type Item =
+  | "Choice Band" // こだわりハチマキ
+  | "Choice Specs" // こだわりメガネ
+  | "Life Orb" // いのちのたま
+  | "Expert Belt" // たつじんのおび
+  | "Muscle Band" // ちからのハチマキ
+  | "Wise Glasses" // ものしりメガネ
+  | "Eviolite" // しんかのきせき
+  | "Assault Vest" // とつげきチョッキ
+  | "Normal Gem" // ノーマルジュエル
+  | "Punching Glove"; // パンチグローブ
+
+/** 技の分類（特性判定用） */
+export interface MoveFlags {
+  isPunchMove?: boolean; // パンチ技か
+  isRecoilMove?: boolean; // 反動技か
+  isContactMove?: boolean; // 接触技か
+}
+
 /** ダメージ計算の入力 */
 export interface DamageCalculationInput {
   // 技情報
@@ -49,8 +84,12 @@ export interface DamageCalculationInput {
   attackerAttack: number; // 物理攻撃 or 特殊攻撃の実数値
   attackerTypes: PokemonType[]; // タイプ一致判定用
   attackerTeraType?: PokemonType; // テラスタイプ
+  // 技の分類
+  moveFlags?: MoveFlags;
 
   // 防御側
+  defenderCurrentHp?: number;
+  defenderMaxHp?: number;
   defenderDefense: number; // 物理防御 or 特殊防御の実数値
   defenderTypes: PokemonType[]; // タイプ相性判定用
 
