@@ -147,8 +147,10 @@ describe("damage-calc", () => {
       // てだすけありの方がダメージが高い
       expect(helpResult.maxDamage).toBeGreaterThan(normalResult.maxDamage);
 
-      console.log("通常:", normalResult.maxDamage);
-      console.log("てだすけ:", helpResult.maxDamage);
+      console.log("通常(最小値):", normalResult.minDamage);
+      console.log("てだすけ(最小値):", helpResult.minDamage);
+      console.log("通常(最大値):", normalResult.minDamage);
+      console.log("てだすけ(最大値):", helpResult.minDamage);
     });
 
     it("ダブルバトルの全体技は0.75倍", () => {

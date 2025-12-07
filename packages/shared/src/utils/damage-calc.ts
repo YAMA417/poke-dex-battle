@@ -335,12 +335,21 @@ export function calculateDamage(input: DamageCalculationInput): DamageResult {
   // てだすけ補正（1.5倍）
   const helpingHandModifier = input.condition.isHelpingHand ? 1.5 : 1.0;
 
-  // 乱数の範囲: 0.85〜1.00 (16段階: 85, 86, 87, ..., 100)
+  // 乱数の範囲: 0.85〜1.00
   const randomMin = 0.85;
   const randomMax = 1.0;
 
-  // 最小ダメージを計算（乱数0.85）
-  let minDamage = Math.floor(baseDamage * randomMin);
+  // 【乱数前の補正】てだすけ、全体技補正
+  let damageBeforeRandom = baseDamage;
+  damageBeforeRandom = Math.floor(damageBeforeRandom * spreadModifier);
+  damageBeforeRandom = Math.floor(damageBeforeRandom * helpingHandModifier);
+
+  // 【乱数適用】
+  const minDamageAfterRandom = Math.floor(damageBeforeRandom * randomMin);
+  const maxDamageAfterRandom = Math.floor(damageBeforeRandom * randomMax);
+
+  // 【乱数後の補正】STAB、タイプ相性、その他
+  let minDamage = minDamageAfterRandom;
   minDamage = Math.floor(minDamage * stab);
   minDamage = Math.floor(minDamage * typeEffectiveness);
   minDamage = Math.floor(minDamage * weatherModifier);
@@ -348,13 +357,10 @@ export function calculateDamage(input: DamageCalculationInput): DamageResult {
   minDamage = Math.floor(minDamage * attackerAbilityModifier);
   minDamage = Math.floor(minDamage * attackerItemModifier);
   minDamage = Math.floor(minDamage * punchingGloveModifier);
-  minDamage = Math.floor(minDamage * spreadModifier);
-  minDamage = Math.floor(minDamage * helpingHandModifier);
   minDamage = Math.floor(minDamage * defenderAbilityModifier);
   minDamage = Math.floor(minDamage * defenderItemModifier);
 
-  // 最大ダメージを計算（乱数1.00）
-  let maxDamage = Math.floor(baseDamage * randomMax);
+  let maxDamage = maxDamageAfterRandom;
   maxDamage = Math.floor(maxDamage * stab);
   maxDamage = Math.floor(maxDamage * typeEffectiveness);
   maxDamage = Math.floor(maxDamage * weatherModifier);
@@ -362,8 +368,6 @@ export function calculateDamage(input: DamageCalculationInput): DamageResult {
   maxDamage = Math.floor(maxDamage * attackerAbilityModifier);
   maxDamage = Math.floor(maxDamage * attackerItemModifier);
   maxDamage = Math.floor(maxDamage * punchingGloveModifier);
-  maxDamage = Math.floor(maxDamage * spreadModifier);
-  maxDamage = Math.floor(maxDamage * helpingHandModifier);
   maxDamage = Math.floor(maxDamage * defenderAbilityModifier);
   maxDamage = Math.floor(maxDamage * defenderItemModifier);
 
