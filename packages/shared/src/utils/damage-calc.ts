@@ -9,6 +9,23 @@ import type {
 import type { PokemonType } from "../types/pokemon";
 
 /**
+ * Pokemon-style rounding: round to nearest integer, rounding DOWN at 0.5
+ * 第5世代以降のダメージ計算で使用される丸め処理
+ * 例: 142.5 → 142, 142.6 → 143, 142.4 → 142
+ */
+function pokeRound(value: number): number {
+  const decimal = value - Math.floor(value);
+  if (decimal < 0.5) {
+    return Math.floor(value);
+  } else if (decimal > 0.5) {
+    return Math.ceil(value);
+  } else {
+    // Exactly 0.5: round down
+    return Math.floor(value);
+  }
+}
+
+/**
  * 能力ランクから補正倍率を取得
  * ランク補正: https://wiki.xn--rckteqa2e.com/wiki/%E8%83%BD%E5%8A%9B%E5%A4%89%E5%8C%96
  */
@@ -211,6 +228,27 @@ export function calculateWeatherModifier(
 }
 
 /**
+ * "other"補正チェーンを適用（特性・持ち物など）
+ * shadowtag.xyzと同じ方式: 4096ベースで補正を連鎖させてから最後にダメージに適用
+ * 参考: https://shadowtag.xyz/
+ */
+function applyOtherModifiers(baseDamage: number, modifiers: number[]): number {
+  const INIT_VAL = 4096;
+  let chain = INIT_VAL;
+
+  // 補正を4096ベースで連鎖させる
+  for (const modifier of modifiers) {
+    if (modifier !== 1.0) {
+      const modifier4096 = Math.floor(modifier * INIT_VAL);
+      chain = Math.round((chain * modifier4096) / INIT_VAL);
+    }
+  }
+
+  // 最後に五捨五超入で適用
+  return pokeRound((baseDamage * chain) / INIT_VAL);
+}
+
+/**
  * 基本ダメージを計算（乱数・その他補正を除く）
  */
 export function calculateBaseDamage(input: DamageCalculationInput): number {
@@ -221,40 +259,116 @@ export function calculateBaseDamage(input: DamageCalculationInput): number {
     defenderDefense,
     moveCategory,
     condition,
+    moveType,
+    moveFlags,
   } = input;
 
-  // 能力ランク補正を適用
+  // タイプ相性（威力補正で使用）
+  const typeEffectiveness = calcTypeEffectiveness(moveType, input.defenderTypes);
+
+  // ===================
+  // 【1】威力補正を適用
+  // ===================
+  let finalPower = movePower;
+
+  // てだすけ: 技の威力を1.5倍
+  if (condition.isHelpingHand) {
+    finalPower = Math.floor(finalPower * 1.5);
+  }
+
+  // テクニシャン: 威力60以下の技が1.5倍
+  if (condition.attackerAbility === "Technician" && movePower <= 60) {
+    finalPower = Math.floor(finalPower * 1.5);
+  }
+
+  // てつのこぶし: パンチ技が1.2倍
+  if (condition.attackerAbility === "Iron Fist" && moveFlags?.isPunchMove) {
+    finalPower = Math.floor(finalPower * 1.2);
+  }
+
+  // すてみ: 反動技が1.2倍
+  if (condition.attackerAbility === "Reckless" && moveFlags?.isRecoilMove) {
+    finalPower = Math.floor(finalPower * 1.2);
+  }
+
+  // たつじんのおび: 効果抜群で1.2倍
+  if (condition.attackerItem === "Expert Belt" && typeEffectiveness > 1) {
+    finalPower = Math.floor(finalPower * 1.2);
+  }
+
+  // ノーマルジュエル: ノーマルタイプ1.3倍
+  if (condition.attackerItem === "Normal Gem" && moveType === "Normal") {
+    finalPower = Math.floor(finalPower * 1.3);
+  }
+
+  // パンチグローブ: パンチ技1.1倍
+  if (condition.attackerItem === "Punching Glove" && moveFlags?.isPunchMove) {
+    finalPower = Math.floor(finalPower * 1.1);
+  }
+
+  // ===================
+  // 【2】攻撃補正を適用
+  // ===================
+  let finalAttack = attackerAttack;
+
+  // 能力ランク補正
   const attackStage =
     moveCategory === "Physical"
       ? condition.attackerStatStages.attack
       : condition.attackerStatStages.specialAttack;
+
+  const attackMultiplier = getStatStageMultiplier(attackStage);
+  const effectiveAttack = Math.floor(finalAttack * attackMultiplier);
+
+  // 急所の場合は能力ダウンを無視
+  finalAttack =
+    condition.isCriticalHit && attackStage < 0
+      ? finalAttack
+      : effectiveAttack;
+
+  // こだわりハチマキ/メガネ: 攻撃を1.5倍
+  if (
+    (condition.attackerItem === "Choice Band" && moveCategory === "Physical") ||
+    (condition.attackerItem === "Choice Specs" && moveCategory === "Special")
+  ) {
+    finalAttack = Math.floor(finalAttack * 1.5);
+  }
+
+  // ちからのハチマキ/ものしりメガネ: 攻撃を1.1倍
+  if (
+    (condition.attackerItem === "Muscle Band" && moveCategory === "Physical") ||
+    (condition.attackerItem === "Wise Glasses" && moveCategory === "Special")
+  ) {
+    finalAttack = Math.floor(finalAttack * 1.1);
+  }
+
+  // ===================
+  // 【3】防御補正を適用
+  // ===================
+  let finalDefense = defenderDefense;
+
   const defenseStage =
     moveCategory === "Physical"
       ? condition.defenderStatStages.defense
       : condition.defenderStatStages.specialDefense;
 
-  const attackMultiplier = getStatStageMultiplier(attackStage);
   const defenseMultiplier = getStatStageMultiplier(defenseStage);
+  const effectiveDefense = Math.floor(finalDefense * defenseMultiplier);
 
-  const effectiveAttack = Math.floor(attackerAttack * attackMultiplier);
-  const effectiveDefense = Math.floor(defenderDefense / defenseMultiplier);
-
-  // 急所の場合は能力ダウンを無視（簡易実装）
-  const finalAttack =
-    condition.isCriticalHit && attackStage < 0
-      ? attackerAttack
-      : effectiveAttack;
-  const finalDefense =
+  // 急所の場合は能力アップを無視
+  finalDefense =
     condition.isCriticalHit && defenseStage > 0
-      ? defenderDefense
+      ? finalDefense
       : effectiveDefense;
 
-  // ダメージ計算式
+  // ===================
+  // 【4】ダメージ計算式
+  // ===================
   // ((レベル × 2 ÷ 5 + 2) × 技威力 × 攻撃 ÷ 防御) ÷ 50 + 2
   const levelFactor = Math.floor((attackerLevel * 2) / 5) + 2;
   const damage = Math.floor(
     Math.floor(
-      Math.floor((levelFactor * movePower * finalAttack) / finalDefense) / 50
+      Math.floor((levelFactor * finalPower * finalAttack) / finalDefense) / 50
     ) + 2
   );
 
@@ -290,13 +404,15 @@ export function calculateDamage(input: DamageCalculationInput): DamageResult {
   // 急所補正
   const criticalModifier = input.condition.isCriticalHit ? 1.5 : 1.0;
 
-  // 特性補正
-  const attackerAbilityModifier = calculateAttackerAbilityModifier(
-    input.condition.attackerAbility,
-    input.movePower,
-    input.moveFlags
-  );
+  // ダメージ補正のみ（威力・攻撃補正はcalculateBaseDamageで適用済み）
 
+  // いのちのたま: ダメージ補正
+  let lifeOrbModifier = 1.0;
+  if (input.condition.attackerItem === "Life Orb") {
+    lifeOrbModifier = 1.3;
+  }
+
+  // 防御側の特性によるダメージ補正
   const defenderAbilityModifier = calculateDefenderAbilityModifier(
     input.condition.defenderAbility,
     typeEffectiveness,
@@ -306,70 +422,56 @@ export function calculateDamage(input: DamageCalculationInput): DamageResult {
     input.defenderMaxHp
   );
 
-  // 持ち物補正
-  const attackerItemModifier = calculateAttackerItemModifier(
-    input.condition.attackerItem,
-    input.moveCategory,
-    typeEffectiveness,
-    input.moveType
-  );
-
+  // 防御側の持ち物によるダメージ補正
   const defenderItemModifier = calculateDefenderItemModifier(
     input.condition.defenderItem,
     input.moveCategory
   );
 
-  // パンチグローブの追加処理
-  let punchingGloveModifier = 1.0;
-  if (
-    input.condition.attackerItem === "Punching Glove" &&
-    input.moveFlags?.isPunchMove
-  ) {
-    punchingGloveModifier = 1.1;
-  }
-
   // ダブルバトル補正（全体技は0.75倍）
   const spreadModifier =
     input.condition.isDoubleBattle && input.condition.isSpreadMove ? 0.75 : 1.0;
 
-  // てだすけ補正（1.5倍）
-  const helpingHandModifier = input.condition.isHelpingHand ? 1.5 : 1.0;
+  // 【正しいダメージ計算順序】
+  // 第5世代以降の公式: base × Targets × Weather × Critical × random × STAB × Type × other
+  // 参考: https://bulbapedia.bulbagarden.net/wiki/Damage
 
-  // 乱数の範囲: 0.85〜1.00
-  const randomMin = 0.85;
-  const randomMax = 1.0;
+  let minDamage = baseDamage;
+  let maxDamage = baseDamage;
 
-  // 【乱数前の補正】てだすけ、全体技補正
-  let damageBeforeRandom = baseDamage;
-  damageBeforeRandom = Math.floor(damageBeforeRandom * spreadModifier);
-  damageBeforeRandom = Math.floor(damageBeforeRandom * helpingHandModifier);
+  // 1. Targets (全体技補正) - BEFORE random
+  minDamage = Math.floor(minDamage * spreadModifier);
+  maxDamage = Math.floor(maxDamage * spreadModifier);
 
-  // 【乱数適用】
-  const minDamageAfterRandom = Math.floor(damageBeforeRandom * randomMin);
-  const maxDamageAfterRandom = Math.floor(damageBeforeRandom * randomMax);
-
-  // 【乱数後の補正】STAB、タイプ相性、その他
-  let minDamage = minDamageAfterRandom;
-  minDamage = Math.floor(minDamage * stab);
-  minDamage = Math.floor(minDamage * typeEffectiveness);
+  // 2. Weather (天候補正) - BEFORE random
   minDamage = Math.floor(minDamage * weatherModifier);
-  minDamage = Math.floor(minDamage * criticalModifier);
-  minDamage = Math.floor(minDamage * attackerAbilityModifier);
-  minDamage = Math.floor(minDamage * attackerItemModifier);
-  minDamage = Math.floor(minDamage * punchingGloveModifier);
-  minDamage = Math.floor(minDamage * defenderAbilityModifier);
-  minDamage = Math.floor(minDamage * defenderItemModifier);
-
-  let maxDamage = maxDamageAfterRandom;
-  maxDamage = Math.floor(maxDamage * stab);
-  maxDamage = Math.floor(maxDamage * typeEffectiveness);
   maxDamage = Math.floor(maxDamage * weatherModifier);
+
+  // 3. Critical (急所補正) - BEFORE random
+  minDamage = Math.floor(minDamage * criticalModifier);
   maxDamage = Math.floor(maxDamage * criticalModifier);
-  maxDamage = Math.floor(maxDamage * attackerAbilityModifier);
-  maxDamage = Math.floor(maxDamage * attackerItemModifier);
-  maxDamage = Math.floor(maxDamage * punchingGloveModifier);
-  maxDamage = Math.floor(maxDamage * defenderAbilityModifier);
-  maxDamage = Math.floor(maxDamage * defenderItemModifier);
+
+  // 4. Random (乱数: 0.85〜1.00) - ここで最小/最大が分岐
+  minDamage = Math.floor(minDamage * 0.85);
+  maxDamage = Math.floor(maxDamage * 1.0);
+
+  // 5. STAB (タイプ一致補正) - AFTER random
+  minDamage = Math.floor(minDamage * stab);
+  maxDamage = Math.floor(maxDamage * stab);
+
+  // 6. Type (タイプ相性) - AFTER random
+  minDamage = Math.floor(minDamage * typeEffectiveness);
+  maxDamage = Math.floor(maxDamage * typeEffectiveness);
+
+  // 7. "other" modifiers (ダメージ補正のみ) - AFTER Type
+  // 威力・攻撃補正はすでにcalculateBaseDamageで適用済み
+  const otherModifiers = [
+    lifeOrbModifier,
+    defenderAbilityModifier,
+    defenderItemModifier,
+  ];
+  minDamage = applyOtherModifiers(minDamage, otherModifiers);
+  maxDamage = applyOtherModifiers(maxDamage, otherModifiers);
 
   // 防御側のHPを仮定（後でUI側で上書き可能）
   const defenderHp = input.defenderMaxHp || 100; // ダミー値
@@ -387,7 +489,7 @@ export function calculateDamage(input: DamageCalculationInput): DamageResult {
       stab,
       weatherModifier,
       criticalModifier,
-      randomModifier: [randomMin, randomMax],
+      randomModifier: [0.85, 1.0],
     },
   };
 }

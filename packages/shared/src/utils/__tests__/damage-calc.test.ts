@@ -61,7 +61,7 @@ describe("damage-calc", () => {
   });
 
   describe("calculateDamage", () => {
-    it("カイリューのげきりん → ガブリアス", () => {
+    it("①カイリューのげきりん → ガブリアス", () => {
       const input: DamageCalculationInput = {
         movePower: 120,
         moveType: "Dragon",
@@ -93,19 +93,16 @@ describe("damage-calc", () => {
 
       const result = calculateDamage(input);
 
-      // ダメージ範囲を確認
-      expect(result.minDamage).toBeGreaterThan(0);
-      expect(result.maxDamage).toBeGreaterThanOrEqual(result.minDamage);
+      // shadowtag.xyzの期待値
+      expect(result.minDamage).toBe(240);
+      expect(result.maxDamage).toBe(284);
 
-      // デバッグ情報を確認
-      expect(result.details?.stab).toBe(1.5); // タイプ一致
-      expect(result.details?.typeEffectiveness).toBe(2); // ドラゴン → ドラゴンは2倍
-      expect(result.details?.weatherModifier).toBe(1.0);
-
-      console.log("カイリューのげきりん → ガブリアス:", result);
+      console.log("①カイリューのげきりん → ガブリアス:");
+      console.log("  最小:", result.minDamage, "(期待: 240)");
+      console.log("  最大:", result.maxDamage, "(期待: 284)");
     });
 
-    it("てだすけ使用時は1.5倍", () => {
+    it("②通常攻撃とてだすけ使用時", () => {
       const input: DamageCalculationInput = {
         movePower: 80,
         moveType: "Normal",
@@ -138,22 +135,28 @@ describe("damage-calc", () => {
 
       const normalResult = calculateDamage(input);
 
+      console.log("②通常（実際の値）:");
+      console.log("  最小:", normalResult.minDamage, "(期待: 67)");
+      console.log("  最大:", normalResult.maxDamage, "(期待: 81)");
+
       const inputWithHelp = {
         ...input,
         condition: { ...input.condition, isHelpingHand: true },
       };
       const helpResult = calculateDamage(inputWithHelp);
 
-      // てだすけありの方がダメージが高い
-      expect(helpResult.maxDamage).toBeGreaterThan(normalResult.maxDamage);
+      console.log("②てだすけ（実際の値）:");
+      console.log("  最小:", helpResult.minDamage, "(期待: 102)");
+      console.log("  最大:", helpResult.maxDamage, "(期待: 121)");
 
-      console.log("通常(最小値):", normalResult.minDamage);
-      console.log("てだすけ(最小値):", helpResult.minDamage);
-      console.log("通常(最大値):", normalResult.minDamage);
-      console.log("てだすけ(最大値):", helpResult.minDamage);
+      // shadowtag.xyzの期待値
+      expect(normalResult.minDamage).toBe(67);
+      expect(normalResult.maxDamage).toBe(81);
+      expect(helpResult.minDamage).toBe(102);
+      expect(helpResult.maxDamage).toBe(121);
     });
 
-    it("ダブルバトルの全体技は0.75倍", () => {
+    it("④ダブルバトルの全体技は0.75倍", () => {
       const input: DamageCalculationInput = {
         movePower: 80,
         moveType: "Normal",
@@ -180,32 +183,24 @@ describe("damage-calc", () => {
             specialDefense: 0,
             speed: 0,
           },
-          isDoubleBattle: false,
-          isSpreadMove: false,
-        },
-      };
-
-      const singleResult = calculateDamage(input);
-
-      const doubleInput = {
-        ...input,
-        condition: {
-          ...input.condition,
           isDoubleBattle: true,
           isSpreadMove: true,
         },
       };
-      const doubleResult = calculateDamage(doubleInput);
 
-      // 全体技の方がダメージが低い
-      expect(doubleResult.maxDamage).toBeLessThan(singleResult.maxDamage);
+      const result = calculateDamage(input);
 
-      console.log("単体技:", singleResult.maxDamage);
-      console.log("全体技:", doubleResult.maxDamage);
+      // shadowtag.xyzの期待値
+      expect(result.minDamage).toBe(51);
+      expect(result.maxDamage).toBe(60);
+
+      console.log("④全体技:");
+      console.log("  最小:", result.minDamage, "(期待: 51)");
+      console.log("  最大:", result.maxDamage, "(期待: 60)");
     });
   });
   describe("特性と持ち物のテスト", () => {
-    it("テクニシャン: 威力60以下の技が1.5倍", () => {
+    it("⑤テクニシャン: 威力60以下の技が1.5倍", () => {
       const input: DamageCalculationInput = {
         movePower: 60,
         moveType: "Normal",
@@ -237,12 +232,17 @@ describe("damage-calc", () => {
       };
 
       const result = calculateDamage(input);
-      console.log("テクニシャン適用:", result.maxDamage);
 
-      expect(result.maxDamage).toBeGreaterThan(0);
+      // shadowtag.xyzの期待値
+      expect(result.minDamage).toBe(76);
+      expect(result.maxDamage).toBe(91);
+
+      console.log("⑤テクニシャン適用:");
+      console.log("  最小:", result.minDamage, "(期待: 76)");
+      console.log("  最大:", result.maxDamage, "(期待: 91)");
     });
 
-    it("こだわりハチマキ: 物理攻撃1.5倍", () => {
+    it("⑥こだわりハチマキ: 物理攻撃1.5倍", () => {
       const input: DamageCalculationInput = {
         movePower: 80,
         moveType: "Normal",
@@ -274,12 +274,17 @@ describe("damage-calc", () => {
       };
 
       const result = calculateDamage(input);
-      console.log("こだわりハチマキ適用:", result.maxDamage);
 
-      expect(result.maxDamage).toBeGreaterThan(0);
+      // shadowtag.xyzの期待値
+      expect(result.minDamage).toBe(68);
+      expect(result.maxDamage).toBe(81);
+
+      console.log("⑥こだわりハチマキ適用:");
+      console.log("  最小:", result.minDamage, "(期待: 68)");
+      console.log("  最大:", result.maxDamage, "(期待: 81)");
     });
 
-    it("いのちのたま: 全ての技1.3倍", () => {
+    it("⑦いのちのたま: 全ての技1.3倍", () => {
       const input: DamageCalculationInput = {
         movePower: 80,
         moveType: "Normal",
@@ -311,12 +316,17 @@ describe("damage-calc", () => {
       };
 
       const result = calculateDamage(input);
-      console.log("いのちのたま適用:", result.maxDamage);
 
-      expect(result.maxDamage).toBeGreaterThan(0);
+      // shadowtag.xyzの期待値
+      expect(result.minDamage).toBe(58);
+      expect(result.maxDamage).toBe(70);
+
+      console.log("⑦いのちのたま適用:");
+      console.log("  最小:", result.minDamage, "(期待: 58)");
+      console.log("  最大:", result.maxDamage, "(期待: 70)");
     });
 
-    it("マルチスケイル: HP満タン時ダメージ0.5倍", () => {
+    it("⑧マルチスケイル: HP満タン時ダメージ0.5倍", () => {
       const input: DamageCalculationInput = {
         movePower: 80,
         moveType: "Normal",
@@ -350,9 +360,14 @@ describe("damage-calc", () => {
       };
 
       const result = calculateDamage(input);
-      console.log("マルチスケイル適用:", result.maxDamage);
 
-      expect(result.maxDamage).toBeGreaterThan(0);
+      // shadowtag.xyzの期待値
+      expect(result.minDamage).toBe(22);
+      expect(result.maxDamage).toBe(27);
+
+      console.log("⑧マルチスケイル適用:");
+      console.log("  最小:", result.minDamage, "(期待: 22)");
+      console.log("  最大:", result.maxDamage, "(期待: 27)");
     });
   });
 });
