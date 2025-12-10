@@ -33,17 +33,14 @@ export function PokemonStatInput({
 
   const handleModeToggle = () => {
     if (mode === "manual") {
-      // KÕ’êÕþ(n-šg—
       const calculated = calcOtherStat(baseStat, iv, ev, level, natureModifier);
       onChange(calculated);
       setMode("auto");
     } else {
-      // êÕ’KÕþ(n$’­
       setMode("manual");
     }
   };
 
-  // IV~_oEVL	ôUŒ_‰êÕ—
   const handleIvChange = (newIv: number) => {
     setIv(newIv);
     if (mode === "auto") {
@@ -82,7 +79,7 @@ export function PokemonStatInput({
           size="sm"
           onClick={handleModeToggle}
         >
-          {mode === "manual" ? "êÕ—kÿ" : "KÕe›kÿ"}
+          {mode === "manual" ? "Auto" : "Manual"}
         </Button>
       </div>
 
@@ -95,7 +92,7 @@ export function PokemonStatInput({
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               onChange(parseInt(e.target.value) || 1)
             }
-            placeholder="Ÿp$’e›"
+            placeholder="Enter stat value"
           />
         </div>
       ) : (
@@ -103,7 +100,7 @@ export function PokemonStatInput({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label htmlFor={`${statType}-iv`} className="text-xs">
-                S$ (IV)
+                IV
               </Label>
               <Input
                 id={`${statType}-iv`}
@@ -120,7 +117,7 @@ export function PokemonStatInput({
             </div>
             <div className="space-y-1">
               <Label htmlFor={`${statType}-ev`} className="text-xs">
-                ª›$ (EV)
+                EV
               </Label>
               <Input
                 id={`${statType}-ev`}
@@ -138,7 +135,7 @@ export function PokemonStatInput({
             </div>
           </div>
           <div className="text-sm text-muted-foreground">
-            Ÿp$: <span className="font-bold text-foreground">{value}</span>
+            Stat: <span className="font-bold text-foreground">{value}</span>
           </div>
         </div>
       )}

@@ -53,12 +53,10 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
   const [defenseRank, setDefenseRank] = useState<StatStage>(0);
   const [specialDefenseRank, setSpecialDefenseRank] = useState<StatStage>(0);
 
-  // HP(nKÕ/êÕŠÿH
   const [hpMode, setHpMode] = useState<"manual" | "auto">("auto");
   const [hpIv, setHpIv] = useState(31);
   const [hpEv, setHpEv] = useState(252);
 
-  // Çü¿L	ôUŒ_‰ªkå
   const notifyChange = (updates: Partial<DefenderData>) => {
     const data: DefenderData = {
       pokemonName,
@@ -77,7 +75,6 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
     onDataChange(data);
   };
 
-  // HPêÕ—
   const calculateHp = (base: number, iv: number, ev: number) => {
     return calcHpStat(base, iv, ev, 50);
   };
@@ -85,12 +82,11 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>2¡t</CardTitle>
+        <CardTitle>Defender</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Ý±âó */}
         <div className="space-y-2">
-          <Label htmlFor="defender-pokemon-name">Ý±âó</Label>
+          <Label htmlFor="defender-pokemon-name">Pokemon Name</Label>
           <Input
             id="defender-pokemon-name"
             type="text"
@@ -99,16 +95,15 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
               setPokemonName(e.target.value);
               notifyChange({ pokemonName: e.target.value });
             }}
-            placeholder="Ý±âó’e›"
+            placeholder="Enter Pokemon name"
           />
         </div>
 
-        {/* .Ï$ */}
         <div className="space-y-3">
-          <h3 className="text-sm font-medium">.Ï$</h3>
+          <h3 className="text-sm font-medium">Base Stats</h3>
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="hp-base-stat">HP.Ï$</Label>
+              <Label htmlFor="hp-base-stat">HP</Label>
               <Input
                 id="hp-base-stat"
                 type="number"
@@ -129,7 +124,7 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="defense-base-stat">2¡.Ï$</Label>
+              <Label htmlFor="defense-base-stat">Defense</Label>
               <Input
                 id="defense-base-stat"
                 type="number"
@@ -144,7 +139,7 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="special-defense-base-stat">y2.Ï$</Label>
+              <Label htmlFor="special-defense-base-stat">Sp.Def</Label>
               <Input
                 id="special-defense-base-stat"
                 type="number"
@@ -161,11 +156,9 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
           </div>
         </div>
 
-        {/* ¹Æü¿¹Ÿp$ */}
         <div className="space-y-4">
-          <h3 className="text-sm font-medium">¹Æü¿¹Ÿp$</h3>
+          <h3 className="text-sm font-medium">Stats</h3>
 
-          {/* HP ('<ÜcjW) */}
           <div className="space-y-3 p-4 border rounded-lg">
             <div className="flex justify-between items-center">
               <Label>HP</Label>
@@ -183,7 +176,7 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
                   }
                 }}
               >
-                {hpMode === "manual" ? "êÕ—kÿ" : "KÕe›kÿ"}
+                {hpMode === "manual" ? "Auto" : "Manual"}
               </button>
             </div>
 
@@ -197,14 +190,14 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
                   setHpStat(value);
                   notifyChange({ hpStat: value });
                 }}
-                placeholder="Ÿp$’e›"
+                placeholder="Enter stat value"
               />
             ) : (
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <Label htmlFor="hp-iv" className="text-xs">
-                      S$ (IV)
+                      IV
                     </Label>
                     <Input
                       id="hp-iv"
@@ -223,7 +216,7 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
                   </div>
                   <div className="space-y-1">
                     <Label htmlFor="hp-ev" className="text-xs">
-                      ª›$ (EV)
+                      EV
                     </Label>
                     <Input
                       id="hp-ev"
@@ -243,16 +236,15 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
                   </div>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Ÿp$: <span className="font-bold text-foreground">{hpStat}</span>
+                  Stat: <span className="font-bold text-foreground">{hpStat}</span>
                 </div>
               </div>
             )}
           </div>
 
-          {/* 2¡ */}
           <div className="space-y-3 p-4 border rounded-lg">
             <NatureModifierRadio
-              statName="2¡"
+              statName="Defense"
               value={defenseModifier}
               onChange={(modifier) => {
                 setDefenseModifier(modifier);
@@ -260,7 +252,7 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
               }}
             />
             <PokemonStatInput
-              label="2¡"
+              label="Defense"
               statType="defense"
               level={50}
               natureModifier={defenseModifier}
@@ -273,10 +265,9 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
             />
           </div>
 
-          {/* y2 */}
           <div className="space-y-3 p-4 border rounded-lg">
             <NatureModifierRadio
-              statName="y2"
+              statName="Sp.Def"
               value={specialDefenseModifier}
               onChange={(modifier) => {
                 setSpecialDefenseModifier(modifier);
@@ -284,7 +275,7 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
               }}
             />
             <PokemonStatInput
-              label="y2"
+              label="Sp.Def"
               statType="specialDefense"
               level={50}
               natureModifier={specialDefenseModifier}
@@ -298,12 +289,11 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
           </div>
         </div>
 
-        {/* ý›éó¯ */}
         <div className="space-y-3">
-          <h3 className="text-sm font-medium">ý›éó¯</h3>
+          <h3 className="text-sm font-medium">Stat Stages</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="defense-rank">2¡éó¯</Label>
+              <Label htmlFor="defense-rank">Defense</Label>
               <Select
                 value={defenseRank.toString()}
                 onValueChange={(value: string) => {
@@ -325,7 +315,7 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="special-defense-rank">y2éó¯</Label>
+              <Label htmlFor="special-defense-rank">Sp.Def</Label>
               <Select
                 value={specialDefenseRank.toString()}
                 onValueChange={(value: string) => {
@@ -349,29 +339,28 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
           </div>
         </div>
 
-        {/* ]nÖ (Phase 1go*ŸÅ) */}
         <div className="space-y-3">
-          <h3 className="text-sm font-medium">]nÖ</h3>
+          <h3 className="text-sm font-medium">Other</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="defender-ability">y'</Label>
+              <Label htmlFor="defender-ability">Ability</Label>
               <Select value="none" disabled>
                 <SelectTrigger id="defender-ability">
-                  <SelectValue placeholder="jW" />
+                  <SelectValue placeholder="None" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">jW</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="defender-item">ai</Label>
+              <Label htmlFor="defender-item">Item</Label>
               <Select value="none" disabled>
                 <SelectTrigger id="defender-item">
-                  <SelectValue placeholder="jW" />
+                  <SelectValue placeholder="None" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">jW</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                 </SelectContent>
               </Select>
             </div>
