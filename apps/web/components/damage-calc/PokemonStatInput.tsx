@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { calcOtherStat } from "@poke-dex-battle/shared";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type StatType = "attack" | "defense" | "specialAttack" | "specialDefense";
 
@@ -30,6 +30,15 @@ export function PokemonStatInput({
   const [mode, setMode] = useState<"manual" | "auto">("auto");
   const [iv, setIv] = useState(31);
   const [ev, setEv] = useState(252);
+
+  // natureModifier or baseStat が変更されたら自動で再計算
+  useEffect(() => {
+    if (mode === "auto") {
+      const calculated = calcOtherStat(baseStat, iv, ev, level, natureModifier);
+      onChange(calculated);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [natureModifier, baseStat, mode, iv, ev, level]);
 
   const handleModeToggle = () => {
     if (mode === "manual") {
@@ -79,7 +88,7 @@ export function PokemonStatInput({
           size="sm"
           onClick={handleModeToggle}
         >
-          {mode === "manual" ? "Auto" : "Manual"}
+          {mode === "manual" ? "自動計算に切替" : "手動入力に切替"}
         </Button>
       </div>
 
@@ -92,7 +101,7 @@ export function PokemonStatInput({
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               onChange(parseInt(e.target.value) || 1)
             }
-            placeholder="Enter stat value"
+            placeholder="実数値を入力"
           />
         </div>
       ) : (
@@ -100,7 +109,7 @@ export function PokemonStatInput({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label htmlFor={`${statType}-iv`} className="text-xs">
-                IV
+                個体値 (IV)
               </Label>
               <Input
                 id={`${statType}-iv`}
@@ -117,7 +126,7 @@ export function PokemonStatInput({
             </div>
             <div className="space-y-1">
               <Label htmlFor={`${statType}-ev`} className="text-xs">
-                EV
+                努力値 (EV)
               </Label>
               <Input
                 id={`${statType}-ev`}
@@ -135,7 +144,7 @@ export function PokemonStatInput({
             </div>
           </div>
           <div className="text-sm text-muted-foreground">
-            Stat: <span className="font-bold text-foreground">{value}</span>
+            実数値: <span className="font-bold text-foreground">{value}</span>
           </div>
         </div>
       )}

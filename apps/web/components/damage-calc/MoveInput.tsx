@@ -53,12 +53,14 @@ export function MoveInput({
         <Label htmlFor="move-power">威力</Label>
         <Input
           id="move-power"
-          type="number"
-          min={0}
+          type="text"
+          inputMode="numeric"
           value={movePower}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onMovePowerChange(parseInt(e.target.value) || 0)
-          }
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            const numericValue = e.target.value.replace(/\D/g, '');
+            const parsed = parseInt(numericValue || '0', 10);
+            onMovePowerChange(parsed);
+          }}
         />
       </div>
 

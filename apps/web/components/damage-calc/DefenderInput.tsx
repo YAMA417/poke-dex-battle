@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import type { StatStage } from "@poke-dex-battle/shared";
 import { calcHpStat } from "@poke-dex-battle/shared";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NatureModifierRadio } from "./NatureModifierRadio";
 import { PokemonStatInput } from "./PokemonStatInput";
 
@@ -43,7 +43,7 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
   const [defenseBaseStat, setDefenseBaseStat] = useState(100);
   const [specialDefenseBaseStat, setSpecialDefenseBaseStat] = useState(100);
 
-  const [hpStat, setHpStat] = useState(165);
+  const [hpStat, setHpStat] = useState(207);
   const [defenseStat, setDefenseStat] = useState(152);
   const [specialDefenseStat, setSpecialDefenseStat] = useState(152);
 
@@ -79,14 +79,24 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
     return calcHpStat(base, iv, ev, 50);
   };
 
+  // HP種族値が変更されたら自動で再計算
+  useEffect(() => {
+    if (hpMode === "auto") {
+      const calculated = calculateHp(hpBaseStat, hpIv, hpEv);
+      setHpStat(calculated);
+      notifyChange({ hpStat: calculated });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hpBaseStat, hpMode, hpIv, hpEv]);
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Defender</CardTitle>
+        <CardTitle>防御側</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="defender-pokemon-name">Pokemon Name</Label>
+          <Label htmlFor="defender-pokemon-name">ポケモン名</Label>
           <Input
             id="defender-pokemon-name"
             type="text"
@@ -95,69 +105,34 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
               setPokemonName(e.target.value);
               notifyChange({ pokemonName: e.target.value });
             }}
-            placeholder="Enter Pokemon name"
+            placeholder="ポケモン名を入力"
           />
         </div>
 
+        {/* HP */}
         <div className="space-y-3">
-          <h3 className="text-sm font-medium">Base Stats</h3>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="hp-base-stat">HP</Label>
-              <Input
-                id="hp-base-stat"
-                type="number"
-                min={1}
-                max={255}
-                value={hpBaseStat}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const value = parseInt(e.target.value) || 1;
-                  setHpBaseStat(value);
-                  if (hpMode === "auto") {
-                    const calculated = calculateHp(value, hpIv, hpEv);
-                    setHpStat(calculated);
-                    notifyChange({ hpBaseStat: value, hpStat: calculated });
-                  } else {
-                    notifyChange({ hpBaseStat: value });
-                  }
-                }}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="defense-base-stat">Defense</Label>
-              <Input
-                id="defense-base-stat"
-                type="number"
-                min={1}
-                max={255}
-                value={defenseBaseStat}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const value = parseInt(e.target.value) || 1;
-                  setDefenseBaseStat(value);
-                  notifyChange({ defenseBaseStat: value });
-                }}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="special-defense-base-stat">Sp.Def</Label>
-              <Input
-                id="special-defense-base-stat"
-                type="number"
-                min={1}
-                max={255}
-                value={specialDefenseBaseStat}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const value = parseInt(e.target.value) || 1;
-                  setSpecialDefenseBaseStat(value);
-                  notifyChange({ specialDefenseBaseStat: value });
-                }}
-              />
-            </div>
+          <h3 className="text-sm font-medium">HP</h3>
+          <div className="space-y-2">
+            <Label htmlFor="hp-base-stat">HP種族値</Label>
+            <Input
+              id="hp-base-stat"
+              type="number"
+              min={1}
+              max={255}
+              value={hpBaseStat}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const value = parseInt(e.target.value) || 1;
+                setHpBaseStat(value);
+                if (hpMode === "auto") {
+                  const calculated = calculateHp(value, hpIv, hpEv);
+                  setHpStat(calculated);
+                  notifyChange({ hpBaseStat: value, hpStat: calculated });
+                } else {
+                  notifyChange({ hpBaseStat: value });
+                }
+              }}
+            />
           </div>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-sm font-medium">Stats</h3>
 
           <div className="space-y-3 p-4 border rounded-lg">
             <div className="flex justify-between items-center">
@@ -176,7 +151,7 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
                   }
                 }}
               >
-                {hpMode === "manual" ? "Auto" : "Manual"}
+                {hpMode === "manual" ? "自動計算に切替" : "手動入力に切替"}
               </button>
             </div>
 
@@ -190,14 +165,14 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
                   setHpStat(value);
                   notifyChange({ hpStat: value });
                 }}
-                placeholder="Enter stat value"
+                placeholder="実数値を入力"
               />
             ) : (
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <Label htmlFor="hp-iv" className="text-xs">
-                      IV
+                      個体値 (IV)
                     </Label>
                     <Input
                       id="hp-iv"
@@ -216,7 +191,7 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
                   </div>
                   <div className="space-y-1">
                     <Label htmlFor="hp-ev" className="text-xs">
-                      EV
+                      努力値 (EV)
                     </Label>
                     <Input
                       id="hp-ev"
@@ -236,15 +211,35 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
                   </div>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Stat: <span className="font-bold text-foreground">{hpStat}</span>
+                  実数値: <span className="font-bold text-foreground">{hpStat}</span>
                 </div>
               </div>
             )}
           </div>
+        </div>
+
+        {/* 防御 */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium">防御</h3>
+          <div className="space-y-2">
+            <Label htmlFor="defense-base-stat">防御種族値</Label>
+            <Input
+              id="defense-base-stat"
+              type="number"
+              min={1}
+              max={255}
+              value={defenseBaseStat}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const value = parseInt(e.target.value) || 1;
+                setDefenseBaseStat(value);
+                notifyChange({ defenseBaseStat: value });
+              }}
+            />
+          </div>
 
           <div className="space-y-3 p-4 border rounded-lg">
             <NatureModifierRadio
-              statName="Defense"
+              statName="防御"
               value={defenseModifier}
               onChange={(modifier) => {
                 setDefenseModifier(modifier);
@@ -252,7 +247,7 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
               }}
             />
             <PokemonStatInput
-              label="Defense"
+              label="防御"
               statType="defense"
               level={50}
               natureModifier={defenseModifier}
@@ -264,10 +259,30 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
               }}
             />
           </div>
+        </div>
+
+        {/* 特防 */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium">特防</h3>
+          <div className="space-y-2">
+            <Label htmlFor="special-defense-base-stat">特防種族値</Label>
+            <Input
+              id="special-defense-base-stat"
+              type="number"
+              min={1}
+              max={255}
+              value={specialDefenseBaseStat}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const value = parseInt(e.target.value) || 1;
+                setSpecialDefenseBaseStat(value);
+                notifyChange({ specialDefenseBaseStat: value });
+              }}
+            />
+          </div>
 
           <div className="space-y-3 p-4 border rounded-lg">
             <NatureModifierRadio
-              statName="Sp.Def"
+              statName="特防"
               value={specialDefenseModifier}
               onChange={(modifier) => {
                 setSpecialDefenseModifier(modifier);
@@ -275,7 +290,7 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
               }}
             />
             <PokemonStatInput
-              label="Sp.Def"
+              label="特防"
               statType="specialDefense"
               level={50}
               natureModifier={specialDefenseModifier}
@@ -290,10 +305,10 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
         </div>
 
         <div className="space-y-3">
-          <h3 className="text-sm font-medium">Stat Stages</h3>
+          <h3 className="text-sm font-medium">能力ランク</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="defense-rank">Defense</Label>
+              <Label htmlFor="defense-rank">防御ランク</Label>
               <Select
                 value={defenseRank.toString()}
                 onValueChange={(value: string) => {
@@ -315,7 +330,7 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="special-defense-rank">Sp.Def</Label>
+              <Label htmlFor="special-defense-rank">特防ランク</Label>
               <Select
                 value={specialDefenseRank.toString()}
                 onValueChange={(value: string) => {
@@ -340,27 +355,27 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
         </div>
 
         <div className="space-y-3">
-          <h3 className="text-sm font-medium">Other</h3>
+          <h3 className="text-sm font-medium">その他</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="defender-ability">Ability</Label>
+              <Label htmlFor="defender-ability">特性</Label>
               <Select value="none" disabled>
                 <SelectTrigger id="defender-ability">
-                  <SelectValue placeholder="None" />
+                  <SelectValue placeholder="なし" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="none">なし</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="defender-item">Item</Label>
+              <Label htmlFor="defender-item">持ち物</Label>
               <Select value="none" disabled>
                 <SelectTrigger id="defender-item">
-                  <SelectValue placeholder="None" />
+                  <SelectValue placeholder="なし" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="none">なし</SelectItem>
                 </SelectContent>
               </Select>
             </div>

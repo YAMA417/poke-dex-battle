@@ -24,7 +24,7 @@ export function NatureModifierRadio({
     <div className="space-y-2">
       <Label className="text-sm font-medium">{statName}の性格補正</Label>
       <RadioGroup
-        value={value.toString()}
+        value={value.toFixed(1)}
         onValueChange={(val: string) => onChange(Number(val) as 1.1 | 1.0 | 0.9)}
         className="flex space-x-4"
       >

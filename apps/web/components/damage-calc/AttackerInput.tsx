@@ -129,7 +129,7 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
         {/* 種族値 */}
         <div className="space-y-3">
           <h3 className="text-sm font-medium">種族値</h3>
-          <div className="grid grid-cols-2 gap-3">
+          {moveCategory === "Physical" ? (
             <div className="space-y-2">
               <Label htmlFor="attack-base-stat">攻撃種族値</Label>
               <Input
@@ -145,6 +145,7 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
                 }}
               />
             </div>
+          ) : (
             <div className="space-y-2">
               <Label htmlFor="special-attack-base-stat">特攻種族値</Label>
               <Input
@@ -160,66 +161,66 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
                 }}
               />
             </div>
-          </div>
+          )}
         </div>
 
         {/* ステータス実数値 */}
         <div className="space-y-4">
           <h3 className="text-sm font-medium">ステータス実数値</h3>
 
-          {/* 攻撃 */}
-          <div className="space-y-3 p-4 border rounded-lg">
-            <NatureModifierRadio
-              statName="攻撃"
-              value={attackModifier}
-              onChange={(modifier) => {
-                setAttackModifier(modifier);
-                notifyChange({ attackModifier: modifier });
-              }}
-            />
-            <PokemonStatInput
-              label="攻撃"
-              statType="attack"
-              level={50}
-              natureModifier={attackModifier}
-              baseStat={attackBaseStat}
-              value={attackStat}
-              onChange={(value) => {
-                setAttackStat(value);
-                notifyChange({ attackStat: value });
-              }}
-            />
-          </div>
-
-          {/* 特攻 */}
-          <div className="space-y-3 p-4 border rounded-lg">
-            <NatureModifierRadio
-              statName="特攻"
-              value={specialAttackModifier}
-              onChange={(modifier) => {
-                setSpecialAttackModifier(modifier);
-                notifyChange({ specialAttackModifier: modifier });
-              }}
-            />
-            <PokemonStatInput
-              label="特攻"
-              statType="specialAttack"
-              level={50}
-              natureModifier={specialAttackModifier}
-              baseStat={specialAttackBaseStat}
-              value={specialAttackStat}
-              onChange={(value) => {
-                setSpecialAttackStat(value);
-                notifyChange({ specialAttackStat: value });
-              }}
-            />
-          </div>
+          {moveCategory === "Physical" ? (
+            <div className="space-y-3 p-4 border rounded-lg">
+              <NatureModifierRadio
+                statName="攻撃"
+                value={attackModifier}
+                onChange={(modifier) => {
+                  setAttackModifier(modifier);
+                  notifyChange({ attackModifier: modifier });
+                }}
+              />
+              <PokemonStatInput
+                label="攻撃"
+                statType="attack"
+                level={50}
+                natureModifier={attackModifier}
+                baseStat={attackBaseStat}
+                value={attackStat}
+                onChange={(value) => {
+                  setAttackStat(value);
+                  notifyChange({ attackStat: value });
+                }}
+              />
+            </div>
+          ) : (
+            <div className="space-y-3 p-4 border rounded-lg">
+              <NatureModifierRadio
+                statName="特攻"
+                value={specialAttackModifier}
+                onChange={(modifier) => {
+                  setSpecialAttackModifier(modifier);
+                  notifyChange({ specialAttackModifier: modifier });
+                }}
+              />
+              <PokemonStatInput
+                label="特攻"
+                statType="specialAttack"
+                level={50}
+                natureModifier={specialAttackModifier}
+                baseStat={specialAttackBaseStat}
+                value={specialAttackStat}
+                onChange={(value) => {
+                  setSpecialAttackStat(value);
+                  notifyChange({ specialAttackStat: value });
+                }}
+              />
+            </div>
+          )}
         </div>
 
         {/* 能力ランク */}
         <div className="space-y-3">
           <h3 className="text-sm font-medium">能力ランク</h3>
-          <div className="grid grid-cols-2 gap-3">
+          {moveCategory === "Physical" ? (
             <div className="space-y-2">
               <Label htmlFor="attack-rank">攻撃ランク</Label>
               <Select
@@ -242,6 +243,7 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
                 </SelectContent>
               </Select>
             </div>
+          ) : (
             <div className="space-y-2">
               <Label htmlFor="special-attack-rank">特攻ランク</Label>
               <Select
@@ -264,7 +266,7 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          )}
         </div>
 
         {/* その他 (Phase 1では未実装) */}
