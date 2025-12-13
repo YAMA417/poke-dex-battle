@@ -10,8 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePokemonSearch } from "@/hooks/usePokemonSearch";
 import type { PokemonType, StatStage } from "@poke-dex-battle/shared";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MoveInput } from "./MoveInput";
 import { NatureModifierRadio } from "./NatureModifierRadio";
 import { PokemonStatInput } from "./PokemonStatInput";
@@ -24,6 +25,7 @@ interface AttackerInputProps {
 
 export interface AttackerData {
   pokemonName: string;
+  pokemonTypes: PokemonType[];
   moveName: string;
   movePower: number;
   moveType: PokemonType;
@@ -40,27 +42,49 @@ export interface AttackerData {
 
 export function AttackerInput({ onDataChange }: AttackerInputProps) {
   const [pokemonName, setPokemonName] = useState("");
+  const [pokemonTypes, setPokemonTypes] = useState<PokemonType[]>([]);
   const [moveName, setMoveName] = useState("");
   const [movePower, setMovePower] = useState(80);
   const [moveType, setMoveType] = useState<PokemonType>("Normal");
-  const [moveCategory, setMoveCategory] = useState<"Physical" | "Special">("Physical");
+  const [moveCategory, setMoveCategory] = useState<"Physical" | "Special">(
+    "Physical"
+  );
 
   const [attackBaseStat, setAttackBaseStat] = useState(100);
   const [specialAttackBaseStat, setSpecialAttackBaseStat] = useState(100);
 
   const [attackModifier, setAttackModifier] = useState<1.1 | 1.0 | 0.9>(1.0);
-  const [specialAttackModifier, setSpecialAttackModifier] = useState<1.1 | 1.0 | 0.9>(1.0);
+  const [specialAttackModifier, setSpecialAttackModifier] = useState<
+    1.1 | 1.0 | 0.9
+  >(1.0);
 
   const [attackStat, setAttackStat] = useState(152);
   const [specialAttackStat, setSpecialAttackStat] = useState(152);
 
   const [attackRank, setAttackRank] = useState<StatStage>(0);
   const [specialAttackRank, setSpecialAttackRank] = useState<StatStage>(0);
+  const { data: pokemonData, loading, error } = usePokemonSearch(pokemonName);
+
+  // PokéAPIからデータを取得したら種族値とタイプを自動反映
+  useEffect(() => {
+    if (pokemonData?.baseStats) {
+      setAttackBaseStat(pokemonData.baseStats.attack);
+      setSpecialAttackBaseStat(pokemonData.baseStats.specialAttack);
+      setPokemonTypes(pokemonData.types);
+      notifyChange({
+        attackBaseStat: pokemonData.baseStats.attack,
+        specialAttackBaseStat: pokemonData.baseStats.specialAttack,
+        pokemonTypes: pokemonData.types,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pokemonData]);
 
   // データが変更されたら親に通知
   const notifyChange = (updates: Partial<AttackerData>) => {
     const data: AttackerData = {
       pokemonName,
+      pokemonTypes,
       moveName,
       movePower,
       moveType,

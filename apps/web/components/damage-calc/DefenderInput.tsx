@@ -10,9 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { StatStage } from "@poke-dex-battle/shared";
+import { usePokemonSearch } from "@/hooks/usePokemonSearch";
+import type { PokemonType, StatStage } from "@poke-dex-battle/shared";
 import { calcHpStat } from "@poke-dex-battle/shared";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { NatureModifierRadio } from "./NatureModifierRadio";
 import { PokemonStatInput } from "./PokemonStatInput";
 
@@ -24,6 +25,7 @@ interface DefenderInputProps {
 
 export interface DefenderData {
   pokemonName: string;
+  pokemonTypes: PokemonType[];
   hpBaseStat: number;
   defenseBaseStat: number;
   specialDefenseBaseStat: number;
@@ -38,6 +40,7 @@ export interface DefenderData {
 
 export function DefenderInput({ onDataChange }: DefenderInputProps) {
   const [pokemonName, setPokemonName] = useState("");
+  const [pokemonTypes, setPokemonTypes] = useState<PokemonType[]>([]);
 
   const [hpBaseStat, setHpBaseStat] = useState(100);
   const [defenseBaseStat, setDefenseBaseStat] = useState(100);
@@ -48,7 +51,9 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
   const [specialDefenseStat, setSpecialDefenseStat] = useState(152);
 
   const [defenseModifier, setDefenseModifier] = useState<1.1 | 1.0 | 0.9>(1.0);
-  const [specialDefenseModifier, setSpecialDefenseModifier] = useState<1.1 | 1.0 | 0.9>(1.0);
+  const [specialDefenseModifier, setSpecialDefenseModifier] = useState<
+    1.1 | 1.0 | 0.9
+  >(1.0);
 
   const [defenseRank, setDefenseRank] = useState<StatStage>(0);
   const [specialDefenseRank, setSpecialDefenseRank] = useState<StatStage>(0);
@@ -56,10 +61,28 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
   const [hpMode, setHpMode] = useState<"manual" | "auto">("auto");
   const [hpIv, setHpIv] = useState(31);
   const [hpEv, setHpEv] = useState(252);
+  const { data: pokemonData, loading, error } = usePokemonSearch(pokemonName);
+  // PokéAPIからデータを取得したら種族値とタイプを自動反映
+  useEffect(() => {
+    if (pokemonData?.baseStats) {
+      setHpBaseStat(pokemonData.baseStats.hp);
+      setDefenseBaseStat(pokemonData.baseStats.defense);
+      setSpecialDefenseBaseStat(pokemonData.baseStats.specialDefense);
+      setPokemonTypes(pokemonData.types);
+      notifyChange({
+        hpBaseStat: pokemonData.baseStats.hp,
+        defenseBaseStat: pokemonData.baseStats.defense,
+        specialDefenseBaseStat: pokemonData.baseStats.specialDefense,
+        pokemonTypes: pokemonData.types,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pokemonData]);
 
   const notifyChange = (updates: Partial<DefenderData>) => {
     const data: DefenderData = {
       pokemonName,
+      pokemonTypes,
       hpBaseStat,
       defenseBaseStat,
       specialDefenseBaseStat,
@@ -181,7 +204,10 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
                       max={31}
                       value={hpIv}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value = Math.max(0, Math.min(31, parseInt(e.target.value) || 0));
+                        const value = Math.max(
+                          0,
+                          Math.min(31, parseInt(e.target.value) || 0)
+                        );
                         setHpIv(value);
                         const calculated = calculateHp(hpBaseStat, value, hpEv);
                         setHpStat(calculated);
@@ -201,7 +227,10 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
                       step={4}
                       value={hpEv}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value = Math.max(0, Math.min(252, parseInt(e.target.value) || 0));
+                        const value = Math.max(
+                          0,
+                          Math.min(252, parseInt(e.target.value) || 0)
+                        );
                         setHpEv(value);
                         const calculated = calculateHp(hpBaseStat, hpIv, value);
                         setHpStat(calculated);
@@ -211,7 +240,8 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
                   </div>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  実数値: <span className="font-bold text-foreground">{hpStat}</span>
+                  実数値:{" "}
+                  <span className="font-bold text-foreground">{hpStat}</span>
                 </div>
               </div>
             )}

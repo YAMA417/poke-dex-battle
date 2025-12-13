@@ -61,9 +61,9 @@ export function DamageCalculator() {
       moveCategory: attackerData.moveCategory,
       attackerLevel: 50,
       attackerAttack: attackStat,
-      attackerTypes: [], // Phase 1: no STAB
+      attackerTypes: attackerData.pokemonTypes,
       defenderDefense: defenseStat,
-      defenderTypes: [], // Phase 1: no type effectiveness
+      defenderTypes: defenderData.pokemonTypes,
       defenderMaxHp: defenderData.hpStat,
       condition: {
         weather,

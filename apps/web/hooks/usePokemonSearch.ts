@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { fetchPokemon, fetchPokemonSpecies } from "@poke-dex-battle/shared";
-import type { PokeApiPokemonResponse, PokeApiSpeciesResponse } from "@poke-dex-battle/shared";
+import { fetchPokemon, fetchPokemonSpecies, resolvePokemonName } from "@poke-dex-battle/shared";
+import type { PokeApiPokemonResponse, PokeApiSpeciesResponse, PokemonType } from "@poke-dex-battle/shared";
 
 interface PokemonData {
   japaneseName: string;
+  types: PokemonType[];
   baseStats: {
     hp: number;
     attack: number;
@@ -31,11 +32,15 @@ export function usePokemonSearch(pokemonName: string) {
       setError(null);
 
       try {
-        // Convert to lowercase and remove spaces for API request
-        const searchTerm = pokemonName.toLowerCase().replace(/\s+/g, "-");
+        // Convert Japanese name to English name if needed
+        const resolvedName = resolvePokemonName(pokemonName);
 
-        // Fetch pokemon data
-        const pokemonData = await fetchPokemon(searchTerm);
+        if (!resolvedName) {
+          throw new Error(`ポケモン「${pokemonName}」が見つかりませんでした`);
+        }
+
+        // Fetch pokemon data using the resolved English name
+        const pokemonData = await fetchPokemon(resolvedName);
 
         // Fetch species data for Japanese name
         const speciesData = await fetchPokemonSpecies(pokemonData.species.name);
@@ -44,6 +49,15 @@ export function usePokemonSearch(pokemonName: string) {
         const japaneseName =
           speciesData.names.find((name) => name.language.name === "ja")?.name ||
           pokemonData.name;
+
+        // Extract types
+        const types: PokemonType[] = pokemonData.types
+          .sort((a, b) => a.slot - b.slot)
+          .map((typeInfo) => {
+            const typeName = typeInfo.type.name;
+            // Convert to PokemonType format (capitalize first letter)
+            return (typeName.charAt(0).toUpperCase() + typeName.slice(1)) as PokemonType;
+          });
 
         // Extract base stats
         const baseStats = {
@@ -55,7 +69,7 @@ export function usePokemonSearch(pokemonName: string) {
           speed: pokemonData.stats.find((s) => s.stat.name === "speed")?.base_stat || 0,
         };
 
-        setData({ japaneseName, baseStats });
+        setData({ japaneseName, types, baseStats });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch Pokemon data");
         setData(null);

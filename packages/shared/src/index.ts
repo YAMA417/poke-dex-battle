@@ -4,6 +4,7 @@ export * from "./types";
 // Utils
 export * from "./utils/damage-calc";
 export * from "./utils/stat-calc";
+export * from "./utils/pokemon-name-resolver";
 
 // API
 export * from "./api/pokeapi";
