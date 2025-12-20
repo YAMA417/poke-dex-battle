@@ -11,6 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePokemonSearch } from "@/hooks/usePokemonSearch";
+import { useItemSearch } from "@/hooks/useItemSearch";
+import { useAbilitySearch } from "@/hooks/useAbilitySearch";
 import type { PokemonType, StatStage } from "@poke-dex-battle/shared";
 import { useEffect, useState } from "react";
 import { MoveInput } from "./MoveInput";
@@ -38,6 +40,8 @@ export interface AttackerData {
   specialAttackModifier: 1.1 | 1.0 | 0.9;
   attackRank: StatStage;
   specialAttackRank: StatStage;
+  abilityName: string;
+  itemName: string;
 }
 
 export function AttackerInput({ onDataChange }: AttackerInputProps) {
@@ -63,7 +67,12 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
 
   const [attackRank, setAttackRank] = useState<StatStage>(0);
   const [specialAttackRank, setSpecialAttackRank] = useState<StatStage>(0);
+  const [abilityName, setAbilityName] = useState("");
+  const [itemName, setItemName] = useState("");
+
   const { data: pokemonData, loading, error } = usePokemonSearch(pokemonName);
+  const { data: abilityData } = useAbilitySearch(abilityName);
+  const { data: itemData } = useItemSearch(itemName);
 
   // PokéAPIからデータを取得したら種族値とタイプを自動反映
   useEffect(() => {
@@ -97,6 +106,8 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
       specialAttackModifier,
       attackRank,
       specialAttackRank,
+      abilityName,
+      itemName,
       ...updates,
     };
     onDataChange(data);
@@ -293,31 +304,45 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
           )}
         </div>
 
-        {/* その他 (Phase 1では未実装) */}
+        {/* その他 */}
         <div className="space-y-3">
           <h3 className="text-sm font-medium">その他</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="attacker-ability">特性</Label>
-              <Select value="none" disabled>
-                <SelectTrigger id="attacker-ability">
-                  <SelectValue placeholder="なし" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">なし</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                id="attacker-ability"
+                type="text"
+                value={abilityName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setAbilityName(e.target.value);
+                  notifyChange({ abilityName: e.target.value });
+                }}
+                placeholder="特性名を入力"
+              />
+              {abilityData && (
+                <p className="text-xs text-muted-foreground">
+                  {abilityData.japaneseName}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="attacker-item">持ち物</Label>
-              <Select value="none" disabled>
-                <SelectTrigger id="attacker-item">
-                  <SelectValue placeholder="なし" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">なし</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                id="attacker-item"
+                type="text"
+                value={itemName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setItemName(e.target.value);
+                  notifyChange({ itemName: e.target.value });
+                }}
+                placeholder="持ち物名を入力"
+              />
+              {itemData && (
+                <p className="text-xs text-muted-foreground">
+                  {itemData.japaneseName}
+                </p>
+              )}
             </div>
           </div>
         </div>

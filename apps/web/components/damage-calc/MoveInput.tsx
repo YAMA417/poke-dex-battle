@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import type { MoveCategory, PokemonType } from "@poke-dex-battle/shared";
 import { POKEMON_TYPE_OPTIONS } from "@poke-dex-battle/shared";
+import { useMoveSearch } from "@/hooks/useMoveSearch";
 
 interface MoveInputProps {
   moveName: string;
@@ -34,6 +36,32 @@ export function MoveInput({
   onMoveTypeChange,
   onMoveCategoryChange,
 }: MoveInputProps) {
+  // 技名から詳細情報を取得
+  const { data: moveData, loading, error } = useMoveSearch(moveName);
+
+  // 技データが取得できたら、各項目を自動入力
+  useEffect(() => {
+    if (moveData) {
+      // 威力を自動設定（nullの場合は変更しない）
+      if (moveData.power !== null && moveData.power !== movePower) {
+        onMovePowerChange(moveData.power);
+      }
+
+      // タイプを自動設定
+      if (moveData.type !== moveType) {
+        onMoveTypeChange(moveData.type as PokemonType);
+      }
+
+      // カテゴリを自動設定（PhysicalまたはSpecialのみ）
+      if (
+        (moveData.category === "Physical" || moveData.category === "Special") &&
+        moveData.category !== moveCategory
+      ) {
+        onMoveCategoryChange(moveData.category);
+      }
+    }
+  }, [moveData]);
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
