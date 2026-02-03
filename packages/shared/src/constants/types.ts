@@ -22,6 +22,28 @@ export const POKEMON_TYPES: PokemonType[] = [
   'Fairy',
 ];
 
+/** タイプのラベル付きオプション（UI用） */
+export const POKEMON_TYPE_OPTIONS: { value: PokemonType; label: string }[] = [
+  { value: "Normal", label: "ノーマル" },
+  { value: "Fire", label: "ほのお" },
+  { value: "Water", label: "みず" },
+  { value: "Electric", label: "でんき" },
+  { value: "Grass", label: "くさ" },
+  { value: "Ice", label: "こおり" },
+  { value: "Fighting", label: "かくとう" },
+  { value: "Poison", label: "どく" },
+  { value: "Ground", label: "じめん" },
+  { value: "Flying", label: "ひこう" },
+  { value: "Psychic", label: "エスパー" },
+  { value: "Bug", label: "むし" },
+  { value: "Rock", label: "いわ" },
+  { value: "Ghost", label: "ゴースト" },
+  { value: "Dragon", label: "ドラゴン" },
+  { value: "Dark", label: "あく" },
+  { value: "Steel", label: "はがね" },
+  { value: "Fairy", label: "フェアリー" },
+];
+
 /** タイプ相性表（攻撃側 → 防御側 → 倍率） */
 export const TYPE_EFFECTIVENESS: Record<PokemonType, Partial<Record<PokemonType, number>>> = {
   Normal: { Rock: 0.5, Ghost: 0, Steel: 0.5 },
