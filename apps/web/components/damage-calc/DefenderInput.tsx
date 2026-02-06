@@ -10,12 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Autocomplete } from "@/components/ui/autocomplete";
 import { usePokemonSearch } from "@/hooks/usePokemonSearch";
 import { useItemSearch } from "@/hooks/useItemSearch";
 import { useAbilitySearch } from "@/hooks/useAbilitySearch";
 import type { PokemonType, StatStage } from "@poke-dex-battle/shared";
-import { calcHpStat } from "@poke-dex-battle/shared";
-import { useEffect, useState } from "react";
+import { calcHpStat, pokemonNameMap } from "@poke-dex-battle/shared";
+import { useEffect, useState, useMemo } from "react";
 import { NatureModifierRadio } from "./NatureModifierRadio";
 import { PokemonStatInput } from "./PokemonStatInput";
 
@@ -71,6 +72,25 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
   const { data: pokemonData, loading, error } = usePokemonSearch(pokemonName);
   const { data: abilityData } = useAbilitySearch(abilityName);
   const { data: itemData } = useItemSearch(itemName);
+
+  // ポケモン名のオプションリストを生成（重複を避ける）
+  const pokemonOptions = useMemo(() => {
+    const seen = new Set<number>();
+    return Object.values(pokemonNameMap)
+      .filter((pokemon) => {
+        if (seen.has(pokemon.id)) {
+          return false;
+        }
+        seen.add(pokemon.id);
+        return true;
+      })
+      .map((pokemon) => ({
+        label: pokemon.japaneseName,
+        value: pokemon.englishName,
+        id: `pokemon-${pokemon.id}`,
+      }));
+  }, []);
+
   // PokéAPIからデータを取得したら種族値とタイプを自動反映
   useEffect(() => {
     if (pokemonData?.baseStats) {
@@ -131,13 +151,12 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
       <CardContent className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="defender-pokemon-name">ポケモン名</Label>
-          <Input
+          <Autocomplete
             id="defender-pokemon-name"
-            type="text"
-            value={pokemonName}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setPokemonName(e.target.value);
-              notifyChange({ pokemonName: e.target.value });
+            options={pokemonOptions}
+            onSelect={(selectedValue) => {
+              setPokemonName(selectedValue);
+              notifyChange({ pokemonName: selectedValue });
             }}
             placeholder="ポケモン名を入力"
           />

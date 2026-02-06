@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Autocomplete } from "@/components/ui/autocomplete";
 import {
   Select,
   SelectContent,
@@ -11,8 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { MoveCategory, PokemonType } from "@poke-dex-battle/shared";
-import { POKEMON_TYPE_OPTIONS } from "@poke-dex-battle/shared";
+import type { PokemonType } from "@poke-dex-battle/shared";
+import { POKEMON_TYPE_OPTIONS, moveNameMap } from "@poke-dex-battle/shared";
 import { useMoveSearch } from "@/hooks/useMoveSearch";
 
 interface MoveInputProps {
@@ -38,6 +39,24 @@ export function MoveInput({
 }: MoveInputProps) {
   // 技名から詳細情報を取得
   const { data: moveData, loading, error } = useMoveSearch(moveName);
+
+  // 技名のオプションリストを生成（重複を避ける）
+  const moveOptions = useMemo(() => {
+    const seen = new Set<number>();
+    return Object.values(moveNameMap)
+      .filter((move: any) => {
+        if (seen.has(move.id)) {
+          return false;
+        }
+        seen.add(move.id);
+        return true;
+      })
+      .map((move: any) => ({
+        label: move.japaneseName,
+        value: move.englishName,
+        id: `move-${move.id}`,
+      }));
+  }, []);
 
   // 技データが取得できたら、各項目を自動入力
   useEffect(() => {
@@ -66,13 +85,10 @@ export function MoveInput({
     <div className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="move-name">技名</Label>
-        <Input
+        <Autocomplete
           id="move-name"
-          type="text"
-          value={moveName}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onMoveNameChange(e.target.value)
-          }
+          options={moveOptions}
+          onSelect={(selectedValue) => onMoveNameChange(selectedValue)}
           placeholder="技名を入力"
         />
       </div>
