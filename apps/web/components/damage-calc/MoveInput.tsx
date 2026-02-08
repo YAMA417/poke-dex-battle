@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import type { PokemonType } from "@poke-dex-battle/shared";
 import { POKEMON_TYPE_OPTIONS, moveNameMap } from "@poke-dex-battle/shared";
+import type { MoveNameEntry } from "@poke-dex-battle/shared";
 import { useMoveSearch } from "@/hooks/useMoveSearch";
 
 interface MoveInputProps {
@@ -44,14 +45,14 @@ export function MoveInput({
   const moveOptions = useMemo(() => {
     const seen = new Set<number>();
     return Object.values(moveNameMap)
-      .filter((move: any) => {
+      .filter((move: MoveNameEntry) => {
         if (seen.has(move.id)) {
           return false;
         }
         seen.add(move.id);
         return true;
       })
-      .map((move: any) => ({
+      .map((move: MoveNameEntry) => ({
         label: move.japaneseName,
         value: move.englishName,
         id: `move-${move.id}`,
@@ -79,7 +80,15 @@ export function MoveInput({
         onMoveCategoryChange(moveData.category);
       }
     }
-  }, [moveData]);
+  }, [
+    moveData,
+    movePower,
+    moveType,
+    moveCategory,
+    onMovePowerChange,
+    onMoveTypeChange,
+    onMoveCategoryChange,
+  ]);
 
   return (
     <div className="space-y-4">
