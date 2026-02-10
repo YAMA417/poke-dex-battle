@@ -8,9 +8,9 @@
     "backend/*"
   ],
   "scripts": {
-    "dev": "npm-run-all --parallel dev:shared dev:web dev:api",
-    "dev:frontend": "npm-run-all --parallel dev:shared dev:web",
-    "dev:backend": "npm-run-all --parallel dev:shared dev:api",
+    "dev": "npm run build:shared && npm-run-all --parallel dev:shared dev:web dev:api",
+    "dev:frontend": "npm run build:shared && npm-run-all --parallel dev:shared dev:web",
+    "dev:backend": "npm run build:shared && npm-run-all --parallel dev:shared dev:api",
     "dev:shared": "npm run dev -w @poke-dex-battle/shared",
     "dev:web": "npm run dev -w web",
     "dev:api": "npm run dev -w api",
