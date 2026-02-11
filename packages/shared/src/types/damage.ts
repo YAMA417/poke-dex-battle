@@ -52,6 +52,62 @@ export type Ability =
   | "Fluffy" // もふもふ
   | "Thick Fat"; // あついしぼう
 
+/**
+ * ダメージ計算用のポケモン型（新エンジン）
+ * 実数値ベースで統一
+ */
+export interface CalcPokemon {
+  level: number;
+  types: PokemonType[];
+  stats: {
+    hp: number;
+    atk: number;
+    def: number;
+    spa: number;
+    spd: number;
+    spe: number;
+  };
+  boosts?: {
+    atk?: StatStage;
+    def?: StatStage;
+    spa?: StatStage;
+    spd?: StatStage;
+    spe?: StatStage;
+  };
+  ability?: string;
+  item?: string;
+  status?: "burn" | "none";
+  currentHp?: number;
+  maxHp?: number;
+  teraType?: PokemonType;
+  isTerastallized?: boolean;
+}
+
+/**
+ * ダメージ計算用の技型（新エンジン）
+ */
+export interface CalcMove {
+  name: string;
+  power: number;
+  type: PokemonType;
+  category: "Physical" | "Special";
+  isCritical?: boolean;
+  flags?: MoveFlags;
+}
+
+/**
+ * ダメージ計算用のバトルコンテキスト（新エンジン）
+ */
+export interface BattleContext {
+  weather?: Weather;
+  field?: Field;
+  isDoubleBattle?: boolean;
+  isSpreadMove?: boolean;
+  isHelpingHand?: boolean;
+  reflect?: boolean;
+  lightScreen?: boolean;
+}
+
 /** 持ち物の種類（Phase 1: 基本10個） */
 export type Item =
   | "Choice Band" // こだわりハチマキ
