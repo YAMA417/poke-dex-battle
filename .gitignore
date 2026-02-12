@@ -57,5 +57,9 @@ expo-env.d.ts
 .claude/*
 !.claude/CLAUDE.md
 
+# .agent（ANTIGRAVITY.mdのみトラッキング）
+.agent/*
+!.agent/ANTIGRAVITY.md
+
 # Misc
 *.pem
