@@ -11,6 +11,9 @@ import { applyOtherModifiers } from "./apply-other-modifiers";
 interface ModifierResult {
   minDamage: number;
   maxDamage: number;
+  stab: number;
+  typeEffectiveness: number;
+  weatherModifier: number;
 }
 
 /**
@@ -118,5 +121,11 @@ export function calculateModifier(
     maxDamage = applyOtherModifiers(maxDamage, otherModifiers);
   }
 
-  return { minDamage, maxDamage };
+  return {
+    minDamage,
+    maxDamage,
+    stab,
+    typeEffectiveness,
+    weatherModifier,
+  };
 }
