@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
+import type { DamageCalculationInput } from "../../../types/damage";
 import { calculateDamage } from "../../damage-calc";
 import { calculateDamageV2 } from "../../damage-calc/index";
 import { convertLegacyInput } from "../../damage-calc/legacy-adapter";
-import type { DamageCalculationInput } from "../../types/damage";
 
 /**
  * 旧API（calculateDamage）と新API（calculateDamageV2）の統合テスト
@@ -35,13 +35,11 @@ describe("ダメージ計算エンジン統合テスト", () => {
     );
 
     // 結果が一致することを確認
-    expect(v2Result.minDamage).toBe(
+    expect(v2Result.minDamage, `${testName}: minDamage が一致しない`).toBe(
       legacyResult.minDamage,
-      `${testName}: minDamage が一致しない`,
     );
-    expect(v2Result.maxDamage).toBe(
+    expect(v2Result.maxDamage, `${testName}: maxDamage が一致しない`).toBe(
       legacyResult.maxDamage,
-      `${testName}: maxDamage が一致しない`,
     );
 
     // percent も確認
@@ -91,7 +89,45 @@ describe("ダメージ計算エンジン統合テスト", () => {
     expect(result.maxDamage).toBe(284);
   });
 
-  it("②通常攻撃 + てだすけ (min: 102, max: 121)", () => {
+  it("②ガブリアスの逆鱗 → ガブリアス (min: 236, max: 278)", () => {
+    const input: DamageCalculationInput = {
+      movePower: 120,
+      moveType: "Dragon",
+      moveCategory: "Physical",
+      attackerLevel: 50,
+      attackerAttack: 200,
+      attackerTypes: ["Dragon", "Ground"],
+      defenderDefense: 115,
+      defenderTypes: ["Dragon", "Ground"],
+      condition: {
+        weather: "none",
+        field: "none",
+        attackerStatStages: {
+          attack: 0,
+          defense: 0,
+          specialAttack: 0,
+          specialDefense: 0,
+          speed: 0,
+        },
+        defenderStatStages: {
+          attack: 0,
+          defense: 0,
+          specialAttack: 0,
+          specialDefense: 0,
+          speed: 0,
+        },
+      },
+    };
+
+    compareResults(input, "②ガブリアスの逆鱗 → ガブリアス");
+
+    // 期待値の確認
+    const result = calculateDamage(input);
+    expect(result.minDamage).toBe(236);
+    expect(result.maxDamage).toBe(278);
+  });
+
+  it("③通常攻撃 + てだすけ (min: 102, max: 121)", () => {
     const input: DamageCalculationInput = {
       movePower: 80,
       moveType: "Normal",
@@ -122,7 +158,7 @@ describe("ダメージ計算エンジン統合テスト", () => {
       },
     };
 
-    compareResults(input, "②通常攻撃 + てだすけ");
+    compareResults(input, "③通常攻撃 + てだすけ");
 
     // 期待値の確認
     const result = calculateDamage(input);
@@ -130,7 +166,7 @@ describe("ダメージ計算エンジン統合テスト", () => {
     expect(result.maxDamage).toBe(121);
   });
 
-  it("③ダブル全体技 (min: 51, max: 60)", () => {
+  it("④ダブル全体技 (min: 51, max: 60)", () => {
     const input: DamageCalculationInput = {
       movePower: 80,
       moveType: "Normal",
@@ -162,7 +198,7 @@ describe("ダメージ計算エンジン統合テスト", () => {
       },
     };
 
-    compareResults(input, "③ダブル全体技");
+    compareResults(input, "④ダブル全体技");
 
     // 期待値の確認
     const result = calculateDamage(input);
@@ -170,7 +206,7 @@ describe("ダメージ計算エンジン統合テスト", () => {
     expect(result.maxDamage).toBe(60);
   });
 
-  it("④テクニシャン (min: 76, max: 91)", () => {
+  it("⑤テクニシャン (min: 76, max: 91)", () => {
     const input: DamageCalculationInput = {
       movePower: 60,
       moveType: "Normal",
@@ -201,7 +237,7 @@ describe("ダメージ計算エンジン統合テスト", () => {
       },
     };
 
-    compareResults(input, "④テクニシャン");
+    compareResults(input, "④テクニシャン適用");
 
     // 期待値の確認
     const result = calculateDamage(input);
@@ -240,7 +276,7 @@ describe("ダメージ計算エンジン統合テスト", () => {
       },
     };
 
-    compareResults(input, "⑤こだわりハチマキ");
+    compareResults(input, "⑤こだわりハチマキ適用");
 
     // 期待値の確認
     const result = calculateDamage(input);
@@ -279,7 +315,7 @@ describe("ダメージ計算エンジン統合テスト", () => {
       },
     };
 
-    compareResults(input, "⑥いのちのたま");
+    compareResults(input, "⑥いのちのたま適用");
 
     // 期待値の確認
     const result = calculateDamage(input);
