@@ -1,4 +1,4 @@
-import type { PokemonType, Stats } from './pokemon';
+import type { PokemonType, Stats } from "./pokemon";
 
 // ================================================================================
 // PokéAPI レスポンス型（生データ）
@@ -35,7 +35,7 @@ export interface PokeApiPokemonResponse {
     front_default: string | null;
     front_shiny: string | null;
     other?: {
-      'official-artwork'?: {
+      "official-artwork"?: {
         front_default: string | null;
       };
     };
@@ -61,7 +61,7 @@ export interface PokeApiMoveResponse {
     url: string;
   };
   damage_class: {
-    name: 'physical' | 'special' | 'status';
+    name: "physical" | "special" | "status";
     url: string;
   };
   effect_entries: Array<{
@@ -112,6 +112,10 @@ export interface PokeApiItemResponse {
   id: number;
   name: string;
   cost: number;
+  category: {
+    name: string;
+    url: string;
+  };
   names: Array<{
     name: string;
     language: {
@@ -195,7 +199,7 @@ export interface MoveData {
   name: string;
   nameJa: string;
   type: PokemonType;
-  category: 'Physical' | 'Special' | 'Status';
+  category: "Physical" | "Special" | "Status";
   power: number | null;
   accuracy: number | null;
   pp: number;
@@ -277,7 +281,7 @@ export interface CachedTypeEffectiveness extends CacheEntry<TypeEffectiveness> {
 // ================================================================================
 
 /** PokéAPI言語コード */
-export type PokeApiLanguage = 'ja' | 'en' | 'ja-Hrkt';
+export type PokeApiLanguage = "ja" | "en" | "ja-Hrkt";
 
 /** キャッシュ設定 */
 export interface CacheConfig {
