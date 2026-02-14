@@ -25,6 +25,7 @@ const STAT_STAGES: StatStage[] = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6];
 
 interface AttackerInputProps {
   onDataChange: (data: AttackerData) => void;
+  title?: string;
 }
 
 export interface AttackerData {
@@ -46,7 +47,8 @@ export interface AttackerData {
   itemName: string;
 }
 
-export function AttackerInput({ onDataChange }: AttackerInputProps) {
+export function AttackerInput({ onDataChange, title = "" }: AttackerInputProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const [pokemonName, setPokemonName] = useState("");
   const [pokemonTypes, setPokemonTypes] = useState<PokemonType[]>([]);
   const [moveName, setMoveName] = useState("");
@@ -71,6 +73,11 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
   const [specialAttackRank, setSpecialAttackRank] = useState<StatStage>(0);
   const [abilityName, setAbilityName] = useState("");
   const [itemName, setItemName] = useState("");
+
+  // マウント検出（ハイドレーションミスマッチ対策）
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const { data: pokemonData, loading, error } = usePokemonSearch(pokemonName);
   const { data: abilityData } = useAbilitySearch(abilityName);
@@ -133,10 +140,14 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
     onDataChange(data);
   };
 
+  if (!isMounted) {
+    return null;
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>攻撃側</CardTitle>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* ポケモン名 */}
@@ -156,214 +167,221 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
         {/* 技情報 */}
         <div className="space-y-2">
           <h3 className="text-sm font-medium">技情報</h3>
-          <MoveInput
-            moveName={moveName}
-            movePower={movePower}
-            moveType={moveType}
-            moveCategory={moveCategory}
-            onMoveNameChange={(name) => {
-              setMoveName(name);
-              notifyChange({ moveName: name });
-            }}
-            onMovePowerChange={(power) => {
-              setMovePower(power);
-              notifyChange({ movePower: power });
-            }}
-            onMoveTypeChange={(type) => {
-              setMoveType(type);
-              notifyChange({ moveType: type });
-            }}
-            onMoveCategoryChange={(category) => {
-              setMoveCategory(category);
-              notifyChange({ moveCategory: category });
-            }}
-          />
+          <div>
+            <MoveInput
+              moveName={moveName}
+              movePower={movePower}
+              moveType={moveType}
+              moveCategory={moveCategory}
+              onMoveNameChange={(name) => {
+                setMoveName(name);
+                notifyChange({ moveName: name });
+              }}
+              onMovePowerChange={(power) => {
+                setMovePower(power);
+                notifyChange({ movePower: power });
+              }}
+              onMoveTypeChange={(type) => {
+                setMoveType(type);
+                notifyChange({ moveType: type });
+              }}
+              onMoveCategoryChange={(category) => {
+                setMoveCategory(category);
+                notifyChange({ moveCategory: category });
+              }}
+            />
+          </div>
         </div>
 
         {/* 種族値 */}
         <div className="space-y-3">
           <h3 className="text-sm font-medium">種族値</h3>
-          {moveCategory === "Physical" ? (
-            <div className="space-y-2">
-              <Label htmlFor="attack-base-stat">攻撃種族値</Label>
-              <Input
-                id="attack-base-stat"
-                type="number"
-                min={1}
-                max={255}
-                value={attackBaseStat}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const value = parseInt(e.target.value) || 1;
-                  setAttackBaseStat(value);
-                  notifyChange({ attackBaseStat: value });
-                }}
-              />
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <Label htmlFor="special-attack-base-stat">特攻種族値</Label>
-              <Input
-                id="special-attack-base-stat"
-                type="number"
-                min={1}
-                max={255}
-                value={specialAttackBaseStat}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const value = parseInt(e.target.value) || 1;
-                  setSpecialAttackBaseStat(value);
-                  notifyChange({ specialAttackBaseStat: value });
-                }}
-              />
-            </div>
-          )}
+          <div>
+              {moveCategory === "Physical" ? (
+                <div className="space-y-2">
+                  <Label htmlFor="attack-base-stat">攻撃種族値</Label>
+                  <Input
+                    id="attack-base-stat"
+                    type="number"
+                    min={1}
+                    max={255}
+                    value={attackBaseStat}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const value = parseInt(e.target.value) || 1;
+                      setAttackBaseStat(value);
+                      notifyChange({ attackBaseStat: value });
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="special-attack-base-stat">特攻種族値</Label>
+                  <Input
+                    id="special-attack-base-stat"
+                    type="number"
+                    min={1}
+                    max={255}
+                    value={specialAttackBaseStat}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const value = parseInt(e.target.value) || 1;
+                      setSpecialAttackBaseStat(value);
+                      notifyChange({ specialAttackBaseStat: value });
+                    }}
+                  />
+                </div>
+              )}
+          </div>
         </div>
 
         {/* ステータス実数値 */}
         <div className="space-y-4">
           <h3 className="text-sm font-medium">ステータス実数値</h3>
-
-          {moveCategory === "Physical" ? (
-            <div className="space-y-3 p-4 border rounded-lg">
-              <NatureModifierRadio
-                statName="攻撃"
-                value={attackModifier}
-                onChange={(modifier) => {
-                  setAttackModifier(modifier);
-                  notifyChange({ attackModifier: modifier });
-                }}
-              />
-              <PokemonStatInput
-                label="攻撃"
-                statType="attack"
-                level={50}
-                natureModifier={attackModifier}
-                baseStat={attackBaseStat}
-                value={attackStat}
-                onChange={(value) => {
-                  setAttackStat(value);
-                  notifyChange({ attackStat: value });
-                }}
-              />
-            </div>
-          ) : (
-            <div className="space-y-3 p-4 border rounded-lg">
-              <NatureModifierRadio
-                statName="特攻"
-                value={specialAttackModifier}
-                onChange={(modifier) => {
-                  setSpecialAttackModifier(modifier);
-                  notifyChange({ specialAttackModifier: modifier });
-                }}
-              />
-              <PokemonStatInput
-                label="特攻"
-                statType="specialAttack"
-                level={50}
-                natureModifier={specialAttackModifier}
-                baseStat={specialAttackBaseStat}
-                value={specialAttackStat}
-                onChange={(value) => {
-                  setSpecialAttackStat(value);
-                  notifyChange({ specialAttackStat: value });
-                }}
-              />
-            </div>
-          )}
+          <div>
+              {moveCategory === "Physical" ? (
+                <div className="space-y-3 p-4 border rounded-lg">
+                  <NatureModifierRadio
+                    statName="攻撃"
+                    value={attackModifier}
+                    onChange={(modifier) => {
+                      setAttackModifier(modifier);
+                      notifyChange({ attackModifier: modifier });
+                    }}
+                  />
+                  <PokemonStatInput
+                    label="攻撃"
+                    statType="attack"
+                    level={50}
+                    natureModifier={attackModifier}
+                    baseStat={attackBaseStat}
+                    value={attackStat}
+                    onChange={(value) => {
+                      setAttackStat(value);
+                      notifyChange({ attackStat: value });
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-3 p-4 border rounded-lg">
+                  <NatureModifierRadio
+                    statName="特攻"
+                    value={specialAttackModifier}
+                    onChange={(modifier) => {
+                      setSpecialAttackModifier(modifier);
+                      notifyChange({ specialAttackModifier: modifier });
+                    }}
+                  />
+                  <PokemonStatInput
+                    label="特攻"
+                    statType="specialAttack"
+                    level={50}
+                    natureModifier={specialAttackModifier}
+                    baseStat={specialAttackBaseStat}
+                    value={specialAttackStat}
+                    onChange={(value) => {
+                      setSpecialAttackStat(value);
+                      notifyChange({ specialAttackStat: value });
+                    }}
+                  />
+                </div>
+              )}
+          </div>
         </div>
 
         {/* 能力ランク */}
         <div className="space-y-3">
           <h3 className="text-sm font-medium">能力ランク</h3>
-          {moveCategory === "Physical" ? (
-            <div className="space-y-2">
-              <Label htmlFor="attack-rank">攻撃ランク</Label>
-              <Select
-                value={attackRank.toString()}
-                onValueChange={(value: string) => {
-                  const rank = parseInt(value) as StatStage;
-                  setAttackRank(rank);
-                  notifyChange({ attackRank: rank });
-                }}
-              >
-                <SelectTrigger id="attack-rank">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STAT_STAGES.map((stage) => (
-                    <SelectItem key={stage} value={stage.toString()}>
-                      {stage > 0 ? `+${stage}` : stage}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <Label htmlFor="special-attack-rank">特攻ランク</Label>
-              <Select
-                value={specialAttackRank.toString()}
-                onValueChange={(value: string) => {
-                  const rank = parseInt(value) as StatStage;
-                  setSpecialAttackRank(rank);
-                  notifyChange({ specialAttackRank: rank });
-                }}
-              >
-                <SelectTrigger id="special-attack-rank">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STAT_STAGES.map((stage) => (
-                    <SelectItem key={stage} value={stage.toString()}>
-                      {stage > 0 ? `+${stage}` : stage}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <div>
+              {moveCategory === "Physical" ? (
+                <div className="space-y-2">
+                  <Label htmlFor="attack-rank">攻撃ランク</Label>
+                  <Select
+                    value={attackRank.toString()}
+                    onValueChange={(value: string) => {
+                      const rank = parseInt(value) as StatStage;
+                      setAttackRank(rank);
+                      notifyChange({ attackRank: rank });
+                    }}
+                  >
+                    <SelectTrigger id="attack-rank">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STAT_STAGES.map((stage) => (
+                        <SelectItem key={stage} value={stage.toString()}>
+                          {stage > 0 ? `+${stage}` : stage}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="special-attack-rank">特攻ランク</Label>
+                  <Select
+                    value={specialAttackRank.toString()}
+                    onValueChange={(value: string) => {
+                      const rank = parseInt(value) as StatStage;
+                      setSpecialAttackRank(rank);
+                      notifyChange({ specialAttackRank: rank });
+                    }}
+                  >
+                    <SelectTrigger id="special-attack-rank">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STAT_STAGES.map((stage) => (
+                        <SelectItem key={stage} value={stage.toString()}>
+                          {stage > 0 ? `+${stage}` : stage}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+          </div>
         </div>
 
         {/* その他 */}
         <div className="space-y-3">
           <h3 className="text-sm font-medium">その他</h3>
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="attacker-ability">特性</Label>
-              <Input
-                id="attacker-ability"
-                type="text"
-                value={abilityName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  setAbilityName(e.target.value);
-                  notifyChange({ abilityName: e.target.value });
-                }}
-                placeholder="特性名を入力"
-              />
-              {abilityData && (
-                <p className="text-xs text-muted-foreground">
-                  {abilityData.japaneseName}
-                </p>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="attacker-ability">特性</Label>
+                <Input
+                  id="attacker-ability"
+                  type="text"
+                  value={abilityName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    setAbilityName(e.target.value);
+                    notifyChange({ abilityName: e.target.value });
+                  }}
+                  placeholder="特性名を入力"
+                />
+                {abilityData && (
+                  <p className="text-xs text-muted-foreground">
+                    {abilityData.japaneseName}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="attacker-item">持ち物</Label>
+                <Input
+                  id="attacker-item"
+                  type="text"
+                  value={itemName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    setItemName(e.target.value);
+                    notifyChange({ itemName: e.target.value });
+                  }}
+                  placeholder="持ち物名を入力"
+                />
+                {itemData && (
+                  <p className="text-xs text-muted-foreground">
+                    {itemData.japaneseName}
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="attacker-item">持ち物</Label>
-              <Input
-                id="attacker-item"
-                type="text"
-                value={itemName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  setItemName(e.target.value);
-                  notifyChange({ itemName: e.target.value });
-                }}
-                placeholder="持ち物名を入力"
-              />
-              {itemData && (
-                <p className="text-xs text-muted-foreground">
-                  {itemData.japaneseName}
-                </p>
-              )}
-            </div>
-          </div>
         </div>
       </CardContent>
     </Card>
