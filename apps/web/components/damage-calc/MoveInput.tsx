@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { useMoveSearch } from "@/hooks/useMoveSearch";
 import type { PokemonType } from "@poke-dex-battle/shared";
-import { POKEMON_TYPE_OPTIONS, getAllMoves, getLearnset } from "@poke-dex-battle/shared";
+import { POKEMON_TYPE_OPTIONS, getAllMoves, getLevelMoves, getMachineMoves } from "@poke-dex-battle/shared";
 import { useEffect, useMemo } from "react";
 
 interface MoveInputProps {
@@ -42,28 +42,48 @@ export function MoveInput({
   // 技名から詳細情報を取得
   const { data: moveData } = useMoveSearch(moveName);
 
-  // 全技データ（ポケモン選択時は learnset で絞り込み）
+  // 全技データ（ポケモン選択時は learnset で絞り込み、レベル技/わざマシンで分類）
   const moveOptions = useMemo(() => {
     const allMoves = getAllMoves();
+    const moveById = new Map(allMoves.map((m) => [m.id, m]));
 
     if (pokemonName) {
-      const learnset = new Set(getLearnset(pokemonName));
-      if (learnset.size > 0) {
-        return allMoves
-          .filter((move) => learnset.has(move.id))
+      const levelMoveIds = getLevelMoves(pokemonName);
+      const machineMoveIds = getMachineMoves(pokemonName);
+
+      if (levelMoveIds.length > 0 || machineMoveIds.length > 0) {
+        const levelOptions = levelMoveIds
+          .map((id) => moveById.get(id))
+          .filter((m) => m != null)
           .map((move) => ({
             label: move.nameJa,
-            value: move.name,
-            id: `move-${move.num}`,
+            value: move.nameJa,
+            id: `move-${move.id}`,
+            group: "レベル技・思い出し技",
           }));
+
+        const levelMoveIdSet = new Set(levelMoveIds);
+        // わざマシン技からレベル技と重複するものを除外
+        const machineOptions = machineMoveIds
+          .filter((id) => !levelMoveIdSet.has(id))
+          .map((id) => moveById.get(id))
+          .filter((m) => m != null)
+          .map((move) => ({
+            label: move.nameJa,
+            value: move.nameJa,
+            id: `move-${move.id}`,
+            group: "わざマシン",
+          }));
+
+        return [...levelOptions, ...machineOptions];
       }
     }
 
     // ポケモン未選択 or learnset 取得不可の場合は全技
     return allMoves.map((move) => ({
       label: move.nameJa,
-      value: move.name,
-      id: `move-${move.num}`,
+      value: move.nameJa,
+      id: `move-${move.id}`,
     }));
   }, [pokemonName]);
 

@@ -76,10 +76,21 @@ export interface ShowdownItem {
 /**
  * Showdown から抽出された全データの集約型
  */
+/**
+ * ポケモン別の習得技データ（レベル技・わざマシンで分類）
+ */
+export interface ShowdownLearnsetEntry {
+  level: string[];
+  machine: string[];
+}
+
+/**
+ * Showdown から抽出された全データの集約型
+ */
 export interface ShowdownData {
   species: Record<string, ShowdownSpecies>;
   moves: Record<string, ShowdownMove>;
   abilities: Record<string, ShowdownAbility>;
   items: Record<string, ShowdownItem>;
-  learnsets: Record<string, string[]>;
+  learnsets: Record<string, ShowdownLearnsetEntry>;
 }

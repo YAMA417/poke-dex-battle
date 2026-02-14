@@ -78,20 +78,11 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
 
   // ポケモン名のオプションリストを生成
   const pokemonOptions = useMemo(() => {
-    const seen = new Set<number>();
-    return getAllPokemon()
-      .filter((pokemon) => {
-        if (seen.has(pokemon.num)) {
-          return false;
-        }
-        seen.add(pokemon.num);
-        return true;
-      })
-      .map((pokemon) => ({
-        label: pokemon.nameJa,
-        value: pokemon.name,
-        id: `pokemon-${pokemon.num}`,
-      }));
+    return getAllPokemon().map((pokemon) => ({
+      label: pokemon.nameJa,
+      value: pokemon.nameJa,
+      id: `pokemon-${pokemon.id}`,
+    }));
   }, []);
 
   // ポケモンデータを取得したら種族値・タイプ・第1特性を自動反映

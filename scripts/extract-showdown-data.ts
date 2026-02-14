@@ -19,7 +19,7 @@ const projectRoot = path.resolve(__dirname, "..");
 const outputDir = path.join(projectRoot, "packages/shared/src/data/showdown");
 
 /**
- * 既存の日本語名マップJSONを読み込み、englishName → japaneseName のフラットマップに変換
+ * 既存の日本語名マップJSONを読み込み、正規化キー → japaneseName のルックアップを構築
  */
 function loadNameMap(filename: string): NameMap {
   const filePath = path.join(
@@ -33,7 +33,9 @@ function loadNameMap(filename: string): NameMap {
     const result: NameMap = {};
     for (const entry of Object.values(raw)) {
       if (entry.englishName && entry.japaneseName) {
-        result[entry.englishName] = entry.japaneseName;
+        // 正規化キーで登録（ハイフン・スペース・記号をすべて除去）
+        const key = entry.englishName.toLowerCase().replace(/[^a-z0-9]/g, "");
+        result[key] = entry.japaneseName;
       }
     }
     return result;
@@ -44,10 +46,12 @@ function loadNameMap(filename: string): NameMap {
 }
 
 /**
- * 英語名またはキーを正規化（小文字、スペース削除）
+ * 英語名を正規化（小文字、記号除去）
+ * Showdown名 "Aerial Ace" → "aerialace"
+ * PokéAPI名 "aerial-ace" → "aerialace"
  */
-function normalizeId(name: string): string {
-  return name.toLowerCase().replace(/\s+/g, "");
+function normalize(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
 /**
@@ -58,16 +62,38 @@ function toShowdownId(name: string): string {
 }
 
 /**
- * Showdownデータから日本語名をマップから取得
+ * 日本語名を取得（正規化ベースのルックアップ）
+ * フォルム付きの場合（"Terapagos-Terastal"）、ベース名でフォールバック検索
  */
-function getJapaneseName(englishName: string, nameMap: NameMap): string {
-  const normalized = normalizeId(englishName);
-  for (const [key, value] of Object.entries(nameMap)) {
-    if (normalizeId(key) === normalized) {
-      return value;
+function getJapaneseName(englishName: string, nameMap: NameMap): string | null {
+  // まず完全一致
+  const fullKey = normalize(englishName);
+  if (nameMap[fullKey]) {
+    return nameMap[fullKey];
+  }
+
+  // フォルム付き名前の場合、ベース名で検索
+  const hyphenIdx = englishName.indexOf("-");
+  if (hyphenIdx > 0) {
+    const baseName = englishName.substring(0, hyphenIdx);
+    const baseKey = normalize(baseName);
+    if (nameMap[baseKey]) {
+      return nameMap[baseKey];
     }
   }
-  return englishName;
+
+  return null;
+}
+
+/**
+ * ポケモンのフォルム名を取得（"Terapagos-Terastal" → "テラスタル"）
+ */
+function getFormSuffix(name: string): string | null {
+  const hyphenIdx = name.indexOf("-");
+  if (hyphenIdx > 0) {
+    return name.substring(hyphenIdx + 1);
+  }
+  return null;
 }
 
 /**
@@ -79,18 +105,41 @@ function extractSpecies(): number {
   const pokemonNameMap = loadNameMap("pokemon-name-map.json");
   const dex = Showdown.mod("gen9");
 
+  // VGC 2025 Reg G のルールテーブルで使用可能ポケモンをフィルタ
+  const vgcFormat = dex.formats.get("gen9vgc2025regg");
+  const ruleTable = dex.formats.getRuleTable(vgcFormat);
+
   const species: Record<string, unknown> = {};
   let count = 0;
+  let skippedNoJa = 0;
+  let skippedBanned = 0;
 
   for (const showdownSpecies of dex.species.all()) {
     if (!showdownSpecies.exists || showdownSpecies.num <= 0) continue;
+
+    // ランクマッチで使用不可のポケモンをスキップ
+    if (ruleTable.isBannedSpecies(showdownSpecies)) {
+      skippedBanned++;
+      continue;
+    }
+
+    const jaName = getJapaneseName(showdownSpecies.name, pokemonNameMap);
+    // 日本語名がないエントリはスキップ
+    if (!jaName) {
+      skippedNoJa++;
+      continue;
+    }
+
+    // フォルム付きの場合、表示名にフォルムを付加
+    const formSuffix = getFormSuffix(showdownSpecies.name);
+    const nameJa = formSuffix ? `${jaName} (${formSuffix})` : jaName;
 
     const id = toShowdownId(showdownSpecies.id);
     species[id] = {
       id,
       num: showdownSpecies.num,
       name: showdownSpecies.name,
-      nameJa: getJapaneseName(showdownSpecies.name, pokemonNameMap),
+      nameJa,
       types: showdownSpecies.types,
       baseStats: {
         hp: showdownSpecies.baseStats.hp,
@@ -114,7 +163,7 @@ function extractSpecies(): number {
     "utf-8"
   );
 
-  console.log(`  Extracted ${count} species`);
+  console.log(`  Extracted ${count} species (skipped ${skippedBanned} banned, ${skippedNoJa} without Japanese name)`);
   return count;
 }
 
@@ -129,16 +178,23 @@ function extractMoves(): number {
 
   const moves: Record<string, unknown> = {};
   let count = 0;
+  let skippedNoJa = 0;
 
   for (const showdownMove of dex.moves.all()) {
     if (!showdownMove.exists || showdownMove.num <= 0) continue;
+
+    const nameJa = getJapaneseName(showdownMove.name, moveNameMap);
+    if (!nameJa) {
+      skippedNoJa++;
+      continue;
+    }
 
     const id = toShowdownId(showdownMove.id);
     moves[id] = {
       id,
       num: showdownMove.num,
       name: showdownMove.name,
-      nameJa: getJapaneseName(showdownMove.name, moveNameMap),
+      nameJa,
       type: showdownMove.type,
       category: showdownMove.category,
       basePower: showdownMove.basePower,
@@ -158,7 +214,7 @@ function extractMoves(): number {
     "utf-8"
   );
 
-  console.log(`  Extracted ${count} moves`);
+  console.log(`  Extracted ${count} moves (skipped ${skippedNoJa} without Japanese name)`);
   return count;
 }
 
@@ -173,7 +229,7 @@ function extractAbilities(): number {
     "packages/shared/src/data",
     "ability-name-map.json"
   );
-  let abilityNameEntries: Record<string, AbilityNameEntry> = {};
+  let abilityNameEntries: Record<string, NameMapEntry> = {};
   try {
     const content = fs.readFileSync(abilityNameMapPath, "utf-8");
     abilityNameEntries = JSON.parse(content);
@@ -181,26 +237,30 @@ function extractAbilities(): number {
     console.warn("Warning: Could not load ability-name-map.json");
   }
 
-  // 英語名→日本語名のルックアップ構築
-  const englishToJa: Record<string, string> = {};
+  // 正規化キー → 日本語名 のルックアップ構築
+  const abilityNameMap: NameMap = {};
   for (const entry of Object.values(abilityNameEntries)) {
-    englishToJa[entry.englishName.toLowerCase().replace(/[^a-z0-9]/g, "")] =
-      entry.japaneseName;
+    if (entry.englishName && entry.japaneseName) {
+      const key = normalize(entry.englishName);
+      abilityNameMap[key] = entry.japaneseName;
+    }
   }
 
   const dex = Showdown.mod("gen9");
   const abilities: Record<string, unknown> = {};
   let count = 0;
+  let skippedNoJa = 0;
 
   for (const showdownAbility of dex.abilities.all()) {
     if (!showdownAbility.exists || showdownAbility.num <= 0) continue;
 
-    const id = toShowdownId(showdownAbility.id);
-    const normalizedName = showdownAbility.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "");
-    const nameJa = englishToJa[normalizedName] || showdownAbility.name;
+    const nameJa = abilityNameMap[normalize(showdownAbility.name)];
+    if (!nameJa) {
+      skippedNoJa++;
+      continue;
+    }
 
+    const id = toShowdownId(showdownAbility.id);
     abilities[id] = {
       id,
       num: showdownAbility.num,
@@ -218,7 +278,7 @@ function extractAbilities(): number {
     "utf-8"
   );
 
-  console.log(`  Extracted ${count} abilities`);
+  console.log(`  Extracted ${count} abilities (skipped ${skippedNoJa} without Japanese name)`);
   return count;
 }
 
@@ -233,16 +293,23 @@ function extractItems(): number {
 
   const items: Record<string, unknown> = {};
   let count = 0;
+  let skippedNoJa = 0;
 
   for (const showdownItem of dex.items.all()) {
     if (!showdownItem.exists || showdownItem.num <= 0) continue;
+
+    const nameJa = getJapaneseName(showdownItem.name, itemNameMap);
+    if (!nameJa) {
+      skippedNoJa++;
+      continue;
+    }
 
     const id = toShowdownId(showdownItem.id);
     items[id] = {
       id,
       num: showdownItem.num,
       name: showdownItem.name,
-      nameJa: getJapaneseName(showdownItem.name, itemNameMap),
+      nameJa,
       desc: showdownItem.desc || "",
       shortDesc: showdownItem.shortDesc || "",
     };
@@ -256,29 +323,67 @@ function extractItems(): number {
     "utf-8"
   );
 
-  console.log(`  Extracted ${count} items`);
+  console.log(`  Extracted ${count} items (skipped ${skippedNoJa} without Japanese name)`);
   return count;
 }
 
+interface LearnsetEntry {
+  level: string[];
+  machine: string[];
+}
+
 /**
- * 習得技データを抽出
+ * 習得技データを抽出（レベル技・思い出し技 / わざマシンで分類）
+ * 方法コード: 9L = レベル技, 9R = 思い出し技, 9M = わざマシン
  */
 async function extractLearnsets(): Promise<number> {
   console.log("Extracting learnset data...");
 
   const dex = Showdown.mod("gen9");
-  const learnsets: Record<string, string[]> = {};
+
+  // 抽出済み species の ID セットを取得（日本語名があるもののみ）
+  const speciesJsonPath = path.join(outputDir, "species.json");
+  let validSpeciesIds: Set<string>;
+  try {
+    const speciesData = JSON.parse(fs.readFileSync(speciesJsonPath, "utf-8"));
+    validSpeciesIds = new Set(Object.keys(speciesData));
+  } catch {
+    validSpeciesIds = new Set();
+  }
+
+  const learnsets: Record<string, LearnsetEntry> = {};
   let count = 0;
 
   for (const species of dex.species.all()) {
     if (!species.exists || species.num <= 0) continue;
 
+    const pokemonId = toShowdownId(species.id);
+    if (!validSpeciesIds.has(pokemonId)) continue;
+
     const learnsetData = await dex.species.getLearnsetData(species.id);
     if (!learnsetData?.learnset) continue;
 
-    const pokemonId = toShowdownId(species.id);
-    learnsets[pokemonId] = Object.keys(learnsetData.learnset);
-    count++;
+    const levelMoves = new Set<string>();
+    const machineMoves = new Set<string>();
+
+    for (const [moveId, methods] of Object.entries(learnsetData.learnset)) {
+      for (const method of methods as string[]) {
+        if (!method.startsWith("9")) continue;
+        if (method.match(/^9[LR]/)) {
+          levelMoves.add(moveId);
+        } else if (method === "9M") {
+          machineMoves.add(moveId);
+        }
+      }
+    }
+
+    if (levelMoves.size > 0 || machineMoves.size > 0) {
+      learnsets[pokemonId] = {
+        level: [...levelMoves],
+        machine: [...machineMoves],
+      };
+      count++;
+    }
   }
 
   fs.mkdirSync(outputDir, { recursive: true });
