@@ -1,22 +1,22 @@
 "use client";
 
+import { Autocomplete } from "@/components/ui/autocomplete";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
-import { Autocomplete } from "@/components/ui/autocomplete";
-import { usePokemonSearch } from "@/hooks/usePokemonSearch";
-import { useItemSearch } from "@/hooks/useItemSearch";
 import { useAbilitySearch } from "@/hooks/useAbilitySearch";
+import { useItemSearch } from "@/hooks/useItemSearch";
+import { usePokemonSearch } from "@/hooks/usePokemonSearch";
 import type { PokemonType, StatStage } from "@poke-dex-battle/shared";
-import { calcHpStat, pokemonNameMap } from "@poke-dex-battle/shared";
-import { useEffect, useState, useMemo } from "react";
+import { calcHpStat, getAllPokemon } from "@poke-dex-battle/shared";
+import { useEffect, useMemo, useState } from "react";
 import { NatureModifierRadio } from "./NatureModifierRadio";
 import { PokemonStatInput } from "./PokemonStatInput";
 
@@ -69,40 +69,48 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
   const [hpIv, setHpIv] = useState(31);
   const [hpEv, setHpEv] = useState(252);
 
-  const { data: pokemonData, loading, error } = usePokemonSearch(pokemonName);
+  const { data: pokemonData } = usePokemonSearch(pokemonName);
   const { data: abilityData } = useAbilitySearch(abilityName);
   const { data: itemData } = useItemSearch(itemName);
 
-  // ポケモン名のオプションリストを生成（重複を避ける）
+  // ポケモン名のオプションリストを生成
   const pokemonOptions = useMemo(() => {
     const seen = new Set<number>();
-    return Object.values(pokemonNameMap)
+    return getAllPokemon()
       .filter((pokemon) => {
-        if (seen.has(pokemon.id)) {
+        if (seen.has(pokemon.num)) {
           return false;
         }
-        seen.add(pokemon.id);
+        seen.add(pokemon.num);
         return true;
       })
       .map((pokemon) => ({
-        label: pokemon.japaneseName,
-        value: pokemon.englishName,
-        id: `pokemon-${pokemon.id}`,
+        label: pokemon.nameJa,
+        value: pokemon.name,
+        id: `pokemon-${pokemon.num}`,
       }));
   }, []);
 
-  // PokéAPIからデータを取得したら種族値とタイプを自動反映
+  // ポケモンデータを取得したら種族値・タイプ・第1特性を自動反映
   useEffect(() => {
     if (pokemonData?.baseStats) {
       setHpBaseStat(pokemonData.baseStats.hp);
       setDefenseBaseStat(pokemonData.baseStats.defense);
       setSpecialDefenseBaseStat(pokemonData.baseStats.specialDefense);
       setPokemonTypes(pokemonData.types);
+
+      // 第1特性を自動入力
+      const firstAbility = pokemonData.abilities[0];
+      if (firstAbility) {
+        setAbilityName(firstAbility.nameJa);
+      }
+
       notifyChange({
         hpBaseStat: pokemonData.baseStats.hp,
         defenseBaseStat: pokemonData.baseStats.defense,
         specialDefenseBaseStat: pokemonData.baseStats.specialDefense,
         pokemonTypes: pokemonData.types,
+        abilityName: firstAbility?.nameJa ?? "",
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -431,7 +439,7 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
               />
               {abilityData && (
                 <p className="text-xs text-muted-foreground">
-                  {abilityData.japaneseName}
+                  {abilityData.nameJa}
                 </p>
               )}
             </div>
@@ -449,7 +457,7 @@ export function DefenderInput({ onDataChange }: DefenderInputProps) {
               />
               {itemData && (
                 <p className="text-xs text-muted-foreground">
-                  {itemData.japaneseName}
+                  {itemData.nameJa}
                 </p>
               )}
             </div>

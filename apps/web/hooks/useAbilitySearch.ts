@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
-import { getAbilityDetails } from "@poke-dex-battle/shared";
-import type { AbilityNameEntry } from "@poke-dex-battle/shared";
+import type { AbilityData } from "@poke-dex-battle/shared";
+import { getAbilityByName } from "@poke-dex-battle/shared";
+import { useEffect, useState } from "react";
 
 export function useAbilitySearch(abilityName: string) {
-  const [data, setData] = useState<AbilityNameEntry | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<AbilityData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -14,31 +13,19 @@ export function useAbilitySearch(abilityName: string) {
       return;
     }
 
-    const searchAbility = () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        // Get ability details from name resolver
-        const abilityDetails = getAbilityDetails(abilityName);
-
-        if (!abilityDetails) {
-          throw new Error(`特性「${abilityName}」が見つかりませんでした`);
-        }
-
-        setData(abilityDetails);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch ability data");
+    const timeoutId = setTimeout(() => {
+      const result = getAbilityByName(abilityName);
+      if (result) {
+        setData(result);
+        setError(null);
+      } else {
         setData(null);
-      } finally {
-        setLoading(false);
+        setError(`特性「${abilityName}」が見つかりませんでした`);
       }
-    };
+    }, 300);
 
-    // Debounce search
-    const timeoutId = setTimeout(searchAbility, 500);
     return () => clearTimeout(timeoutId);
   }, [abilityName]);
 
-  return { data, loading, error };
+  return { data, loading: false, error };
 }

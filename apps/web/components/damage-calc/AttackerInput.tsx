@@ -1,22 +1,22 @@
 "use client";
 
+import { Autocomplete } from "@/components/ui/autocomplete";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
-import { Autocomplete } from "@/components/ui/autocomplete";
-import { usePokemonSearch } from "@/hooks/usePokemonSearch";
-import { useItemSearch } from "@/hooks/useItemSearch";
 import { useAbilitySearch } from "@/hooks/useAbilitySearch";
+import { useItemSearch } from "@/hooks/useItemSearch";
+import { usePokemonSearch } from "@/hooks/usePokemonSearch";
 import type { PokemonType, StatStage } from "@poke-dex-battle/shared";
-import { pokemonNameMap } from "@poke-dex-battle/shared";
-import { useEffect, useState, useMemo } from "react";
+import { getAllPokemon } from "@poke-dex-battle/shared";
+import { useEffect, useMemo, useState } from "react";
 import { MoveInput } from "./MoveInput";
 import { NatureModifierRadio } from "./NatureModifierRadio";
 import { PokemonStatInput } from "./PokemonStatInput";
@@ -72,38 +72,46 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
   const [abilityName, setAbilityName] = useState("");
   const [itemName, setItemName] = useState("");
 
-  const { data: pokemonData, loading, error } = usePokemonSearch(pokemonName);
+  const { data: pokemonData } = usePokemonSearch(pokemonName);
   const { data: abilityData } = useAbilitySearch(abilityName);
   const { data: itemData } = useItemSearch(itemName);
 
-  // ポケモン名のオプションリストを生成（重複を避ける）
+  // ポケモン名のオプションリストを生成
   const pokemonOptions = useMemo(() => {
     const seen = new Set<number>();
-    return Object.values(pokemonNameMap)
+    return getAllPokemon()
       .filter((pokemon) => {
-        if (seen.has(pokemon.id)) {
+        if (seen.has(pokemon.num)) {
           return false;
         }
-        seen.add(pokemon.id);
+        seen.add(pokemon.num);
         return true;
       })
       .map((pokemon) => ({
-        label: pokemon.japaneseName,
-        value: pokemon.englishName,
-        id: `pokemon-${pokemon.id}`, // ユニークなキーを生成
+        label: pokemon.nameJa,
+        value: pokemon.name,
+        id: `pokemon-${pokemon.num}`,
       }));
   }, []);
 
-  // PokéAPIからデータを取得したら種族値とタイプを自動反映
+  // ポケモンデータを取得したら種族値・タイプ・第1特性を自動反映
   useEffect(() => {
     if (pokemonData?.baseStats) {
       setAttackBaseStat(pokemonData.baseStats.attack);
       setSpecialAttackBaseStat(pokemonData.baseStats.specialAttack);
       setPokemonTypes(pokemonData.types);
+
+      // 第1特性を自動入力
+      const firstAbility = pokemonData.abilities[0];
+      if (firstAbility) {
+        setAbilityName(firstAbility.nameJa);
+      }
+
       notifyChange({
         attackBaseStat: pokemonData.baseStats.attack,
         specialAttackBaseStat: pokemonData.baseStats.specialAttack,
         pokemonTypes: pokemonData.types,
+        abilityName: firstAbility?.nameJa ?? "",
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -157,6 +165,7 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
         <div className="space-y-2">
           <h3 className="text-sm font-medium">技情報</h3>
           <MoveInput
+            pokemonName={pokemonName}
             moveName={moveName}
             movePower={movePower}
             moveType={moveType}
@@ -341,7 +350,7 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
               />
               {abilityData && (
                 <p className="text-xs text-muted-foreground">
-                  {abilityData.japaneseName}
+                  {abilityData.nameJa}
                 </p>
               )}
             </div>
@@ -359,7 +368,7 @@ export function AttackerInput({ onDataChange }: AttackerInputProps) {
               />
               {itemData && (
                 <p className="text-xs text-muted-foreground">
-                  {itemData.japaneseName}
+                  {itemData.nameJa}
                 </p>
               )}
             </div>

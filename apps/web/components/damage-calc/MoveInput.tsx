@@ -1,23 +1,23 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { Autocomplete } from "@/components/ui/autocomplete";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Autocomplete } from "@/components/ui/autocomplete";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
-import type { PokemonType } from "@poke-dex-battle/shared";
-import { POKEMON_TYPE_OPTIONS, moveNameMap } from "@poke-dex-battle/shared";
-import type { MoveNameEntry } from "@poke-dex-battle/shared";
 import { useMoveSearch } from "@/hooks/useMoveSearch";
+import type { PokemonType } from "@poke-dex-battle/shared";
+import { POKEMON_TYPE_OPTIONS, getAllMoves, getLearnset } from "@poke-dex-battle/shared";
+import { useEffect, useMemo } from "react";
 
 interface MoveInputProps {
+  pokemonName: string;
   moveName: string;
   movePower: number;
   moveType: PokemonType;
@@ -29,6 +29,7 @@ interface MoveInputProps {
 }
 
 export function MoveInput({
+  pokemonName,
   moveName,
   movePower,
   moveType,
@@ -39,25 +40,32 @@ export function MoveInput({
   onMoveCategoryChange,
 }: MoveInputProps) {
   // 技名から詳細情報を取得
-  const { data: moveData, loading, error } = useMoveSearch(moveName);
+  const { data: moveData } = useMoveSearch(moveName);
 
-  // 技名のオプションリストを生成（重複を避ける）
+  // 全技データ（ポケモン選択時は learnset で絞り込み）
   const moveOptions = useMemo(() => {
-    const seen = new Set<number>();
-    return Object.values(moveNameMap)
-      .filter((move: MoveNameEntry) => {
-        if (seen.has(move.id)) {
-          return false;
-        }
-        seen.add(move.id);
-        return true;
-      })
-      .map((move: MoveNameEntry) => ({
-        label: move.japaneseName,
-        value: move.englishName,
-        id: `move-${move.id}`,
-      }));
-  }, []);
+    const allMoves = getAllMoves();
+
+    if (pokemonName) {
+      const learnset = new Set(getLearnset(pokemonName));
+      if (learnset.size > 0) {
+        return allMoves
+          .filter((move) => learnset.has(move.id))
+          .map((move) => ({
+            label: move.nameJa,
+            value: move.name,
+            id: `move-${move.num}`,
+          }));
+      }
+    }
+
+    // ポケモン未選択 or learnset 取得不可の場合は全技
+    return allMoves.map((move) => ({
+      label: move.nameJa,
+      value: move.name,
+      id: `move-${move.num}`,
+    }));
+  }, [pokemonName]);
 
   // 技データが取得できたら、各項目を自動入力
   useEffect(() => {
@@ -68,6 +76,7 @@ export function MoveInput({
       }
 
       // タイプを自動設定
+
       if (moveData.type !== moveType) {
         onMoveTypeChange(moveData.type as PokemonType);
       }
