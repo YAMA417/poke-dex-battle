@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
-import { getItemDetails } from "@poke-dex-battle/shared";
-import type { ItemNameEntry } from "@poke-dex-battle/shared";
+import type { ItemData } from "@poke-dex-battle/shared";
+import { getItemByName } from "@poke-dex-battle/shared";
+import { useEffect, useState } from "react";
 
 export function useItemSearch(itemName: string) {
-  const [data, setData] = useState<ItemNameEntry | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<ItemData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -14,31 +13,19 @@ export function useItemSearch(itemName: string) {
       return;
     }
 
-    const searchItem = () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        // Get item details from name resolver
-        const itemDetails = getItemDetails(itemName);
-
-        if (!itemDetails) {
-          throw new Error(`アイテム「${itemName}」が見つかりませんでした`);
-        }
-
-        setData(itemDetails);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch item data");
+    const timeoutId = setTimeout(() => {
+      const result = getItemByName(itemName);
+      if (result) {
+        setData(result);
+        setError(null);
+      } else {
         setData(null);
-      } finally {
-        setLoading(false);
+        setError(`アイテム「${itemName}」が見つかりませんでした`);
       }
-    };
+    }, 300);
 
-    // Debounce search
-    const timeoutId = setTimeout(searchItem, 500);
     return () => clearTimeout(timeoutId);
   }, [itemName]);
 
-  return { data, loading, error };
+  return { data, loading: false, error };
 }

@@ -4,9 +4,16 @@ import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
+export interface AutocompleteOption {
+  label: string;
+  value: string;
+  id?: string | number;
+  group?: string;
+}
+
 export interface AutocompleteProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'onSelect'> {
-  options: { label: string; value: string; id?: string | number }[];
+  options: AutocompleteOption[];
   onSelect: (value: string) => void;
   isLoading?: boolean;
 }
@@ -131,24 +138,34 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
             role="listbox"
             className="absolute top-full left-0 right-0 z-50 mt-1 border border-input bg-background rounded-md shadow-md max-h-60 overflow-y-auto"
           >
-            {filteredOptions.map((option, index) => (
-              <button
-                key={option.id || `${option.value}-${index}`}
-                role="option"
-                aria-selected={highlightedIndex === index}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  handleSelect(option.value, option.label);
-                }}
-                onMouseEnter={() => setHighlightedIndex(index)}
-                className={cn(
-                  "w-full px-3 py-2 text-left text-sm focus:bg-accent focus:outline-none",
-                  highlightedIndex === index ? "bg-accent" : "hover:bg-accent"
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
+            {filteredOptions.map((option, index) => {
+              const prevGroup = index > 0 ? filteredOptions[index - 1].group : undefined;
+              const showGroupHeader = option.group && option.group !== prevGroup;
+              return (
+                <React.Fragment key={option.id || `${option.value}-${index}`}>
+                  {showGroupHeader && (
+                    <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 sticky top-0">
+                      {option.group}
+                    </div>
+                  )}
+                  <button
+                    role="option"
+                    aria-selected={highlightedIndex === index}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSelect(option.value, option.label);
+                    }}
+                    onMouseEnter={() => setHighlightedIndex(index)}
+                    className={cn(
+                      "w-full px-3 py-2 text-left text-sm focus:bg-accent focus:outline-none",
+                      highlightedIndex === index ? "bg-accent" : "hover:bg-accent"
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                </React.Fragment>
+              );
+            })}
           </div>
         )}
       </div>
