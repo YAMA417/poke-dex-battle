@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
-import { getMoveDetails } from "@poke-dex-battle/shared";
-import type { MoveNameEntry } from "@poke-dex-battle/shared";
+import type { MoveData } from "@poke-dex-battle/shared";
+import { getMoveByName } from "@poke-dex-battle/shared";
+import { useEffect, useState } from "react";
 
 export function useMoveSearch(moveName: string) {
-  const [data, setData] = useState<MoveNameEntry | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<MoveData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -14,31 +13,19 @@ export function useMoveSearch(moveName: string) {
       return;
     }
 
-    const searchMove = () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        // Get move details from name resolver
-        const moveDetails = getMoveDetails(moveName);
-
-        if (!moveDetails) {
-          throw new Error(`技「${moveName}」が見つかりませんでした`);
-        }
-
-        setData(moveDetails);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch move data");
+    const timeoutId = setTimeout(() => {
+      const result = getMoveByName(moveName);
+      if (result) {
+        setData(result);
+        setError(null);
+      } else {
         setData(null);
-      } finally {
-        setLoading(false);
+        setError(`技「${moveName}」が見つかりませんでした`);
       }
-    };
+    }, 300);
 
-    // Debounce search
-    const timeoutId = setTimeout(searchMove, 500);
     return () => clearTimeout(timeoutId);
   }, [moveName]);
 
-  return { data, loading, error };
+  return { data, loading: false, error };
 }

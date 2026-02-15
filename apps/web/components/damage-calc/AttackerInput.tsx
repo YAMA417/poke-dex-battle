@@ -1,22 +1,22 @@
 "use client";
 
+import { Autocomplete } from "@/components/ui/autocomplete";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
-import { Autocomplete } from "@/components/ui/autocomplete";
-import { usePokemonSearch } from "@/hooks/usePokemonSearch";
-import { useItemSearch } from "@/hooks/useItemSearch";
 import { useAbilitySearch } from "@/hooks/useAbilitySearch";
+import { useItemSearch } from "@/hooks/useItemSearch";
+import { usePokemonSearch } from "@/hooks/usePokemonSearch";
 import type { PokemonType, StatStage } from "@poke-dex-battle/shared";
-import { pokemonNameMap } from "@poke-dex-battle/shared";
-import { useEffect, useState, useMemo } from "react";
+import { getAllPokemon } from "@poke-dex-battle/shared";
+import { useEffect, useMemo, useState } from "react";
 import { MoveInput } from "./MoveInput";
 import { NatureModifierRadio } from "./NatureModifierRadio";
 import { PokemonStatInput } from "./PokemonStatInput";
@@ -79,38 +79,37 @@ export function AttackerInput({ onDataChange, title = "" }: AttackerInputProps) 
     setIsMounted(true);
   }, []);
 
-  const { data: pokemonData, loading, error } = usePokemonSearch(pokemonName);
+  const { data: pokemonData } = usePokemonSearch(pokemonName);
   const { data: abilityData } = useAbilitySearch(abilityName);
   const { data: itemData } = useItemSearch(itemName);
 
-  // ポケモン名のオプションリストを生成（重複を避ける）
+  // ポケモン名のオプションリストを生成
   const pokemonOptions = useMemo(() => {
-    const seen = new Set<number>();
-    return Object.values(pokemonNameMap)
-      .filter((pokemon) => {
-        if (seen.has(pokemon.id)) {
-          return false;
-        }
-        seen.add(pokemon.id);
-        return true;
-      })
-      .map((pokemon) => ({
-        label: pokemon.japaneseName,
-        value: pokemon.englishName,
-        id: `pokemon-${pokemon.id}`, // ユニークなキーを生成
-      }));
+    return getAllPokemon().map((pokemon) => ({
+      label: pokemon.nameJa,
+      value: pokemon.nameJa,
+      id: `pokemon-${pokemon.id}`,
+    }));
   }, []);
 
-  // PokéAPIからデータを取得したら種族値とタイプを自動反映
+  // ポケモンデータを取得したら種族値・タイプ・第1特性を自動反映
   useEffect(() => {
     if (pokemonData?.baseStats) {
       setAttackBaseStat(pokemonData.baseStats.attack);
       setSpecialAttackBaseStat(pokemonData.baseStats.specialAttack);
       setPokemonTypes(pokemonData.types);
+
+      // 第1特性を自動入力
+      const firstAbility = pokemonData.abilities[0];
+      if (firstAbility) {
+        setAbilityName(firstAbility.nameJa);
+      }
+
       notifyChange({
         attackBaseStat: pokemonData.baseStats.attack,
         specialAttackBaseStat: pokemonData.baseStats.specialAttack,
         pokemonTypes: pokemonData.types,
+        abilityName: firstAbility?.nameJa ?? "",
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -167,30 +166,29 @@ export function AttackerInput({ onDataChange, title = "" }: AttackerInputProps) 
         {/* 技情報 */}
         <div className="space-y-2">
           <h3 className="text-sm font-medium">技情報</h3>
-          <div>
-            <MoveInput
-              moveName={moveName}
-              movePower={movePower}
-              moveType={moveType}
-              moveCategory={moveCategory}
-              onMoveNameChange={(name) => {
-                setMoveName(name);
-                notifyChange({ moveName: name });
-              }}
-              onMovePowerChange={(power) => {
-                setMovePower(power);
-                notifyChange({ movePower: power });
-              }}
-              onMoveTypeChange={(type) => {
-                setMoveType(type);
-                notifyChange({ moveType: type });
-              }}
-              onMoveCategoryChange={(category) => {
-                setMoveCategory(category);
-                notifyChange({ moveCategory: category });
-              }}
-            />
-          </div>
+          <MoveInput
+            pokemonName={pokemonName}
+            moveName={moveName}
+            movePower={movePower}
+            moveType={moveType}
+            moveCategory={moveCategory}
+            onMoveNameChange={(name) => {
+              setMoveName(name);
+              notifyChange({ moveName: name });
+            }}
+            onMovePowerChange={(power) => {
+              setMovePower(power);
+              notifyChange({ movePower: power });
+            }}
+            onMoveTypeChange={(type) => {
+              setMoveType(type);
+              notifyChange({ moveType: type });
+            }}
+            onMoveCategoryChange={(category) => {
+              setMoveCategory(category);
+              notifyChange({ moveCategory: category });
+            }}
+          />
         </div>
 
         {/* 種族値 */}
@@ -345,43 +343,43 @@ export function AttackerInput({ onDataChange, title = "" }: AttackerInputProps) 
         <div className="space-y-3">
           <h3 className="text-sm font-medium">その他</h3>
           <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="attacker-ability">特性</Label>
-                <Input
-                  id="attacker-ability"
-                  type="text"
-                  value={abilityName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    setAbilityName(e.target.value);
-                    notifyChange({ abilityName: e.target.value });
-                  }}
-                  placeholder="特性名を入力"
-                />
-                {abilityData && (
-                  <p className="text-xs text-muted-foreground">
-                    {abilityData.japaneseName}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="attacker-item">持ち物</Label>
-                <Input
-                  id="attacker-item"
-                  type="text"
-                  value={itemName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    setItemName(e.target.value);
-                    notifyChange({ itemName: e.target.value });
-                  }}
-                  placeholder="持ち物名を入力"
-                />
-                {itemData && (
-                  <p className="text-xs text-muted-foreground">
-                    {itemData.japaneseName}
-                  </p>
-                )}
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="attacker-ability">特性</Label>
+              <Input
+                id="attacker-ability"
+                type="text"
+                value={abilityName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setAbilityName(e.target.value);
+                  notifyChange({ abilityName: e.target.value });
+                }}
+                placeholder="特性名を入力"
+              />
+              {abilityData && (
+                <p className="text-xs text-muted-foreground">
+                  {abilityData.nameJa}
+                </p>
+              )}
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="attacker-item">持ち物</Label>
+              <Input
+                id="attacker-item"
+                type="text"
+                value={itemName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setItemName(e.target.value);
+                  notifyChange({ itemName: e.target.value });
+                }}
+                placeholder="持ち物名を入力"
+              />
+              {itemData && (
+                <p className="text-xs text-muted-foreground">
+                  {itemData.nameJa}
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
