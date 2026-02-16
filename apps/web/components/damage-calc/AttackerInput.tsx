@@ -12,6 +12,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useAbilitySearch } from "@/hooks/useAbilitySearch";
+import { useHydrationSafe } from "@/hooks/useHydrationSafe";
 import { useItemSearch } from "@/hooks/useItemSearch";
 import { usePokemonSearch } from "@/hooks/usePokemonSearch";
 import type { PokemonType, StatStage } from "@poke-dex-battle/shared";
@@ -23,9 +24,19 @@ import { PokemonStatInput } from "./PokemonStatInput";
 
 const STAT_STAGES: StatStage[] = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6];
 
+/**
+ * Generates a unique ID prefix from the title by converting to lowercase and replacing non-alphanumeric chars
+ */
+function generateIdPrefix(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")
+    .slice(0, 20);
+}
+
 interface AttackerInputProps {
   onDataChange: (data: AttackerData) => void;
-  title?: string;
+  title: string;
 }
 
 export interface AttackerData {
@@ -47,8 +58,9 @@ export interface AttackerData {
   itemName: string;
 }
 
-export function AttackerInput({ onDataChange, title = "" }: AttackerInputProps) {
-  const [isMounted, setIsMounted] = useState(false);
+export function AttackerInput({ onDataChange, title }: AttackerInputProps) {
+  const isMounted = useHydrationSafe();
+  const idPrefix = useMemo(() => generateIdPrefix(title), [title]);
   const [pokemonName, setPokemonName] = useState("");
   const [pokemonTypes, setPokemonTypes] = useState<PokemonType[]>([]);
   const [moveName, setMoveName] = useState("");
@@ -73,11 +85,6 @@ export function AttackerInput({ onDataChange, title = "" }: AttackerInputProps) 
   const [specialAttackRank, setSpecialAttackRank] = useState<StatStage>(0);
   const [abilityName, setAbilityName] = useState("");
   const [itemName, setItemName] = useState("");
-
-  // マウント検出（ハイドレーションミスマッチ対策）
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const { data: pokemonData } = usePokemonSearch(pokemonName);
   const { data: abilityData } = useAbilitySearch(abilityName);
@@ -151,9 +158,9 @@ export function AttackerInput({ onDataChange, title = "" }: AttackerInputProps) 
       <CardContent className="space-y-6">
         {/* ポケモン名 */}
         <div className="space-y-2">
-          <Label htmlFor="attacker-pokemon-name">ポケモン名</Label>
+          <Label htmlFor={`${idPrefix}-pokemon-name`}>ポケモン名</Label>
           <Autocomplete
-            id="attacker-pokemon-name"
+            id={`${idPrefix}-pokemon-name`}
             options={pokemonOptions}
             onSelect={(selectedValue) => {
               setPokemonName(selectedValue);
@@ -197,9 +204,9 @@ export function AttackerInput({ onDataChange, title = "" }: AttackerInputProps) 
           <div>
               {moveCategory === "Physical" ? (
                 <div className="space-y-2">
-                  <Label htmlFor="attack-base-stat">攻撃種族値</Label>
+                  <Label htmlFor={`${idPrefix}-attack-base-stat`}>攻撃種族値</Label>
                   <Input
-                    id="attack-base-stat"
+                    id={`${idPrefix}-attack-base-stat`}
                     type="number"
                     min={1}
                     max={255}
@@ -213,9 +220,9 @@ export function AttackerInput({ onDataChange, title = "" }: AttackerInputProps) 
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <Label htmlFor="special-attack-base-stat">特攻種族値</Label>
+                  <Label htmlFor={`${idPrefix}-special-attack-base-stat`}>特攻種族値</Label>
                   <Input
-                    id="special-attack-base-stat"
+                    id={`${idPrefix}-special-attack-base-stat`}
                     type="number"
                     min={1}
                     max={255}
@@ -291,7 +298,7 @@ export function AttackerInput({ onDataChange, title = "" }: AttackerInputProps) 
           <div>
               {moveCategory === "Physical" ? (
                 <div className="space-y-2">
-                  <Label htmlFor="attack-rank">攻撃ランク</Label>
+                  <Label htmlFor={`${idPrefix}-attack-rank`}>攻撃ランク</Label>
                   <Select
                     value={attackRank.toString()}
                     onValueChange={(value: string) => {
@@ -300,7 +307,7 @@ export function AttackerInput({ onDataChange, title = "" }: AttackerInputProps) 
                       notifyChange({ attackRank: rank });
                     }}
                   >
-                    <SelectTrigger id="attack-rank">
+                    <SelectTrigger id={`${idPrefix}-attack-rank`}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -314,7 +321,7 @@ export function AttackerInput({ onDataChange, title = "" }: AttackerInputProps) 
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <Label htmlFor="special-attack-rank">特攻ランク</Label>
+                  <Label htmlFor={`${idPrefix}-special-attack-rank`}>特攻ランク</Label>
                   <Select
                     value={specialAttackRank.toString()}
                     onValueChange={(value: string) => {
@@ -323,7 +330,7 @@ export function AttackerInput({ onDataChange, title = "" }: AttackerInputProps) 
                       notifyChange({ specialAttackRank: rank });
                     }}
                   >
-                    <SelectTrigger id="special-attack-rank">
+                    <SelectTrigger id={`${idPrefix}-special-attack-rank`}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -344,9 +351,9 @@ export function AttackerInput({ onDataChange, title = "" }: AttackerInputProps) 
           <h3 className="text-sm font-medium">その他</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="attacker-ability">特性</Label>
+              <Label htmlFor={`${idPrefix}-ability`}>特性</Label>
               <Input
-                id="attacker-ability"
+                id={`${idPrefix}-ability`}
                 type="text"
                 value={abilityName}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -362,9 +369,9 @@ export function AttackerInput({ onDataChange, title = "" }: AttackerInputProps) 
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="attacker-item">持ち物</Label>
+              <Label htmlFor={`${idPrefix}-item`}>持ち物</Label>
               <Input
-                id="attacker-item"
+                id={`${idPrefix}-item`}
                 type="text"
                 value={itemName}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {

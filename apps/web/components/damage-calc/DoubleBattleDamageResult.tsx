@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DamageResult as DamageResultType } from "@poke-dex-battle/shared";
 
+type DamageLabel = "確定" | "確定ライン" | "乱数" | "超乱数" | "不可";
+
 interface DoubleBattleDamageResultProps {
   result: {
     target1: {
@@ -28,7 +30,7 @@ interface DoubleBattleDamageResultProps {
  * - "超乱数": Between 20% and 50%
  * - "不可": Cannot KO
  */
-function getDamageLabel(result: DamageResultType): string {
+function getDamageLabel(result: DamageResultType): DamageLabel {
   const { minPercent, maxPercent } = result;
 
   if (minPercent >= 100) {
@@ -46,7 +48,7 @@ function getDamageLabel(result: DamageResultType): string {
 /**
  * Gets the color class based on damage label
  */
-function getLabelColorClass(label: string): string {
+function getLabelColorClass(label: DamageLabel): string {
   switch (label) {
     case "確定":
       return "text-green-600 font-bold";
@@ -56,9 +58,30 @@ function getLabelColorClass(label: string): string {
       return "text-orange-500 font-medium";
     case "超乱数":
       return "text-orange-400";
-    default:
+    case "不可":
       return "text-red-400";
   }
+}
+
+/**
+ * Determines the best attack pattern (highest minimum damage) for a target
+ */
+function getBestPatternLabel(results: {
+  attackerAOnly: DamageResultType;
+  attackerBOnly: DamageResultType;
+  combined: DamageResultType;
+}): string {
+  const patterns = [
+    { label: "Aのみ", result: results.attackerAOnly },
+    { label: "Bのみ", result: results.attackerBOnly },
+    { label: "集中", result: results.combined },
+  ];
+
+  const bestPattern = patterns.reduce((prev, current) =>
+    current.result.minPercent > prev.result.minPercent ? current : prev
+  );
+
+  return bestPattern.label;
 }
 
 interface DamageRowProps {
@@ -112,9 +135,8 @@ function TargetSection({
     { label: "集中", result: results.combined },
   ];
 
-  const bestPattern = patterns.reduce((prev, current) =>
-    current.result.minPercent > prev.result.minPercent ? current : prev
-  );
+  const bestPatternLabel = getBestPatternLabel(results);
+  const bestPattern = patterns.find((p) => p.label === bestPatternLabel);
 
   return (
     <div className="space-y-3">
@@ -123,7 +145,7 @@ function TargetSection({
         {targetName && (
           <span className="text-sm text-muted-foreground">{targetName}</span>
         )}
-        {targetHp && (
+        {targetHp !== undefined && (
           <span className="text-sm text-muted-foreground">
             HP: {targetHp}
           </span>
@@ -132,7 +154,7 @@ function TargetSection({
 
       <div className="space-y-1">
         {patterns.map((pattern) => {
-          const isBest = pattern.label === bestPattern.label;
+          const isBest = pattern.label === bestPatternLabel;
           return (
             <div
               key={pattern.label}
@@ -169,7 +191,7 @@ export function DoubleBattleDamageResult({
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-sm">
-            条件を入力して「計算する」ボタンを押してください
+            攻撃側・防御側のポケモンと技を入力すると自動で計算されます
           </p>
         </CardContent>
       </Card>
@@ -205,37 +227,8 @@ export function DoubleBattleDamageResult({
           </h4>
 
           {(() => {
-            const target1Best = ["Aのみ", "Bのみ", "集中"].reduce((prev, label) => {
-              const pattern =
-                label === "Aのみ"
-                  ? result.target1.attackerAOnly
-                  : label === "Bのみ"
-                    ? result.target1.attackerBOnly
-                    : result.target1.combined;
-              const prevPattern =
-                prev === "Aのみ"
-                  ? result.target1.attackerAOnly
-                  : prev === "Bのみ"
-                    ? result.target1.attackerBOnly
-                    : result.target1.combined;
-              return pattern.minPercent > prevPattern.minPercent ? label : prev;
-            }, "Aのみ");
-
-            const target2Best = ["Aのみ", "Bのみ", "集中"].reduce((prev, label) => {
-              const pattern =
-                label === "Aのみ"
-                  ? result.target2.attackerAOnly
-                  : label === "Bのみ"
-                    ? result.target2.attackerBOnly
-                    : result.target2.combined;
-              const prevPattern =
-                prev === "Aのみ"
-                  ? result.target2.attackerAOnly
-                  : prev === "Bのみ"
-                    ? result.target2.attackerBOnly
-                    : result.target2.combined;
-              return pattern.minPercent > prevPattern.minPercent ? label : prev;
-            }, "Aのみ");
+            const target1Best = getBestPatternLabel(result.target1);
+            const target2Best = getBestPatternLabel(result.target2);
 
             return (
               <div className="space-y-2 text-sm">

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useHydrationSafe } from "@/hooks/useHydrationSafe";
 import type {
   DamageCalculationInput,
   DamageResult as DamageResultType,
@@ -8,13 +9,15 @@ import type {
   Weather,
 } from "@poke-dex-battle/shared";
 import { calculateDamage } from "@poke-dex-battle/shared";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { AttackerData } from "./AttackerInput";
 import { AttackerInput } from "./AttackerInput";
 import { BattleConditionInput } from "./BattleConditionInput";
 import { DoubleBattleDamageResult } from "./DoubleBattleDamageResult";
 import type { DefenderData } from "./DefenderInput";
 import { DefenderInput } from "./DefenderInput";
+
+type SectionKey = "attackers" | "defenders" | "conditions";
 
 interface DoubleBattleResult {
   target1: {
@@ -30,7 +33,7 @@ interface DoubleBattleResult {
 }
 
 export function DamageCalculator() {
-  const [isMounted, setIsMounted] = useState(false);
+  const isMounted = useHydrationSafe();
   const [attackerDataA, setAttackerDataA] = useState<AttackerData | null>(null);
   const [attackerDataB, setAttackerDataB] = useState<AttackerData | null>(null);
   const [defenderData1, setDefenderData1] = useState<DefenderData | null>(null);
@@ -44,19 +47,14 @@ export function DamageCalculator() {
 
   const [result, setResult] = useState<DoubleBattleResult | null>(null);
 
-  // マウント検出（ハイドレーションミスマッチ対策）
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   // Section expansion states
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+  const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({
     attackers: true,
     defenders: true,
     conditions: true,
   });
 
-  const toggleSection = (section: string) => {
+  const toggleSection = (section: SectionKey) => {
     setExpandedSections((prev) => ({
       ...prev,
       [section]: !prev[section],
@@ -64,7 +62,7 @@ export function DamageCalculator() {
   };
 
   // Helper function to create damage calculation input
-  const createInput = (
+  const createInput = useCallback((
     attacker: AttackerData,
     defender: DefenderData,
     isSpread: boolean
@@ -121,7 +119,7 @@ export function DamageCalculator() {
         isCriticalHit,
       },
     };
-  };
+  }, [weather, field, isHelpingHand, isCriticalHit]);
 
   // Auto-calculate when required fields are filled
   useEffect(() => {
@@ -152,7 +150,7 @@ export function DamageCalculator() {
         createInput(attackerDataB, defenderData1, false)
       ),
       combined: calculateDamage(
-        createInput(attackerDataA, defenderData1, true)
+        createInput(attackerDataA, defenderData1, false)
       ),
     };
 
@@ -165,7 +163,7 @@ export function DamageCalculator() {
         createInput(attackerDataB, defenderData2, false)
       ),
       combined: calculateDamage(
-        createInput(attackerDataA, defenderData2, true)
+        createInput(attackerDataA, defenderData2, false)
       ),
     };
 
@@ -174,15 +172,11 @@ export function DamageCalculator() {
       target2: target2Result,
     });
   }, [
+    createInput,
     attackerDataA,
     attackerDataB,
     defenderData1,
     defenderData2,
-    weather,
-    field,
-    isHelpingHand,
-    isSpreadMove,
-    isCriticalHit,
   ]);
 
   if (!isMounted) {
@@ -199,7 +193,7 @@ export function DamageCalculator() {
             onClick={() => toggleSection("attackers")}
             className="text-lg font-semibold hover:text-primary transition-colors flex items-center gap-2"
           >
-            <span className="inline-block transition-transform" style={{ transform: expandedSections.attackers ? "rotate(0deg)" : "rotate(-90deg)" }}>
+            <span className={`inline-block transition-transform ${expandedSections.attackers ? "rotate-0" : "-rotate-90"}`}>
               ▼
             </span>
             【攻撃側】
@@ -221,7 +215,7 @@ export function DamageCalculator() {
             onClick={() => toggleSection("defenders")}
             className="text-lg font-semibold hover:text-primary transition-colors flex items-center gap-2"
           >
-            <span className="inline-block transition-transform" style={{ transform: expandedSections.defenders ? "rotate(0deg)" : "rotate(-90deg)" }}>
+            <span className={`inline-block transition-transform ${expandedSections.defenders ? "rotate-0" : "-rotate-90"}`}>
               ▼
             </span>
             【防御側】
@@ -243,7 +237,7 @@ export function DamageCalculator() {
             onClick={() => toggleSection("conditions")}
             className="text-lg font-semibold hover:text-primary transition-colors flex items-center gap-2"
           >
-            <span className="inline-block transition-transform" style={{ transform: expandedSections.conditions ? "rotate(0deg)" : "rotate(-90deg)" }}>
+            <span className={`inline-block transition-transform ${expandedSections.conditions ? "rotate-0" : "-rotate-90"}`}>
               ▼
             </span>
             【バトル条件】
