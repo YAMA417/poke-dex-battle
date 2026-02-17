@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { useAbilitySearch } from "@/hooks/useAbilitySearch";
 import { useHydrationSafe } from "@/hooks/useHydrationSafe";
@@ -20,22 +20,16 @@ import { calcHpStat, getAllPokemon } from "@poke-dex-battle/shared";
 import { useEffect, useMemo, useState } from "react";
 import { NatureModifierRadio } from "./NatureModifierRadio";
 import { PokemonStatInput } from "./PokemonStatInput";
+import { generateIdPrefix } from "@/utils/id";
 
 const STAT_STAGES: StatStage[] = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6];
 
-/**
- * Generates a unique ID prefix from the title by converting to lowercase and replacing non-alphanumeric chars
- */
-function generateIdPrefix(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "")
-    .slice(0, 20);
-}
+
 
 interface DefenderInputProps {
   onDataChange: (data: DefenderData) => void;
   title: string;
+  idKey: string;
 }
 
 export interface DefenderData {
@@ -55,9 +49,9 @@ export interface DefenderData {
   itemName: string;
 }
 
-export function DefenderInput({ onDataChange, title }: DefenderInputProps) {
+export function DefenderInput({ onDataChange, title, idKey }: DefenderInputProps) {
   const isMounted = useHydrationSafe();
-  const idPrefix = useMemo(() => generateIdPrefix(title), [title]);
+  const idPrefix = useMemo(() => generateIdPrefix(title, idKey), [title, idKey]);
   const [pokemonName, setPokemonName] = useState("");
   const [pokemonTypes, setPokemonTypes] = useState<PokemonType[]>([]);
 

@@ -9,6 +9,7 @@ import type {
   Weather,
 } from "@poke-dex-battle/shared";
 import { calculateDamage } from "@poke-dex-battle/shared";
+import type { DoubleBattleResult } from "@/types/damage";
 import { useState, useEffect, useCallback } from "react";
 import type { AttackerData } from "./AttackerInput";
 import { AttackerInput } from "./AttackerInput";
@@ -19,18 +20,26 @@ import { DefenderInput } from "./DefenderInput";
 
 type SectionKey = "attackers" | "defenders" | "conditions";
 
-interface DoubleBattleResult {
-  target1: {
-    attackerAOnly: DamageResultType;
-    attackerBOnly: DamageResultType;
-    combined: DamageResultType;
-  };
-  target2: {
-    attackerAOnly: DamageResultType;
-    attackerBOnly: DamageResultType;
-    combined: DamageResultType;
+
+
+function combineDamage(
+  damageA: DamageResultType,
+  damageB: DamageResultType,
+  defenderHp: number
+): DamageResultType {
+  const minDamage = damageA.minDamage + damageB.minDamage;
+  const maxDamage = damageA.maxDamage + damageB.maxDamage;
+
+  return {
+    minDamage,
+    maxDamage,
+    minPercent: damageA.minPercent + damageB.minPercent,
+    maxPercent: damageA.maxPercent + damageB.maxPercent,
+    guaranteed: minDamage > 0 ? Math.ceil(defenderHp / minDamage) : Infinity,
+    possible: maxDamage > 0 ? Math.ceil(defenderHp / maxDamage) : Infinity,
   };
 }
+
 
 export function DamageCalculator() {
   const isMounted = useHydrationSafe();
@@ -119,7 +128,7 @@ export function DamageCalculator() {
         isCriticalHit,
       },
     };
-  }, [weather, field, isHelpingHand, isCriticalHit]);
+  }, [weather, field, isHelpingHand, isSpreadMove, isCriticalHit]);
 
   // Auto-calculate when required fields are filled
   useEffect(() => {
@@ -142,29 +151,32 @@ export function DamageCalculator() {
     }
 
     // Calculate for Target 1
+    // Calculate for Target 1
+    const target1AttackerA = calculateDamage(
+      createInput(attackerDataA, defenderData1, false)
+    );
+    const target1AttackerB = calculateDamage(
+      createInput(attackerDataB, defenderData1, false)
+    );
+
     const target1Result: DoubleBattleResult["target1"] = {
-      attackerAOnly: calculateDamage(
-        createInput(attackerDataA, defenderData1, false)
-      ),
-      attackerBOnly: calculateDamage(
-        createInput(attackerDataB, defenderData1, false)
-      ),
-      combined: calculateDamage(
-        createInput(attackerDataA, defenderData1, false)
-      ),
+      attackerAOnly: target1AttackerA,
+      attackerBOnly: target1AttackerB,
+      combined: combineDamage(target1AttackerA, target1AttackerB, defenderData1.hpStat),
     };
 
     // Calculate for Target 2
+    const target2AttackerA = calculateDamage(
+      createInput(attackerDataA, defenderData2, false)
+    );
+    const target2AttackerB = calculateDamage(
+      createInput(attackerDataB, defenderData2, false)
+    );
+
     const target2Result: DoubleBattleResult["target2"] = {
-      attackerAOnly: calculateDamage(
-        createInput(attackerDataA, defenderData2, false)
-      ),
-      attackerBOnly: calculateDamage(
-        createInput(attackerDataB, defenderData2, false)
-      ),
-      combined: calculateDamage(
-        createInput(attackerDataA, defenderData2, false)
-      ),
+      attackerAOnly: target2AttackerA,
+      attackerBOnly: target2AttackerB,
+      combined: combineDamage(target2AttackerA, target2AttackerB, defenderData2.hpStat),
     };
 
     setResult({
@@ -177,6 +189,11 @@ export function DamageCalculator() {
     attackerDataB,
     defenderData1,
     defenderData2,
+    weather,
+    field,
+    isHelpingHand,
+    isSpreadMove,
+    isCriticalHit,
   ]);
 
   if (!isMounted) {
@@ -201,8 +218,16 @@ export function DamageCalculator() {
         </div>
         {expandedSections.attackers && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <AttackerInput onDataChange={setAttackerDataA} title="ポケモンA" />
-            <AttackerInput onDataChange={setAttackerDataB} title="ポケモンB" />
+            <AttackerInput
+              onDataChange={setAttackerDataA}
+              title="ポケモンA"
+              idKey="attacker-a"
+            />
+            <AttackerInput
+              onDataChange={setAttackerDataB}
+              title="ポケモンB"
+              idKey="attacker-b"
+            />
           </div>
         )}
       </div>
@@ -223,8 +248,16 @@ export function DamageCalculator() {
         </div>
         {expandedSections.defenders && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <DefenderInput onDataChange={setDefenderData1} title="対象①" />
-            <DefenderInput onDataChange={setDefenderData2} title="対象②" />
+            <DefenderInput
+              onDataChange={setDefenderData1}
+              title="対象①"
+              idKey="target-1"
+            />
+            <DefenderInput
+              onDataChange={setDefenderData2}
+              title="対象②"
+              idKey="target-2"
+            />
           </div>
         )}
       </div>

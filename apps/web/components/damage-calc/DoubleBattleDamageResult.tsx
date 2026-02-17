@@ -1,21 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { DoubleBattleResult } from "@/types/damage";
 import type { DamageResult as DamageResultType } from "@poke-dex-battle/shared";
 
 type DamageLabel = "確定" | "確定ライン" | "乱数" | "超乱数" | "不可";
 
 interface DoubleBattleDamageResultProps {
-  result: {
-    target1: {
-      attackerAOnly: DamageResultType;
-      attackerBOnly: DamageResultType;
-      combined: DamageResultType;
-    };
-    target2: {
-      attackerAOnly: DamageResultType;
-      attackerBOnly: DamageResultType;
-      combined: DamageResultType;
-    };
-  } | null;
+  result: DoubleBattleResult | null;
   target1Hp?: number;
   target2Hp?: number;
   target1Name?: string;
@@ -158,9 +148,8 @@ function TargetSection({
           return (
             <div
               key={pattern.label}
-              className={`rounded px-3 ${
-                isBest ? "bg-blue-50 dark:bg-blue-950" : ""
-              }`}
+              className={`rounded px-3 ${isBest ? "bg-blue-50 dark:bg-blue-950" : ""
+                }`}
             >
               <DamageRow
                 label={
