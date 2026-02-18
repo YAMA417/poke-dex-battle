@@ -63,6 +63,20 @@ export function DamageCalculator() {
     conditions: true,
   });
 
+  // Attacker details toggle state (synchronized)
+  const [isAttackerDetailsOpen, setIsAttackerDetailsOpen] = useState(false);
+
+  const toggleAttackerDetails = () => {
+    setIsAttackerDetailsOpen((prev) => !prev);
+  };
+
+  // Defender details toggle state (synchronized)
+  const [isDefenderDetailsOpen, setIsDefenderDetailsOpen] = useState(false);
+
+  const toggleDefenderDetails = () => {
+    setIsDefenderDetailsOpen((prev) => !prev);
+  };
+
   const toggleSection = (section: SectionKey) => {
     setExpandedSections((prev) => ({
       ...prev,
@@ -202,19 +216,19 @@ export function DamageCalculator() {
 
   return (
     <div className="space-y-6">
+      {/* Results */}
+      <DoubleBattleDamageResult
+        result={result}
+        target1Hp={defenderData1?.hpStat}
+        target2Hp={defenderData2?.hpStat}
+        target1Name={defenderData1?.pokemonName}
+        target2Name={defenderData2?.pokemonName}
+      />
+
       {/* Attacker Selection */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => toggleSection("attackers")}
-            className="text-lg font-semibold hover:text-primary transition-colors flex items-center gap-2"
-          >
-            <span className={`inline-block transition-transform ${expandedSections.attackers ? "rotate-0" : "-rotate-90"}`}>
-              ▼
-            </span>
-            【攻撃側】
-          </button>
+        <div className="flex items-center gap-2 text-lg font-semibold">
+          【攻撃側】
         </div>
         {expandedSections.attackers && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -222,11 +236,15 @@ export function DamageCalculator() {
               onDataChange={setAttackerDataA}
               title="ポケモンA"
               idKey="attacker-a"
+              isDetailsOpen={isAttackerDetailsOpen}
+              onToggleDetails={toggleAttackerDetails}
             />
             <AttackerInput
               onDataChange={setAttackerDataB}
               title="ポケモンB"
               idKey="attacker-b"
+              isDetailsOpen={isAttackerDetailsOpen}
+              onToggleDetails={toggleAttackerDetails}
             />
           </div>
         )}
@@ -234,17 +252,8 @@ export function DamageCalculator() {
 
       {/* Defender Selection */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => toggleSection("defenders")}
-            className="text-lg font-semibold hover:text-primary transition-colors flex items-center gap-2"
-          >
-            <span className={`inline-block transition-transform ${expandedSections.defenders ? "rotate-0" : "-rotate-90"}`}>
-              ▼
-            </span>
-            【防御側】
-          </button>
+        <div className="flex items-center gap-2 text-lg font-semibold">
+          【防御側】
         </div>
         {expandedSections.defenders && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -252,11 +261,15 @@ export function DamageCalculator() {
               onDataChange={setDefenderData1}
               title="対象①"
               idKey="target-1"
+              isDetailsOpen={isDefenderDetailsOpen}
+              onToggleDetails={toggleDefenderDetails}
             />
             <DefenderInput
               onDataChange={setDefenderData2}
               title="対象②"
               idKey="target-2"
+              isDetailsOpen={isDefenderDetailsOpen}
+              onToggleDetails={toggleDefenderDetails}
             />
           </div>
         )}
@@ -264,17 +277,8 @@ export function DamageCalculator() {
 
       {/* Battle Conditions */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => toggleSection("conditions")}
-            className="text-lg font-semibold hover:text-primary transition-colors flex items-center gap-2"
-          >
-            <span className={`inline-block transition-transform ${expandedSections.conditions ? "rotate-0" : "-rotate-90"}`}>
-              ▼
-            </span>
-            【バトル条件】
-          </button>
+        <div className="flex items-center gap-2 text-lg font-semibold">
+          【バトル条件】
         </div>
         {expandedSections.conditions && (
           <BattleConditionInput
@@ -291,15 +295,6 @@ export function DamageCalculator() {
           />
         )}
       </div>
-
-      {/* Results */}
-      <DoubleBattleDamageResult
-        result={result}
-        target1Hp={defenderData1?.hpStat}
-        target2Hp={defenderData2?.hpStat}
-        target1Name={defenderData1?.pokemonName}
-        target2Name={defenderData2?.pokemonName}
-      />
     </div>
   );
 }
