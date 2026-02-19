@@ -11,29 +11,74 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAbilitySearch } from "@/hooks/useAbilitySearch";
-import { useHydrationSafe } from "@/hooks/useHydrationSafe";
-import { useItemSearch } from "@/hooks/useItemSearch";
 import { usePokemonSearch } from "@/hooks/usePokemonSearch";
 import type { PokemonType, StatStage } from "@poke-dex-battle/shared";
-import { getAllPokemon } from "@poke-dex-battle/shared";
+import { calcOtherStat, getAllPokemon } from "@poke-dex-battle/shared";
 import { useEffect, useMemo, useState } from "react";
 import { MoveInput } from "./MoveInput";
 import { NatureModifierRadio } from "./NatureModifierRadio";
-import { PokemonStatInput } from "./PokemonStatInput";
 import { generateIdPrefix } from "@/utils/id";
 
 const STAT_STAGES: StatStage[] = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6];
 
+// --- 共有サブコンポーネント ---
 
-
-interface AttackerInputProps {
-  onDataChange: (data: AttackerData) => void;
-  title: string;
-  idKey: string;
-  isDetailsOpen: boolean;
-  onToggleDetails: () => void;
+interface NatureModifierCompactProps {
+  value: 1.1 | 1.0 | 0.9;
+  onChange: (modifier: 1.1 | 1.0 | 0.9) => void;
 }
+
+const NATURE_OPTIONS = [
+  { value: 1.1 as const, label: "↑" },
+  { value: 1.0 as const, label: "—" },
+  { value: 0.9 as const, label: "↓" },
+];
+
+export function NatureModifierCompact({ value, onChange }: NatureModifierCompactProps) {
+  return (
+    <div className="flex gap-1">
+      {NATURE_OPTIONS.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          className={`px-3 py-1 text-xs rounded border transition-colors ${
+            value === opt.value
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-background text-muted-foreground border-input hover:bg-accent"
+          }`}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function EvPreset({ label, value, onChange }: {
+  label: string; value: number; onChange: (ev: number) => void;
+}) {
+  return (
+    <div className="space-y-1">
+      <Label className="text-xs">{label} 努力値</Label>
+      <div className="flex gap-1">
+        <button type="button" onClick={() => onChange(252)}
+          className={`px-2 py-1 text-xs rounded border ${value === 252 ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>
+          252
+        </button>
+        <button type="button" onClick={() => onChange(0)}
+          className={`px-2 py-1 text-xs rounded border ${value === 0 ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>
+          0
+        </button>
+        <Input type="number" min={0} max={252} step={4} value={value}
+          onChange={(e) => onChange(Math.max(0, Math.min(252, parseInt(e.target.value) || 0)))}
+          className="h-7 w-16 text-xs" />
+      </div>
+    </div>
+  );
+}
+
+// --- 型定義 ---
 
 export interface AttackerData {
   pokemonName: string;
@@ -54,46 +99,27 @@ export interface AttackerData {
   itemName: string;
 }
 
-export function AttackerInput({
-  onDataChange,
-  title,
-  idKey,
-  isDetailsOpen,
-  onToggleDetails,
-}: AttackerInputProps) {
-  const isMounted = useHydrationSafe();
+interface AttackerInputProps {
+  data: AttackerData;
+  onDataChange: (data: AttackerData) => void;
+  title: string;
+  idKey: string;
+  displayMode: "compact" | "full";
+}
+
+// --- メインコンポーネント ---
+
+export function AttackerInput({ data, onDataChange, title, idKey, displayMode }: AttackerInputProps) {
   const idPrefix = useMemo(() => generateIdPrefix(title, idKey), [title, idKey]);
-  const [pokemonName, setPokemonName] = useState("");
-  const [pokemonTypes, setPokemonTypes] = useState<PokemonType[]>([]);
-  const [moveName, setMoveName] = useState("");
-  const [movePower, setMovePower] = useState(80);
-  const [moveType, setMoveType] = useState<PokemonType>("Normal");
-  const [moveCategory, setMoveCategory] = useState<"Physical" | "Special">(
-    "Physical"
-  );
 
-  const [attackBaseStat, setAttackBaseStat] = useState(100);
-  const [specialAttackBaseStat, setSpecialAttackBaseStat] = useState(100);
+  // full モード用の内部 state
+  const [attackEv, setAttackEv] = useState(252);
+  const [attackIv, setAttackIv] = useState(31);
+  const [spAtkEv, setSpAtkEv] = useState(252);
+  const [spAtkIv, setSpAtkIv] = useState(31);
 
-  const [attackModifier, setAttackModifier] = useState<1.1 | 1.0 | 0.9>(1.0);
-  const [specialAttackModifier, setSpecialAttackModifier] = useState<
-    1.1 | 1.0 | 0.9
-  >(1.0);
+  const { data: pokemonData } = usePokemonSearch(data.pokemonName);
 
-  const [attackStat, setAttackStat] = useState(152);
-  const [specialAttackStat, setSpecialAttackStat] = useState(152);
-
-  const [attackRank, setAttackRank] = useState<StatStage>(0);
-  const [specialAttackRank, setSpecialAttackRank] = useState<StatStage>(0);
-  const [abilityName, setAbilityName] = useState("");
-  const [itemName, setItemName] = useState("");
-
-
-  const { data: pokemonData } = usePokemonSearch(pokemonName);
-  const { data: abilityData } = useAbilitySearch(abilityName);
-  const { data: itemData } = useItemSearch(itemName);
-
-  // ポケモン名のオプションリストを生成
   const pokemonOptions = useMemo(() => {
     return getAllPokemon().map((pokemon) => ({
       label: pokemon.nameJa,
@@ -102,322 +128,160 @@ export function AttackerInput({
     }));
   }, []);
 
-  // ポケモンデータを取得したら種族値・タイプ・第1特性を自動反映
+  // ポケモンデータ取得時に種族値・タイプ・第1特性を自動反映
   useEffect(() => {
     if (pokemonData?.baseStats) {
-      setAttackBaseStat(pokemonData.baseStats.attack);
-      setSpecialAttackBaseStat(pokemonData.baseStats.specialAttack);
-      setPokemonTypes(pokemonData.types);
-
-      // 第1特性を自動入力
+      const atkBase = pokemonData.baseStats.attack;
+      const spAtkBase = pokemonData.baseStats.specialAttack;
       const firstAbility = pokemonData.abilities[0];
-      if (firstAbility) {
-        setAbilityName(firstAbility.nameJa);
-      }
 
-      notifyChange({
-        attackBaseStat: pokemonData.baseStats.attack,
-        specialAttackBaseStat: pokemonData.baseStats.specialAttack,
+      onDataChange({
+        ...data,
+        attackBaseStat: atkBase,
+        specialAttackBaseStat: spAtkBase,
         pokemonTypes: pokemonData.types,
         abilityName: firstAbility?.nameJa ?? "",
+        attackStat: calcOtherStat(atkBase, attackIv, attackEv, 50, data.attackModifier),
+        specialAttackStat: calcOtherStat(spAtkBase, spAtkIv, spAtkEv, 50, data.specialAttackModifier),
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pokemonData]);
 
-  // データが変更されたら親に通知
-  const notifyChange = (updates: Partial<AttackerData>) => {
-    const data: AttackerData = {
-      pokemonName,
-      pokemonTypes,
-      moveName,
-      movePower,
-      moveType,
-      moveCategory,
-      attackBaseStat,
-      specialAttackBaseStat,
-      attackStat,
-      specialAttackStat,
-      attackModifier,
-      specialAttackModifier,
-      attackRank,
-      specialAttackRank,
-      abilityName,
-      itemName,
-      ...updates,
-    };
-    onDataChange(data);
-  };
+  // EV/IV/modifier 変更時にステータス再計算
+  useEffect(() => {
+    const newAtk = calcOtherStat(data.attackBaseStat, attackIv, attackEv, 50, data.attackModifier);
+    const newSpAtk = calcOtherStat(data.specialAttackBaseStat, spAtkIv, spAtkEv, 50, data.specialAttackModifier);
+    if (newAtk !== data.attackStat || newSpAtk !== data.specialAttackStat) {
+      onDataChange({ ...data, attackStat: newAtk, specialAttackStat: newSpAtk });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attackEv, attackIv, spAtkEv, spAtkIv, data.attackModifier, data.specialAttackModifier, data.attackBaseStat, data.specialAttackBaseStat]);
 
-  if (!isMounted) {
-    return null;
+  if (displayMode === "compact") {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">{title}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Autocomplete
+            id={`${idPrefix}-pokemon-name`}
+            options={pokemonOptions}
+            onSelect={(name) => onDataChange({ ...data, pokemonName: name })}
+            placeholder="ポケモン名"
+          />
+          <MoveInput
+            pokemonName={data.pokemonName}
+            moveName={data.moveName}
+            movePower={data.movePower}
+            moveType={data.moveType}
+            moveCategory={data.moveCategory}
+            onMoveNameChange={(name) => onDataChange({ ...data, moveName: name })}
+            onMovePowerChange={(power) => onDataChange({ ...data, movePower: power })}
+            onMoveTypeChange={(type) => onDataChange({ ...data, moveType: type })}
+            onMoveCategoryChange={(cat) => onDataChange({ ...data, moveCategory: cat })}
+            compact
+          />
+          <div className="space-y-1">
+            <Label className="text-xs">性格補正</Label>
+            <NatureModifierCompact
+              value={data.moveCategory === "Physical" ? data.attackModifier : data.specialAttackModifier}
+              onChange={(mod) => {
+                if (data.moveCategory === "Physical") {
+                  onDataChange({ ...data, attackModifier: mod });
+                } else {
+                  onDataChange({ ...data, specialAttackModifier: mod });
+                }
+              }}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">持ち物</Label>
+            <Input
+              type="text"
+              value={data.itemName}
+              onChange={(e) => onDataChange({ ...data, itemName: e.target.value })}
+              placeholder="持ち物名"
+              className="h-8 text-sm"
+            />
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
+
+  // displayMode === "full"
+  const isPhysical = data.moveCategory === "Physical";
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Layer 1: 基本情報 (常に表示) */}
-        <div className="space-y-6">
-          {/* ポケモン名 */}
-          <div className="space-y-2">
-            <Label htmlFor={`${idPrefix}-pokemon-name`}>ポケモン名</Label>
-            <Autocomplete
-              id={`${idPrefix}-pokemon-name`}
-              options={pokemonOptions}
-              onSelect={(selectedValue) => {
-                setPokemonName(selectedValue);
-                notifyChange({ pokemonName: selectedValue });
-              }}
-              placeholder="ポケモン名を入力"
-            />
-          </div>
-
-          {/* 技情報 */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium">技情報</h3>
-            <MoveInput
-              pokemonName={pokemonName}
-              moveName={moveName}
-              movePower={movePower}
-              moveType={moveType}
-              moveCategory={moveCategory}
-              onMoveNameChange={(name) => {
-                setMoveName(name);
-                notifyChange({ moveName: name });
-              }}
-              onMovePowerChange={(power) => {
-                setMovePower(power);
-                notifyChange({ movePower: power });
-              }}
-              onMoveTypeChange={(type) => {
-                setMoveType(type);
-                notifyChange({ moveType: type });
-              }}
-              onMoveCategoryChange={(category) => {
-                setMoveCategory(category);
-                notifyChange({ moveCategory: category });
-              }}
-            />
-          </div>
-        </div>
-
-        {/* 詳細設定トグルボタン */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <button
-              type="button"
-              onClick={onToggleDetails}
-              className="bg-background px-2 text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
-            >
-              {isDetailsOpen ? "詳細を隠す" : "詳細設定を表示"}
-              <span className={`transform transition-transform ${isDetailsOpen ? "rotate-180" : ""}`}>
-                ▼
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* Layer 2: 詳細設定 (初期非表示) */}
-        {isDetailsOpen && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-200">
-            {/* 種族値 */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium">種族値</h3>
-              <div>
-                {moveCategory === "Physical" ? (
-                  <div className="space-y-2">
-                    <Label htmlFor={`${idPrefix}-attack-base-stat`}>攻撃種族値</Label>
-                    <Input
-                      id={`${idPrefix}-attack-base-stat`}
-                      type="number"
-                      min={1}
-                      max={255}
-                      value={attackBaseStat}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value = parseInt(e.target.value) || 1;
-                        setAttackBaseStat(value);
-                        notifyChange({ attackBaseStat: value });
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Label htmlFor={`${idPrefix}-special-attack-base-stat`}>特攻種族値</Label>
-                    <Input
-                      id={`${idPrefix}-special-attack-base-stat`}
-                      type="number"
-                      min={1}
-                      max={255}
-                      value={specialAttackBaseStat}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value = parseInt(e.target.value) || 1;
-                        setSpecialAttackBaseStat(value);
-                        notifyChange({ specialAttackBaseStat: value });
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
+      <CardContent className="space-y-3">
+        {isPhysical ? (
+          <>
+            <EvPreset label="攻撃" value={attackEv} onChange={setAttackEv} />
+            <div className="space-y-1">
+              <Label className="text-xs">攻撃個体値</Label>
+              <Input type="number" min={0} max={31} value={attackIv}
+                onChange={(e) => setAttackIv(Math.max(0, Math.min(31, parseInt(e.target.value) || 0)))}
+                className="h-7 text-xs" />
             </div>
-
-            {/* ステータス実数値 */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium">ステータス実数値</h3>
-              <div>
-                {moveCategory === "Physical" ? (
-                  <div className="space-y-3 p-4 border rounded-lg">
-                    <NatureModifierRadio
-                      statName="攻撃"
-                      value={attackModifier}
-                      onChange={(modifier) => {
-                        setAttackModifier(modifier);
-                        notifyChange({ attackModifier: modifier });
-                      }}
-                    />
-                    <PokemonStatInput
-                      label="攻撃"
-                      statType="attack"
-                      level={50}
-                      natureModifier={attackModifier}
-                      baseStat={attackBaseStat}
-                      value={attackStat}
-                      onChange={(value) => {
-                        setAttackStat(value);
-                        notifyChange({ attackStat: value });
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="space-y-3 p-4 border rounded-lg">
-                    <NatureModifierRadio
-                      statName="特攻"
-                      value={specialAttackModifier}
-                      onChange={(modifier) => {
-                        setSpecialAttackModifier(modifier);
-                        notifyChange({ specialAttackModifier: modifier });
-                      }}
-                    />
-                    <PokemonStatInput
-                      label="特攻"
-                      statType="specialAttack"
-                      level={50}
-                      natureModifier={specialAttackModifier}
-                      baseStat={specialAttackBaseStat}
-                      value={specialAttackStat}
-                      onChange={(value) => {
-                        setSpecialAttackStat(value);
-                        notifyChange({ specialAttackStat: value });
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
+            <NatureModifierRadio statName="攻撃" value={data.attackModifier}
+              onChange={(mod) => onDataChange({ ...data, attackModifier: mod })} />
+            <div className="text-sm text-muted-foreground">
+              実数値: <span className="font-bold text-foreground">{data.attackStat}</span>
             </div>
-
-            {/* 能力ランク */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium">能力ランク</h3>
-              <div>
-                {moveCategory === "Physical" ? (
-                  <div className="space-y-2">
-                    <Label htmlFor={`${idPrefix}-attack-rank`}>攻撃ランク</Label>
-                    <Select
-                      value={attackRank.toString()}
-                      onValueChange={(value: string) => {
-                        const rank = parseInt(value) as StatStage;
-                        setAttackRank(rank);
-                        notifyChange({ attackRank: rank });
-                      }}
-                    >
-                      <SelectTrigger id={`${idPrefix}-attack-rank`}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {STAT_STAGES.map((stage) => (
-                          <SelectItem key={stage} value={stage.toString()}>
-                            {stage > 0 ? `+${stage}` : stage}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Label htmlFor={`${idPrefix}-special-attack-rank`}>特攻ランク</Label>
-                    <Select
-                      value={specialAttackRank.toString()}
-                      onValueChange={(value: string) => {
-                        const rank = parseInt(value) as StatStage;
-                        setSpecialAttackRank(rank);
-                        notifyChange({ specialAttackRank: rank });
-                      }}
-                    >
-                      <SelectTrigger id={`${idPrefix}-special-attack-rank`}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {STAT_STAGES.map((stage) => (
-                          <SelectItem key={stage} value={stage.toString()}>
-                            {stage > 0 ? `+${stage}` : stage}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </div>
+          </>
+        ) : (
+          <>
+            <EvPreset label="特攻" value={spAtkEv} onChange={setSpAtkEv} />
+            <div className="space-y-1">
+              <Label className="text-xs">特攻個体値</Label>
+              <Input type="number" min={0} max={31} value={spAtkIv}
+                onChange={(e) => setSpAtkIv(Math.max(0, Math.min(31, parseInt(e.target.value) || 0)))}
+                className="h-7 text-xs" />
             </div>
-
-            {/* その他 */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium">その他</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor={`${idPrefix}-ability`}>特性</Label>
-                  <Input
-                    id={`${idPrefix}-ability`}
-                    type="text"
-                    value={abilityName}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      setAbilityName(e.target.value);
-                      notifyChange({ abilityName: e.target.value });
-                    }}
-                    placeholder="特性名を入力"
-                  />
-                  {abilityData && (
-                    <p className="text-xs text-muted-foreground">
-                      {abilityData.nameJa}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`${idPrefix}-item`}>持ち物</Label>
-                  <Input
-                    id={`${idPrefix}-item`}
-                    type="text"
-                    value={itemName}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      setItemName(e.target.value);
-                      notifyChange({ itemName: e.target.value });
-                    }}
-                    placeholder="持ち物名を入力"
-                  />
-                  {itemData && (
-                    <p className="text-xs text-muted-foreground">
-                      {itemData.nameJa}
-                    </p>
-                  )}
-                </div>
-              </div>
+            <NatureModifierRadio statName="特攻" value={data.specialAttackModifier}
+              onChange={(mod) => onDataChange({ ...data, specialAttackModifier: mod })} />
+            <div className="text-sm text-muted-foreground">
+              実数値: <span className="font-bold text-foreground">{data.specialAttackStat}</span>
             </div>
-          </div>
+          </>
         )}
+
+        {/* 能力ランク */}
+        <div className="space-y-1">
+          <Label className="text-xs">{isPhysical ? "攻撃" : "特攻"}ランク</Label>
+          <Select
+            value={(isPhysical ? data.attackRank : data.specialAttackRank).toString()}
+            onValueChange={(v: string) => {
+              const rank = parseInt(v) as StatStage;
+              if (isPhysical) {
+                onDataChange({ ...data, attackRank: rank });
+              } else {
+                onDataChange({ ...data, specialAttackRank: rank });
+              }
+            }}
+          >
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {STAT_STAGES.map((s) => (
+                <SelectItem key={s} value={s.toString()}>{s > 0 ? `+${s}` : s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* 特性 */}
+        <div className="space-y-1">
+          <Label className="text-xs">特性</Label>
+          <Input type="text" value={data.abilityName}
+            onChange={(e) => onDataChange({ ...data, abilityName: e.target.value })}
+            placeholder="特性名" className="h-8 text-sm" />
+        </div>
       </CardContent>
     </Card>
   );

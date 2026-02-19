@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { useHydrationSafe } from "@/hooks/useHydrationSafe";
 import type {
   DamageCalculationInput,
@@ -18,9 +17,41 @@ import { DoubleBattleDamageResult } from "./DoubleBattleDamageResult";
 import type { DefenderData } from "./DefenderInput";
 import { DefenderInput } from "./DefenderInput";
 
-type SectionKey = "attackers" | "defenders" | "conditions";
+const DEFAULT_ATTACKER_DATA: AttackerData = {
+  pokemonName: "",
+  pokemonTypes: [],
+  moveName: "",
+  movePower: 80,
+  moveType: "Normal",
+  moveCategory: "Physical",
+  attackBaseStat: 100,
+  specialAttackBaseStat: 100,
+  attackStat: 152,
+  specialAttackStat: 152,
+  attackModifier: 1.0,
+  specialAttackModifier: 1.0,
+  attackRank: 0,
+  specialAttackRank: 0,
+  abilityName: "",
+  itemName: "",
+};
 
-
+const DEFAULT_DEFENDER_DATA: DefenderData = {
+  pokemonName: "",
+  pokemonTypes: [],
+  hpBaseStat: 100,
+  defenseBaseStat: 100,
+  specialDefenseBaseStat: 100,
+  hpStat: 207,
+  defenseStat: 152,
+  specialDefenseStat: 152,
+  defenseModifier: 1.0,
+  specialDefenseModifier: 1.0,
+  defenseRank: 0,
+  specialDefenseRank: 0,
+  abilityName: "",
+  itemName: "",
+};
 
 function combineDamage(
   damageA: DamageResultType,
@@ -40,13 +71,12 @@ function combineDamage(
   };
 }
 
-
 export function DamageCalculator() {
   const isMounted = useHydrationSafe();
-  const [attackerDataA, setAttackerDataA] = useState<AttackerData | null>(null);
-  const [attackerDataB, setAttackerDataB] = useState<AttackerData | null>(null);
-  const [defenderData1, setDefenderData1] = useState<DefenderData | null>(null);
-  const [defenderData2, setDefenderData2] = useState<DefenderData | null>(null);
+  const [attackerAData, setAttackerAData] = useState<AttackerData>(DEFAULT_ATTACKER_DATA);
+  const [attackerBData, setAttackerBData] = useState<AttackerData>(DEFAULT_ATTACKER_DATA);
+  const [defenderData1, setDefenderData1] = useState<DefenderData>(DEFAULT_DEFENDER_DATA);
+  const [defenderData2, setDefenderData2] = useState<DefenderData>(DEFAULT_DEFENDER_DATA);
 
   const [weather, setWeather] = useState<Weather>("none");
   const [field, setField] = useState<Field>("none");
@@ -55,86 +85,41 @@ export function DamageCalculator() {
   const [isCriticalHit, setIsCriticalHit] = useState(false);
 
   const [result, setResult] = useState<DoubleBattleResult | null>(null);
+  const [isDetailNumbersOpen, setIsDetailNumbersOpen] = useState(false);
+  const [isDetailSettingsOpen, setIsDetailSettingsOpen] = useState(false);
 
-  // Section expansion states
-  const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({
-    attackers: true,
-    defenders: true,
-    conditions: true,
-  });
-
-  // Attacker details toggle state (synchronized)
-  const [isAttackerDetailsOpen, setIsAttackerDetailsOpen] = useState(false);
-
-  const toggleAttackerDetails = () => {
-    setIsAttackerDetailsOpen((prev) => !prev);
-  };
-
-  // Defender details toggle state (synchronized)
-  const [isDefenderDetailsOpen, setIsDefenderDetailsOpen] = useState(false);
-
-  const toggleDefenderDetails = () => {
-    setIsDefenderDetailsOpen((prev) => !prev);
-  };
-
-  const toggleSection = (section: SectionKey) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
-
-  // Helper function to create damage calculation input
   const createInput = useCallback((
     attacker: AttackerData,
     defender: DefenderData,
     isSpread: boolean
   ): DamageCalculationInput => {
-    const attackStat =
-      attacker.moveCategory === "Physical"
-        ? attacker.attackStat
-        : attacker.specialAttackStat;
-
-    const defenseStat =
-      attacker.moveCategory === "Physical"
-        ? defender.defenseStat
-        : defender.specialDefenseStat;
-
-    const attackRank =
-      attacker.moveCategory === "Physical"
-        ? attacker.attackRank
-        : attacker.specialAttackRank;
-
-    const defenseRank =
-      attacker.moveCategory === "Physical"
-        ? defender.defenseRank
-        : defender.specialDefenseRank;
+    const isPhysical = attacker.moveCategory === "Physical";
 
     return {
       movePower: attacker.movePower,
       moveType: attacker.moveType,
       moveCategory: attacker.moveCategory,
       attackerLevel: 50,
-      attackerAttack: attackStat,
+      attackerAttack: isPhysical ? attacker.attackStat : attacker.specialAttackStat,
       attackerTypes: attacker.pokemonTypes,
-      defenderDefense: defenseStat,
+      defenderDefense: isPhysical ? defender.defenseStat : defender.specialDefenseStat,
       defenderTypes: defender.pokemonTypes,
       defenderMaxHp: defender.hpStat,
       condition: {
         weather,
         field,
         attackerStatStages: {
-          attack: attackRank,
+          attack: isPhysical ? attacker.attackRank : 0,
           defense: 0,
-          specialAttack: attackRank,
+          specialAttack: isPhysical ? 0 : attacker.specialAttackRank,
           specialDefense: 0,
           speed: 0,
         },
         defenderStatStages: {
           attack: 0,
-          defense: defenseRank,
+          defense: isPhysical ? defender.defenseRank : 0,
           specialAttack: 0,
-          specialDefense: defenseRank,
+          specialDefense: isPhysical ? 0 : defender.specialDefenseRank,
           speed: 0,
         },
         isHelpingHand,
@@ -142,73 +127,38 @@ export function DamageCalculator() {
         isCriticalHit,
       },
     };
-  }, [weather, field, isHelpingHand, isSpreadMove, isCriticalHit]);
+  }, [weather, field, isHelpingHand, isCriticalHit]);
 
-  // Auto-calculate when required fields are filled
+  // 自動計算
   useEffect(() => {
-    // トリガーの条件：攻撃側のポケモンA「ポケモン名」「技名」、攻撃側のポケモンB「ポケモン名」「技名」
-    const isReadyToCalculate =
-      attackerDataA?.pokemonName &&
-      attackerDataA?.moveName &&
-      attackerDataB?.pokemonName &&
-      attackerDataB?.moveName;
+    const isReady =
+      attackerAData.pokemonName && attackerAData.moveName &&
+      attackerBData.pokemonName && attackerBData.moveName;
 
-    if (!isReadyToCalculate) {
+    if (!isReady) {
       setResult(null);
       return;
     }
 
-    // 防御側が未設定の場合はnullを使用して計算をスキップ
-    if (!defenderData1 || !defenderData2) {
-      setResult(null);
-      return;
-    }
-
-    // Calculate for Target 1
-    // Calculate for Target 1
-    const target1AttackerA = calculateDamage(
-      createInput(attackerDataA, defenderData1, false)
-    );
-    const target1AttackerB = calculateDamage(
-      createInput(attackerDataB, defenderData1, false)
-    );
-
-    const target1Result: DoubleBattleResult["target1"] = {
-      attackerAOnly: target1AttackerA,
-      attackerBOnly: target1AttackerB,
-      combined: combineDamage(target1AttackerA, target1AttackerB, defenderData1.hpStat),
-    };
-
-    // Calculate for Target 2
-    const target2AttackerA = calculateDamage(
-      createInput(attackerDataA, defenderData2, false)
-    );
-    const target2AttackerB = calculateDamage(
-      createInput(attackerDataB, defenderData2, false)
-    );
-
-    const target2Result: DoubleBattleResult["target2"] = {
-      attackerAOnly: target2AttackerA,
-      attackerBOnly: target2AttackerB,
-      combined: combineDamage(target2AttackerA, target2AttackerB, defenderData2.hpStat),
-    };
+    // バグ修正: isSpreadMove を正しく渡す（以前は常に false だった）
+    const t1A = calculateDamage(createInput(attackerAData, defenderData1, isSpreadMove));
+    const t1B = calculateDamage(createInput(attackerBData, defenderData1, isSpreadMove));
+    const t2A = calculateDamage(createInput(attackerAData, defenderData2, isSpreadMove));
+    const t2B = calculateDamage(createInput(attackerBData, defenderData2, isSpreadMove));
 
     setResult({
-      target1: target1Result,
-      target2: target2Result,
+      target1: {
+        attackerAOnly: t1A,
+        attackerBOnly: t1B,
+        combined: combineDamage(t1A, t1B, defenderData1.hpStat),
+      },
+      target2: {
+        attackerAOnly: t2A,
+        attackerBOnly: t2B,
+        combined: combineDamage(t2A, t2B, defenderData2.hpStat),
+      },
     });
-  }, [
-    createInput,
-    attackerDataA,
-    attackerDataB,
-    defenderData1,
-    defenderData2,
-    weather,
-    field,
-    isHelpingHand,
-    isSpreadMove,
-    isCriticalHit,
-  ]);
+  }, [createInput, attackerAData, attackerBData, defenderData1, defenderData2, isSpreadMove]);
 
   if (!isMounted) {
     return null;
@@ -216,83 +166,86 @@ export function DamageCalculator() {
 
   return (
     <div className="space-y-6">
-      {/* Results */}
-      <DoubleBattleDamageResult
-        result={result}
-        target1Hp={defenderData1?.hpStat}
-        target2Hp={defenderData2?.hpStat}
-        target1Name={defenderData1?.pokemonName}
-        target2Name={defenderData2?.pokemonName}
-      />
-
-      {/* Attacker Selection */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 text-lg font-semibold">
-          【攻撃側】
-        </div>
-        {expandedSections.attackers && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <AttackerInput
-              onDataChange={setAttackerDataA}
-              title="ポケモンA"
-              idKey="attacker-a"
-              isDetailsOpen={isAttackerDetailsOpen}
-              onToggleDetails={toggleAttackerDetails}
-            />
-            <AttackerInput
-              onDataChange={setAttackerDataB}
-              title="ポケモンB"
-              idKey="attacker-b"
-              isDetailsOpen={isAttackerDetailsOpen}
-              onToggleDetails={toggleAttackerDetails}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Defender Selection */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 text-lg font-semibold">
-          【防御側】
-        </div>
-        {expandedSections.defenders && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <DefenderInput
-              onDataChange={setDefenderData1}
-              title="対象①"
-              idKey="target-1"
-              isDetailsOpen={isDefenderDetailsOpen}
-              onToggleDetails={toggleDefenderDetails}
-            />
-            <DefenderInput
-              onDataChange={setDefenderData2}
-              title="対象②"
-              idKey="target-2"
-              isDetailsOpen={isDefenderDetailsOpen}
-              onToggleDetails={toggleDefenderDetails}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Battle Conditions */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 text-lg font-semibold">
-          【バトル条件】
-        </div>
-        {expandedSections.conditions && (
-          <BattleConditionInput
-            weather={weather}
-            field={field}
-            isHelpingHand={isHelpingHand}
-            isSpreadMove={isSpreadMove}
-            isCriticalHit={isCriticalHit}
-            onWeatherChange={setWeather}
-            onFieldChange={setField}
-            onHelpingHandChange={setIsHelpingHand}
-            onSpreadMoveChange={setIsSpreadMove}
-            onCriticalHitChange={setIsCriticalHit}
+      {/* メイン3カラム: 攻撃側 | 結果 | 防御側 */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(320px,auto)_1fr] gap-6">
+        {/* 左カラム: 攻撃側 */}
+        <div className="space-y-6">
+          <AttackerInput
+            data={attackerAData}
+            onDataChange={setAttackerAData}
+            title="味方A"
+            idKey="attacker-a"
+            displayMode="compact"
           />
+          <AttackerInput
+            data={attackerBData}
+            onDataChange={setAttackerBData}
+            title="味方B"
+            idKey="attacker-b"
+            displayMode="compact"
+          />
+        </div>
+
+        {/* 中央カラム: 結果 */}
+        <DoubleBattleDamageResult
+          result={result}
+          target1Hp={defenderData1.hpStat}
+          target2Hp={defenderData2.hpStat}
+          target1Name={defenderData1.pokemonName}
+          target2Name={defenderData2.pokemonName}
+          isDetailNumbersOpen={isDetailNumbersOpen}
+          onToggleDetailNumbers={() => setIsDetailNumbersOpen((prev) => !prev)}
+        />
+
+        {/* 右カラム: 防御側 */}
+        <div className="space-y-6">
+          <DefenderInput
+            data={defenderData1}
+            onDataChange={setDefenderData1}
+            title="相手①"
+            idKey="target-1"
+            displayMode="compact"
+          />
+          <DefenderInput
+            data={defenderData2}
+            onDataChange={setDefenderData2}
+            title="相手②"
+            idKey="target-2"
+            displayMode="compact"
+          />
+        </div>
+      </div>
+
+      {/* 詳細設定（折りたたみ） */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setIsDetailSettingsOpen((prev) => !prev)}
+          className="w-full flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors border rounded-lg"
+        >
+          {isDetailSettingsOpen ? "詳細設定を隠す" : "▼ 詳細設定"}
+        </button>
+
+        {isDetailSettingsOpen && (
+          <div className="mt-4 space-y-6 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              <AttackerInput data={attackerAData} onDataChange={setAttackerAData}
+                title="味方A 詳細" idKey="attacker-a-detail" displayMode="full" />
+              <AttackerInput data={attackerBData} onDataChange={setAttackerBData}
+                title="味方B 詳細" idKey="attacker-b-detail" displayMode="full" />
+              <DefenderInput data={defenderData1} onDataChange={setDefenderData1}
+                title="相手① 詳細" idKey="target-1-detail" displayMode="full" />
+              <DefenderInput data={defenderData2} onDataChange={setDefenderData2}
+                title="相手② 詳細" idKey="target-2-detail" displayMode="full" />
+            </div>
+            <BattleConditionInput
+              weather={weather} field={field}
+              isHelpingHand={isHelpingHand} isSpreadMove={isSpreadMove} isCriticalHit={isCriticalHit}
+              onWeatherChange={setWeather} onFieldChange={setField}
+              onHelpingHandChange={setIsHelpingHand} onSpreadMoveChange={setIsSpreadMove}
+              onCriticalHitChange={setIsCriticalHit}
+            />
+          </div>
         )}
       </div>
     </div>

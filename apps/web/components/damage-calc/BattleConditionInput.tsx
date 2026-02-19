@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import {
@@ -37,106 +36,103 @@ export function BattleConditionInput({
   onCriticalHitChange,
 }: BattleConditionInputProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>戦闘環境</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* 天候とフィールド */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="weather">天候</Label>
-            <Select
-              value={weather}
-              onValueChange={(value: string) =>
-                onWeatherChange(value as Weather)
-              }
-            >
-              <SelectTrigger id="weather">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {WEATHER_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="space-y-6">
+      <h3 className="text-base font-semibold">バトル条件</h3>
 
-          <div className="space-y-2">
-            <Label htmlFor="field">フィールド</Label>
-            <Select
-              value={field}
-              onValueChange={(value: string) => onFieldChange(value as Field)}
-            >
-              <SelectTrigger id="field">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {FIELD_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      {/* 天候とフィールド */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="weather">天候</Label>
+          <Select
+            value={weather}
+            onValueChange={(value: string) =>
+              onWeatherChange(value as Weather)
+            }
+          >
+            <SelectTrigger id="weather">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {WEATHER_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* ダブルバトル要素 */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-medium">ダブルバトル要素</h3>
+        <div className="space-y-2">
+          <Label htmlFor="field">フィールド</Label>
+          <Select
+            value={field}
+            onValueChange={(value: string) => onFieldChange(value as Field)}
+          >
+            <SelectTrigger id="field">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {FIELD_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="helpingHand"
-              checked={isHelpingHand}
-              onCheckedChange={onHelpingHandChange}
-            />
-            <Label
-              htmlFor="helpingHand"
-              className="text-sm font-normal cursor-pointer"
-            >
-              てだすけ（1.5倍）
-            </Label>
-          </div>
+      {/* ダブルバトル要素 */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-medium">ダブルバトル要素</h3>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="spreadMove"
-              checked={isSpreadMove}
-              onCheckedChange={onSpreadMoveChange}
-            />
-            <Label
-              htmlFor="spreadMove"
-              className="text-sm font-normal cursor-pointer"
-            >
-              全体技（0.75倍）
-            </Label>
-          </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="helpingHand"
+            checked={isHelpingHand}
+            onCheckedChange={onHelpingHandChange}
+          />
+          <Label
+            htmlFor="helpingHand"
+            className="text-sm font-normal cursor-pointer"
+          >
+            てだすけ（1.5倍）
+          </Label>
         </div>
 
-        {/* その他 */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-medium">その他</h3>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="criticalHit"
-              checked={isCriticalHit}
-              onCheckedChange={onCriticalHitChange}
-            />
-            <Label
-              htmlFor="criticalHit"
-              className="text-sm font-normal cursor-pointer"
-            >
-              急所に当たる
-            </Label>
-          </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="spreadMove"
+            checked={isSpreadMove}
+            onCheckedChange={onSpreadMoveChange}
+          />
+          <Label
+            htmlFor="spreadMove"
+            className="text-sm font-normal cursor-pointer"
+          >
+            全体技（0.75倍）
+          </Label>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* その他 */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-medium">その他</h3>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="criticalHit"
+            checked={isCriticalHit}
+            onCheckedChange={onCriticalHitChange}
+          />
+          <Label
+            htmlFor="criticalHit"
+            className="text-sm font-normal cursor-pointer"
+          >
+            急所に当たる
+          </Label>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -26,6 +26,7 @@ interface MoveInputProps {
   onMovePowerChange: (power: number) => void;
   onMoveTypeChange: (type: PokemonType) => void;
   onMoveCategoryChange: (category: "Physical" | "Special") => void;
+  compact?: boolean;
 }
 
 export function MoveInput({
@@ -38,6 +39,7 @@ export function MoveInput({
   onMovePowerChange,
   onMoveTypeChange,
   onMoveCategoryChange,
+  compact,
 }: MoveInputProps) {
   // 技名から詳細情報を取得
   const { data: moveData } = useMoveSearch(moveName);
@@ -118,6 +120,18 @@ export function MoveInput({
     onMoveTypeChange,
     onMoveCategoryChange,
   ]);
+
+  // compact モード: 技名 Autocomplete のみ
+  if (compact) {
+    return (
+      <Autocomplete
+        id="move-name"
+        options={moveOptions}
+        onSelect={(selectedValue) => onMoveNameChange(selectedValue)}
+        placeholder="技名"
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
