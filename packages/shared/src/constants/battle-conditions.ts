@@ -33,3 +33,13 @@ export const FIELD_OPTIONS = Object.entries(FIELD_LABELS).map(
     label,
   })
 );
+
+/** 全体技のターゲット値 */
+export const SPREAD_MOVE_TARGETS = ["allAdjacentFoes", "allAdjacent"] as const;
+
+/**
+ * Check if a move target indicates a spread move (hits multiple targets).
+ */
+export function isSpreadMoveTarget(target: string): boolean {
+  return (SPREAD_MOVE_TARGETS as readonly string[]).includes(target);
+}

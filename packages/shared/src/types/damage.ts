@@ -35,6 +35,7 @@ export interface BattleCondition {
   defenderAbility?: string;
   attackerItem?: string;
   defenderItem?: string;
+  attackerBurned?: boolean; // やけど状態（物理攻撃0.5倍）
 }
 
 /** 特性の種類（Phase 1: 基本10個） */

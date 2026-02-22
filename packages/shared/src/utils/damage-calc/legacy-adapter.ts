@@ -44,7 +44,7 @@ function convertAttacker(input: DamageCalculationInput): CalcPokemon {
     boosts,
     ability: input.condition.attackerAbility,
     item: input.condition.attackerItem,
-    status: "none",
+    status: input.condition.attackerBurned ? "burn" : "none",
     teraType: input.attackerTeraType,
     isTerastallized: input.condition.attackerTerastallized,
   };

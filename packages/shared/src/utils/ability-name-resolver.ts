@@ -99,7 +99,12 @@ export function getAbilityJapaneseName(input: string | number): string | null {
   }
 
   const entry = nameMap[searchKey] || nameMap[searchKey.toLowerCase()];
-  return entry ? entry.japaneseName : null;
+  if (entry) return entry.japaneseName;
+
+  // スペースをハイフンに置換して再検索（Showdown形式: "Lightning Rod" → "lightning-rod"）
+  const normalized = searchKey.toLowerCase().replace(/ /g, '-');
+  const normalizedEntry = nameMap[normalized];
+  return normalizedEntry ? normalizedEntry.japaneseName : null;
 }
 
 /**

@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import type { DoubleBattleResult } from "@/types/damage";
 import type { DamageResult as DamageResultType } from "@poke-dex-battle/shared";
+import { CheckCircle, AlertTriangle, XCircle, ChevronDown, ChevronUp } from "lucide-react";
 
 type DamageLabel = "確定" | "乱数" | "不可";
 
@@ -10,6 +11,8 @@ interface DoubleBattleDamageResultProps {
   target2Hp?: number;
   target1Name?: string;
   target2Name?: string;
+  attacker1Name?: string;
+  attacker2Name?: string;
   isDetailNumbersOpen: boolean;
   onToggleDetailNumbers: () => void;
 }
@@ -20,19 +23,19 @@ function getDamageLabel(result: DamageResultType): DamageLabel {
   return "不可";
 }
 
-function getLabelIcon(label: DamageLabel): string {
+function getLabelIcon(label: DamageLabel) {
   switch (label) {
-    case "確定": return "✅";
-    case "乱数": return "⚠";
-    case "不可": return "❌";
+    case "確定": return <CheckCircle className="w-4 h-4 text-verdict-ko" />;
+    case "乱数": return <AlertTriangle className="w-4 h-4 text-verdict-chance" />;
+    case "不可": return <XCircle className="w-4 h-4 text-verdict-fail" />;
   }
 }
 
 function getLabelColorClass(label: DamageLabel): string {
   switch (label) {
-    case "確定": return "text-green-600 font-bold";
-    case "乱数": return "text-orange-500 font-semibold";
-    case "不可": return "text-red-400";
+    case "確定": return "text-verdict-ko font-bold";
+    case "乱数": return "text-verdict-chance font-semibold";
+    case "不可": return "text-verdict-fail";
   }
 }
 
@@ -49,8 +52,6 @@ function getBestPatternIndex(results: {
   return percents.indexOf(Math.max(...percents));
 }
 
-const PATTERN_LABELS = ["Aのみ", "Bのみ", "集中"];
-
 function PatternBadge({ label, result, isBest }: {
   label: string; result: DamageResultType; isBest?: boolean;
 }) {
@@ -60,10 +61,10 @@ function PatternBadge({ label, result, isBest }: {
 
   return (
     <div className={`flex items-center gap-1 text-sm px-2 py-1 rounded ${
-      isBest ? "bg-blue-50 dark:bg-blue-950" : ""
+      isBest ? "bg-accent border border-primary/20 shadow-sm" : ""
     }`}>
       <span className="text-xs text-muted-foreground">{label}:</span>
-      <span>{icon}</span>
+      {icon}
       <span className={colorClass}>{damageLabel}</span>
     </div>
   );
@@ -73,7 +74,7 @@ function DamageRow({ label, result }: { label: string; result: DamageResultType 
   return (
     <div className="flex justify-between items-center py-1">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="font-mono text-xs">
+      <span className="font-mono text-xs tabular-nums">
         {result.minPercent.toFixed(1)}%〜{result.maxPercent.toFixed(1)}%
         ({result.minDamage}〜{result.maxDamage})
       </span>
@@ -81,27 +82,36 @@ function DamageRow({ label, result }: { label: string; result: DamageResultType 
   );
 }
 
-function TargetDetailRows({ label, results }: {
+function TargetDetailRows({ label, results, patternLabels }: {
   label: string;
   results: { attackerAOnly: DamageResultType; attackerBOnly: DamageResultType; combined: DamageResultType };
+  patternLabels: string[];
 }) {
   return (
     <div>
       <h4 className="text-xs font-semibold mb-1">{label}</h4>
-      <DamageRow label="Aのみ" result={results.attackerAOnly} />
-      <DamageRow label="Bのみ" result={results.attackerBOnly} />
-      <DamageRow label="集中" result={results.combined} />
+      <DamageRow label={patternLabels[0]} result={results.attackerAOnly} />
+      <DamageRow label={patternLabels[1]} result={results.attackerBOnly} />
+      <DamageRow label={patternLabels[2]} result={results.combined} />
     </div>
   );
 }
 
 export function DoubleBattleDamageResult({
   result, target1Hp, target2Hp, target1Name, target2Name,
+  attacker1Name, attacker2Name,
   isDetailNumbersOpen, onToggleDetailNumbers,
 }: DoubleBattleDamageResultProps) {
+  // 動的ラベル: ポケモン名があれば使用、なければフォールバック
+  const patternLabels = [
+    attacker1Name ? `${attacker1Name}のみ` : "攻撃1のみ",
+    attacker2Name ? `${attacker2Name}のみ` : "攻撃2のみ",
+    "集中",
+  ];
+
   if (!result) {
     return (
-      <Card>
+      <Card className="border-dashed">
         <CardContent className="py-8">
           <p className="text-muted-foreground text-sm text-center">
             ポケモンと技を入力すると<br />自動で計算されます
@@ -119,50 +129,51 @@ export function DoubleBattleDamageResult({
   return (
     <Card>
       <CardContent className="py-4 space-y-2">
-        {/* 対象① */}
+        {/* 防御側1 */}
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold">対象①</span>
-            {target1Name && <span className="text-xs text-muted-foreground">{target1Name}</span>}
-          </div>
-          <div className="flex gap-3">
+          <span className="text-sm font-semibold">
+            {target1Name || "防御側 1"}
+          </span>
+          <div className="flex flex-wrap gap-2">
             {target1Results.map((r, i) => (
-              <PatternBadge key={PATTERN_LABELS[i]} label={PATTERN_LABELS[i]} result={r} isBest={i === target1Best} />
+              <PatternBadge key={patternLabels[i]} label={patternLabels[i]} result={r} isBest={i === target1Best} />
             ))}
           </div>
         </div>
 
         <div className="border-t" />
 
-        {/* 対象② */}
+        {/* 防御側2 */}
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold">対象②</span>
-            {target2Name && <span className="text-xs text-muted-foreground">{target2Name}</span>}
-          </div>
-          <div className="flex gap-3">
+          <span className="text-sm font-semibold">
+            {target2Name || "防御側 2"}
+          </span>
+          <div className="flex flex-wrap gap-2">
             {target2Results.map((r, i) => (
-              <PatternBadge key={PATTERN_LABELS[i]} label={PATTERN_LABELS[i]} result={r} isBest={i === target2Best} />
+              <PatternBadge key={patternLabels[i]} label={patternLabels[i]} result={r} isBest={i === target2Best} />
             ))}
           </div>
         </div>
 
         {/* 数値詳細トグル */}
         <button type="button" onClick={onToggleDetailNumbers}
-          className="w-full pt-2 text-xs text-muted-foreground hover:text-foreground text-center">
-          {isDetailNumbersOpen ? "数値を隠す" : "▼ 数値を見る"}
+          className="w-full pt-2 text-xs text-muted-foreground hover:text-foreground text-center flex items-center justify-center gap-1">
+          {isDetailNumbersOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          {isDetailNumbersOpen ? "数値を隠す" : "数値を見る"}
         </button>
 
         {/* 数値詳細（折りたたみ） */}
         {isDetailNumbersOpen && (
           <div className="pt-2 border-t space-y-4">
             <TargetDetailRows
-              label={`対象① ${target1Name ?? ""}`}
+              label={target1Name || "防御側 1"}
               results={result.target1}
+              patternLabels={patternLabels}
             />
             <TargetDetailRows
-              label={`対象② ${target2Name ?? ""}`}
+              label={target2Name || "防御側 2"}
               results={result.target2}
+              patternLabels={patternLabels}
             />
           </div>
         )}

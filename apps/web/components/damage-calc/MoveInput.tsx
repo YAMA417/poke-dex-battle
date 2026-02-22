@@ -11,10 +11,17 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useMoveSearch } from "@/hooks/useMoveSearch";
 import type { PokemonType } from "@poke-dex-battle/shared";
-import { POKEMON_TYPE_OPTIONS, getAllMoves, getLevelMoves, getMachineMoves } from "@poke-dex-battle/shared";
-import { useEffect, useMemo } from "react";
+import { POKEMON_TYPE_OPTIONS, getAllMoves, getMoveByName, getLevelMoves, getMachineMoves } from "@poke-dex-battle/shared";
+import { useMemo } from "react";
+
+export interface MoveSelectData {
+  name: string;
+  power: number;
+  type: PokemonType;
+  category: "Physical" | "Special";
+  target: string;
+}
 
 interface MoveInputProps {
   pokemonName: string;
@@ -22,7 +29,9 @@ interface MoveInputProps {
   movePower: number;
   moveType: PokemonType;
   moveCategory: "Physical" | "Special";
-  onMoveNameChange: (name: string) => void;
+  // 技選択時の一括更新（rerender-move-effect-to-event）
+  onMoveSelect: (data: MoveSelectData) => void;
+  // 個別フィールドの手動変更（フルモードのみ）
   onMovePowerChange: (power: number) => void;
   onMoveTypeChange: (type: PokemonType) => void;
   onMoveCategoryChange: (category: "Physical" | "Special") => void;
@@ -35,15 +44,12 @@ export function MoveInput({
   movePower,
   moveType,
   moveCategory,
-  onMoveNameChange,
+  onMoveSelect,
   onMovePowerChange,
   onMoveTypeChange,
   onMoveCategoryChange,
   compact,
 }: MoveInputProps) {
-  // 技名から詳細情報を取得
-  const { data: moveData } = useMoveSearch(moveName);
-
   // 全技データ（ポケモン選択時は learnset で絞り込み、レベル技/わざマシンで分類）
   const moveOptions = useMemo(() => {
     const allMoves = getAllMoves();
@@ -89,37 +95,29 @@ export function MoveInput({
     }));
   }, [pokemonName]);
 
-  // 技データが取得できたら、各項目を自動入力
-  useEffect(() => {
+  // rerender-move-effect-to-event: 技選択時にデータを同期的に取得し一括反映
+  const handleMoveSelect = (selectedName: string) => {
+    const moveData = getMoveByName(selectedName);
     if (moveData) {
-      // 威力を自動設定（nullの場合は変更しない）
-      if (moveData.power !== null && moveData.power !== movePower) {
-        onMovePowerChange(moveData.power);
-      }
-
-      // タイプを自動設定
-
-      if (moveData.type !== moveType) {
-        onMoveTypeChange(moveData.type as PokemonType);
-      }
-
-      // カテゴリを自動設定（PhysicalまたはSpecialのみ）
-      if (
-        (moveData.category === "Physical" || moveData.category === "Special") &&
-        moveData.category !== moveCategory
-      ) {
-        onMoveCategoryChange(moveData.category);
-      }
+      onMoveSelect({
+        name: selectedName,
+        power: moveData.power ?? movePower,
+        type: moveData.type as PokemonType,
+        category: (moveData.category === "Physical" || moveData.category === "Special")
+          ? moveData.category
+          : moveCategory,
+        target: moveData.target ?? "",
+      });
+    } else {
+      onMoveSelect({
+        name: selectedName,
+        power: movePower,
+        type: moveType,
+        category: moveCategory,
+        target: "",
+      });
     }
-  }, [
-    moveData,
-    movePower,
-    moveType,
-    moveCategory,
-    onMovePowerChange,
-    onMoveTypeChange,
-    onMoveCategoryChange,
-  ]);
+  };
 
   // compact モード: 技名 Autocomplete のみ
   if (compact) {
@@ -127,7 +125,7 @@ export function MoveInput({
       <Autocomplete
         id="move-name"
         options={moveOptions}
-        onSelect={(selectedValue) => onMoveNameChange(selectedValue)}
+        onSelect={handleMoveSelect}
         placeholder="技名"
       />
     );
@@ -140,7 +138,7 @@ export function MoveInput({
         <Autocomplete
           id="move-name"
           options={moveOptions}
-          onSelect={(selectedValue) => onMoveNameChange(selectedValue)}
+          onSelect={handleMoveSelect}
           placeholder="技名を入力"
         />
       </div>

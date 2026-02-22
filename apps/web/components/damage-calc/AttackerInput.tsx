@@ -2,6 +2,7 @@
 
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,70 +14,13 @@ import {
 } from "@/components/ui/select";
 import { usePokemonSearch } from "@/hooks/usePokemonSearch";
 import type { PokemonType, StatStage } from "@poke-dex-battle/shared";
-import { calcOtherStat, getAllPokemon } from "@poke-dex-battle/shared";
-import { useEffect, useMemo, useState } from "react";
+import { calcOtherStat, getAllPokemon, getCompetitiveItemNames } from "@poke-dex-battle/shared";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MoveInput } from "./MoveInput";
-import { NatureModifierRadio } from "./NatureModifierRadio";
+import { NatureModifierCompact, EvPreset, TypeBadges } from "./SharedFormComponents";
 import { generateIdPrefix } from "@/utils/id";
 
 const STAT_STAGES: StatStage[] = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6];
-
-// --- 共有サブコンポーネント ---
-
-interface NatureModifierCompactProps {
-  value: 1.1 | 1.0 | 0.9;
-  onChange: (modifier: 1.1 | 1.0 | 0.9) => void;
-}
-
-const NATURE_OPTIONS = [
-  { value: 1.1 as const, label: "↑" },
-  { value: 1.0 as const, label: "—" },
-  { value: 0.9 as const, label: "↓" },
-];
-
-export function NatureModifierCompact({ value, onChange }: NatureModifierCompactProps) {
-  return (
-    <div className="flex gap-1">
-      {NATURE_OPTIONS.map((opt) => (
-        <button
-          key={opt.value}
-          type="button"
-          onClick={() => onChange(opt.value)}
-          className={`px-3 py-1 text-xs rounded border transition-colors ${
-            value === opt.value
-              ? "bg-primary text-primary-foreground border-primary"
-              : "bg-background text-muted-foreground border-input hover:bg-accent"
-          }`}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-export function EvPreset({ label, value, onChange }: {
-  label: string; value: number; onChange: (ev: number) => void;
-}) {
-  return (
-    <div className="space-y-1">
-      <Label className="text-xs">{label} 努力値</Label>
-      <div className="flex gap-1">
-        <button type="button" onClick={() => onChange(252)}
-          className={`px-2 py-1 text-xs rounded border ${value === 252 ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>
-          252
-        </button>
-        <button type="button" onClick={() => onChange(0)}
-          className={`px-2 py-1 text-xs rounded border ${value === 0 ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>
-          0
-        </button>
-        <Input type="number" min={0} max={252} step={4} value={value}
-          onChange={(e) => onChange(Math.max(0, Math.min(252, parseInt(e.target.value) || 0)))}
-          className="h-7 w-16 text-xs" />
-      </div>
-    </div>
-  );
-}
 
 // --- 型定義 ---
 
@@ -87,6 +31,7 @@ export interface AttackerData {
   movePower: number;
   moveType: PokemonType;
   moveCategory: "Physical" | "Special";
+  moveTarget: string;
   attackBaseStat: number;
   specialAttackBaseStat: number;
   attackStat: number;
@@ -97,22 +42,26 @@ export interface AttackerData {
   specialAttackRank: StatStage;
   abilityName: string;
   itemName: string;
+  isBurned: boolean;
 }
 
 interface AttackerInputProps {
   data: AttackerData;
   onDataChange: (data: AttackerData) => void;
-  title: string;
   idKey: string;
   displayMode: "compact" | "full";
 }
 
 // --- メインコンポーネント ---
 
-export function AttackerInput({ data, onDataChange, title, idKey, displayMode }: AttackerInputProps) {
-  const idPrefix = useMemo(() => generateIdPrefix(title, idKey), [title, idKey]);
+export function AttackerInput({ data, onDataChange, idKey, displayMode }: AttackerInputProps) {
+  const idPrefix = useMemo(() => generateIdPrefix(data.pokemonName || "attacker", idKey), [data.pokemonName, idKey]);
 
-  // full モード用の内部 state
+  // useRef で最新の data を保持（useEffect 内のステールクロージャ防止）
+  const dataRef = useRef(data);
+  dataRef.current = data;
+
+  // EV/IV の内部 state
   const [attackEv, setAttackEv] = useState(252);
   const [attackIv, setAttackIv] = useState(31);
   const [spAtkEv, setSpAtkEv] = useState(252);
@@ -128,82 +77,201 @@ export function AttackerInput({ data, onDataChange, title, idKey, displayMode }:
     }));
   }, []);
 
+  // 特性オプション（ポケモン選択時にそのポケモンの特性のみ）
+  const abilityOptions = useMemo(() => {
+    if (pokemonData?.abilities) {
+      return pokemonData.abilities.map((a) => ({
+        label: `${a.nameJa}${a.isHidden ? " (夢)" : ""}`,
+        value: a.nameJa,
+        id: `ability-${a.name}`,
+      }));
+    }
+    return [];
+  }, [pokemonData]);
+
+  // 持ち物オプション（競技用のみ）
+  const itemOptions = useMemo(() => {
+    return getCompetitiveItemNames().map((item) => ({
+      label: item.nameJa,
+      value: item.nameJa,
+      id: `item-${item.id}`,
+    }));
+  }, []);
+
   // ポケモンデータ取得時に種族値・タイプ・第1特性を自動反映
   useEffect(() => {
     if (pokemonData?.baseStats) {
+      const d = dataRef.current;
       const atkBase = pokemonData.baseStats.attack;
       const spAtkBase = pokemonData.baseStats.specialAttack;
       const firstAbility = pokemonData.abilities[0];
 
       onDataChange({
-        ...data,
+        ...d,
         attackBaseStat: atkBase,
         specialAttackBaseStat: spAtkBase,
         pokemonTypes: pokemonData.types,
         abilityName: firstAbility?.nameJa ?? "",
-        attackStat: calcOtherStat(atkBase, attackIv, attackEv, 50, data.attackModifier),
-        specialAttackStat: calcOtherStat(spAtkBase, spAtkIv, spAtkEv, 50, data.specialAttackModifier),
+        attackStat: calcOtherStat(atkBase, attackIv, attackEv, 50, d.attackModifier),
+        specialAttackStat: calcOtherStat(spAtkBase, spAtkIv, spAtkEv, 50, d.specialAttackModifier),
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pokemonData]);
 
-  // EV/IV/modifier 変更時にステータス再計算
-  useEffect(() => {
-    const newAtk = calcOtherStat(data.attackBaseStat, attackIv, attackEv, 50, data.attackModifier);
-    const newSpAtk = calcOtherStat(data.specialAttackBaseStat, spAtkIv, spAtkEv, 50, data.specialAttackModifier);
-    if (newAtk !== data.attackStat || newSpAtk !== data.specialAttackStat) {
-      onDataChange({ ...data, attackStat: newAtk, specialAttackStat: newSpAtk });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attackEv, attackIv, spAtkEv, spAtkIv, data.attackModifier, data.specialAttackModifier, data.attackBaseStat, data.specialAttackBaseStat]);
+  // rerender-derived-state-no-effect: ステータスはイベントハンドラで直接計算
+  const isPhysical = data.moveCategory === "Physical";
+  const currentModifier = isPhysical ? data.attackModifier : data.specialAttackModifier;
+  const currentStat = isPhysical ? data.attackStat : data.specialAttackStat;
+  const statLabel = isPhysical ? "攻撃" : "特攻";
 
   if (displayMode === "compact") {
     return (
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">{title}</CardTitle>
+      <Card className="border-t-2 border-t-primary/60">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">
+            {data.pokemonName || "ポケモンを選択"}
+          </CardTitle>
+          <TypeBadges types={data.pokemonTypes} />
         </CardHeader>
         <CardContent className="space-y-3">
+          {/* ポケモン名 */}
           <Autocomplete
             id={`${idPrefix}-pokemon-name`}
             options={pokemonOptions}
             onSelect={(name) => onDataChange({ ...data, pokemonName: name })}
             placeholder="ポケモン名"
+            value={data.pokemonName}
           />
+
+          {/* 技名 */}
           <MoveInput
             pokemonName={data.pokemonName}
             moveName={data.moveName}
             movePower={data.movePower}
             moveType={data.moveType}
             moveCategory={data.moveCategory}
-            onMoveNameChange={(name) => onDataChange({ ...data, moveName: name })}
+            onMoveSelect={(move) => onDataChange({
+              ...data,
+              moveName: move.name,
+              movePower: move.power,
+              moveType: move.type,
+              moveCategory: move.category,
+              moveTarget: move.target,
+            })}
             onMovePowerChange={(power) => onDataChange({ ...data, movePower: power })}
             onMoveTypeChange={(type) => onDataChange({ ...data, moveType: type })}
             onMoveCategoryChange={(cat) => onDataChange({ ...data, moveCategory: cat })}
             compact
           />
+
+          {/* 性格補正 + EV + 実数値 */}
           <div className="space-y-1">
-            <Label className="text-xs">性格補正</Label>
-            <NatureModifierCompact
-              value={data.moveCategory === "Physical" ? data.attackModifier : data.specialAttackModifier}
-              onChange={(mod) => {
-                if (data.moveCategory === "Physical") {
-                  onDataChange({ ...data, attackModifier: mod });
+            <div className="flex items-center justify-between">
+              <Label className="text-xs">{statLabel}</Label>
+              <span className="text-xs text-muted-foreground">
+                実数値: <span className="font-bold text-foreground tabular-nums">{currentStat}</span>
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <NatureModifierCompact
+                value={currentModifier}
+                onChange={(mod) => {
+                  // rerender-move-effect-to-event: modifier変更時にstatも即座に再計算
+                  if (isPhysical) {
+                    onDataChange({
+                      ...data,
+                      attackModifier: mod,
+                      attackStat: calcOtherStat(data.attackBaseStat, attackIv, attackEv, 50, mod),
+                    });
+                  } else {
+                    onDataChange({
+                      ...data,
+                      specialAttackModifier: mod,
+                      specialAttackStat: calcOtherStat(data.specialAttackBaseStat, spAtkIv, spAtkEv, 50, mod),
+                    });
+                  }
+                }}
+              />
+              <span className="text-xs text-muted-foreground">EV</span>
+              <EvPreset
+                value={isPhysical ? attackEv : spAtkEv}
+                onChange={(newEv) => {
+                  // rerender-move-effect-to-event: EV変更時にstatも即座に再計算
+                  if (isPhysical) {
+                    setAttackEv(newEv);
+                    onDataChange({
+                      ...data,
+                      attackStat: calcOtherStat(data.attackBaseStat, attackIv, newEv, 50, data.attackModifier),
+                    });
+                  } else {
+                    setSpAtkEv(newEv);
+                    onDataChange({
+                      ...data,
+                      specialAttackStat: calcOtherStat(data.specialAttackBaseStat, spAtkIv, newEv, 50, data.specialAttackModifier),
+                    });
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          {/* 能力ランク */}
+          <div className="space-y-1">
+            <Label className="text-xs">{statLabel}ランク</Label>
+            <Select
+              value={(isPhysical ? data.attackRank : data.specialAttackRank).toString()}
+              onValueChange={(v: string) => {
+                const rank = parseInt(v) as StatStage;
+                if (isPhysical) {
+                  onDataChange({ ...data, attackRank: rank });
                 } else {
-                  onDataChange({ ...data, specialAttackModifier: mod });
+                  onDataChange({ ...data, specialAttackRank: rank });
                 }
               }}
+            >
+              <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {STAT_STAGES.map((s) => (
+                  <SelectItem key={s} value={s.toString()}>{s > 0 ? `+${s}` : s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* やけど */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id={`${idPrefix}-burned`}
+              checked={data.isBurned}
+              onCheckedChange={(checked: boolean) => onDataChange({ ...data, isBurned: checked === true })}
+            />
+            <Label htmlFor={`${idPrefix}-burned`} className="text-xs font-normal cursor-pointer">
+              やけど（物理攻撃0.5倍）
+            </Label>
+          </div>
+
+          {/* 特性 */}
+          <div className="space-y-1">
+            <Label className="text-xs">特性</Label>
+            <Autocomplete
+              id={`${idPrefix}-ability`}
+              options={abilityOptions}
+              onSelect={(name) => onDataChange({ ...data, abilityName: name })}
+              placeholder="特性"
+              value={data.abilityName}
             />
           </div>
+
+          {/* 持ち物 */}
           <div className="space-y-1">
             <Label className="text-xs">持ち物</Label>
-            <Input
-              type="text"
+            <Autocomplete
+              id={`${idPrefix}-item`}
+              options={itemOptions}
+              onSelect={(name) => onDataChange({ ...data, itemName: name })}
+              placeholder="持ち物"
               value={data.itemName}
-              onChange={(e) => onDataChange({ ...data, itemName: e.target.value })}
-              placeholder="持ち物名"
-              className="h-8 text-sm"
             />
           </div>
         </CardContent>
@@ -211,76 +279,35 @@ export function AttackerInput({ data, onDataChange, title, idKey, displayMode }:
     );
   }
 
-  // displayMode === "full"
-  const isPhysical = data.moveCategory === "Physical";
-
+  // displayMode === "full" — 詳細設定（IVのみ）
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base">{title}</CardTitle>
+    <Card className="border-t-2 border-t-primary/60">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm">{data.pokemonName || "攻撃側"} 詳細</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {isPhysical ? (
-          <>
-            <EvPreset label="攻撃" value={attackEv} onChange={setAttackEv} />
-            <div className="space-y-1">
-              <Label className="text-xs">攻撃個体値</Label>
-              <Input type="number" min={0} max={31} value={attackIv}
-                onChange={(e) => setAttackIv(Math.max(0, Math.min(31, parseInt(e.target.value) || 0)))}
-                className="h-7 text-xs" />
-            </div>
-            <NatureModifierRadio statName="攻撃" value={data.attackModifier}
-              onChange={(mod) => onDataChange({ ...data, attackModifier: mod })} />
-            <div className="text-sm text-muted-foreground">
-              実数値: <span className="font-bold text-foreground">{data.attackStat}</span>
-            </div>
-          </>
-        ) : (
-          <>
-            <EvPreset label="特攻" value={spAtkEv} onChange={setSpAtkEv} />
-            <div className="space-y-1">
-              <Label className="text-xs">特攻個体値</Label>
-              <Input type="number" min={0} max={31} value={spAtkIv}
-                onChange={(e) => setSpAtkIv(Math.max(0, Math.min(31, parseInt(e.target.value) || 0)))}
-                className="h-7 text-xs" />
-            </div>
-            <NatureModifierRadio statName="特攻" value={data.specialAttackModifier}
-              onChange={(mod) => onDataChange({ ...data, specialAttackModifier: mod })} />
-            <div className="text-sm text-muted-foreground">
-              実数値: <span className="font-bold text-foreground">{data.specialAttackStat}</span>
-            </div>
-          </>
-        )}
-
-        {/* 能力ランク */}
+        {/* 個体値 */}
         <div className="space-y-1">
-          <Label className="text-xs">{isPhysical ? "攻撃" : "特攻"}ランク</Label>
-          <Select
-            value={(isPhysical ? data.attackRank : data.specialAttackRank).toString()}
-            onValueChange={(v: string) => {
-              const rank = parseInt(v) as StatStage;
+          <Label className="text-xs">{statLabel}個体値</Label>
+          <Input type="number" min={0} max={31}
+            value={isPhysical ? attackIv : spAtkIv}
+            onChange={(e) => {
+              const iv = Math.max(0, Math.min(31, parseInt(e.target.value) || 0));
               if (isPhysical) {
-                onDataChange({ ...data, attackRank: rank });
+                setAttackIv(iv);
+                onDataChange({
+                  ...data,
+                  attackStat: calcOtherStat(data.attackBaseStat, iv, attackEv, 50, data.attackModifier),
+                });
               } else {
-                onDataChange({ ...data, specialAttackRank: rank });
+                setSpAtkIv(iv);
+                onDataChange({
+                  ...data,
+                  specialAttackStat: calcOtherStat(data.specialAttackBaseStat, iv, spAtkEv, 50, data.specialAttackModifier),
+                });
               }
             }}
-          >
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {STAT_STAGES.map((s) => (
-                <SelectItem key={s} value={s.toString()}>{s > 0 ? `+${s}` : s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* 特性 */}
-        <div className="space-y-1">
-          <Label className="text-xs">特性</Label>
-          <Input type="text" value={data.abilityName}
-            onChange={(e) => onDataChange({ ...data, abilityName: e.target.value })}
-            placeholder="特性名" className="h-8 text-sm" />
+            className="h-7 text-xs" />
         </div>
       </CardContent>
     </Card>

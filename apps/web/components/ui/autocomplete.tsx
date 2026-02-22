@@ -27,6 +27,7 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
       typeof props.value === "string" ? props.value : ""
     );
     const [highlightedIndex, setHighlightedIndex] = React.useState<number>(-1);
+    const [previousValue, setPreviousValue] = React.useState<string>("");
 
     // props.valueの変更を監視して inputValue を同期
     React.useEffect(() => {
@@ -52,12 +53,16 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
       }
     }, [filteredOptions, highlightedIndex]);
 
-    // コンテナ外クリックでドロップダウンを閉じる
+    // コンテナ外クリックでドロップダウンを閉じ、未選択なら元の値に戻す
     React.useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
         if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
           setOpen(false);
           setHighlightedIndex(-1);
+          // 何も選択せずに外をクリックした場合、元の値に戻す
+          if (previousValue && inputValue === "") {
+            setInputValue(previousValue);
+          }
         }
       };
 
@@ -107,6 +112,10 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
           e.preventDefault();
           setOpen(false);
           setHighlightedIndex(-1);
+          // 元の値に戻す
+          if (previousValue) {
+            setInputValue(previousValue);
+          }
           break;
       }
     };
@@ -123,7 +132,12 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
             setHighlightedIndex(-1);
           }}
           onKeyDown={handleKeyDown}
-          onFocus={() => setOpen(true)}
+          onFocus={() => {
+            setOpen(true);
+            // フォーカス時に入力をクリアして全オプションを表示
+            setPreviousValue(inputValue);
+            setInputValue("");
+          }}
           className={cn("w-full", className)}
           autoComplete="off"
           role="combobox"
