@@ -52,11 +52,11 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
   dataRef.current = data;
 
   // EV/IV の内部 state
-  const [hpEv, setHpEv] = useState(252);
+  const [hpEv, setHpEv] = useState(0);
   const [hpIv, setHpIv] = useState(31);
-  const [defEv, setDefEv] = useState(252);
+  const [defEv, setDefEv] = useState(0);
   const [defIv, setDefIv] = useState(31);
-  const [spDefEv, setSpDefEv] = useState(252);
+  const [spDefEv, setSpDefEv] = useState(0);
   const [spDefIv, setSpDefIv] = useState(31);
 
   const { data: pokemonData } = usePokemonSearch(data.pokemonName);
@@ -131,6 +131,7 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
             id={`${idPrefix}-pokemon-name`}
             options={pokemonOptions}
             onSelect={(name) => onDataChange({ ...data, pokemonName: name })}
+            onClear={() => onDataChange({ ...data, pokemonName: "", pokemonTypes: [], abilityName: "" })}
             placeholder="ポケモン名"
             value={data.pokemonName}
           />
@@ -161,7 +162,7 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
               <EvPreset value={hpEv} onChange={(newEv) => {
                 setHpEv(newEv);
                 onDataChange({ ...data, hpStat: calcHpStat(data.hpBaseStat, hpIv, newEv, 50) });
-              }} />
+              }} calcStatFn={(ev) => calcHpStat(data.hpBaseStat, hpIv, ev, 50)} />
             </div>
           </div>
 
@@ -202,7 +203,7 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
                   ...data,
                   defenseStat: calcOtherStat(data.defenseBaseStat, defIv, newEv, 50, data.defenseModifier),
                 });
-              }} />
+              }} calcStatFn={(ev) => calcOtherStat(data.defenseBaseStat, defIv, ev, 50, data.defenseModifier)} />
             </div>
           </div>
 
@@ -243,7 +244,7 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
                   ...data,
                   specialDefenseStat: calcOtherStat(data.specialDefenseBaseStat, spDefIv, newEv, 50, data.specialDefenseModifier),
                 });
-              }} />
+              }} calcStatFn={(ev) => calcOtherStat(data.specialDefenseBaseStat, spDefIv, ev, 50, data.specialDefenseModifier)} />
             </div>
           </div>
 

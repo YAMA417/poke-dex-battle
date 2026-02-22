@@ -9,12 +9,15 @@ import type {
 } from "@poke-dex-battle/shared";
 import {
   calculateDamage,
+  getAbilityByName,
   getAbilityConditionEffect,
   getItemByName,
+  getMoveByName,
+  getMoveFlags,
   isSpreadMoveTarget,
 } from "@poke-dex-battle/shared";
 import type { DoubleBattleResult } from "@/types/damage";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { ArrowLeftRight } from "lucide-react";
 import type { AttackerData } from "./AttackerInput";
 import { AttackerInput } from "./AttackerInput";
@@ -33,12 +36,16 @@ const DEFAULT_ATTACKER_DATA: AttackerData = {
   moveTarget: "",
   attackBaseStat: 100,
   specialAttackBaseStat: 100,
+  defenseBaseStat: 100,
   attackStat: 152,
   specialAttackStat: 152,
+  defenseStat: 120,
   attackModifier: 1.0,
   specialAttackModifier: 1.0,
+  defenseModifier: 1.0,
   attackRank: 0,
   specialAttackRank: 0,
+  defenseRank: 0,
   abilityName: "",
   itemName: "",
   isBurned: false,
@@ -50,9 +57,9 @@ const DEFAULT_DEFENDER_DATA: DefenderData = {
   hpBaseStat: 100,
   defenseBaseStat: 100,
   specialDefenseBaseStat: 100,
-  hpStat: 207,
-  defenseStat: 152,
-  specialDefenseStat: 152,
+  hpStat: 175,
+  defenseStat: 120,
+  specialDefenseStat: 120,
   defenseModifier: 1.0,
   specialDefenseModifier: 1.0,
   defenseRank: 0,
@@ -74,8 +81,8 @@ function combineDamage(
     maxDamage,
     minPercent: damageA.minPercent + damageB.minPercent,
     maxPercent: damageA.maxPercent + damageB.maxPercent,
-    guaranteed: minDamage > 0 ? Math.ceil(defenderHp / minDamage) : Infinity,
-    possible: maxDamage > 0 ? Math.ceil(defenderHp / maxDamage) : Infinity,
+    guaranteed: maxDamage > 0 ? Math.ceil(defenderHp / maxDamage) : Infinity,
+    possible: minDamage > 0 ? Math.ceil(defenderHp / minDamage) : Infinity,
   };
 }
 
@@ -90,11 +97,16 @@ export function DamageCalculator() {
   const [field, setField] = useState<Field>("none");
   const [isHelpingHand, setIsHelpingHand] = useState(false);
   const [isCriticalHit, setIsCriticalHit] = useState(false);
+  const [isReflect, setIsReflect] = useState(false);
+  const [isLightScreen, setIsLightScreen] = useState(false);
 
   const [isDetailNumbersOpen, setIsDetailNumbersOpen] = useState(false);
   const [isDetailSettingsOpen, setIsDetailSettingsOpen] = useState(false);
 
-  // 特性→天候/フィールドの自動連動
+  // 特性→天候/フィールドの自動連動（手動変更は保持、特性由来の値が変わったときのみ自動更新）
+  const prevAbilityWeatherRef = useRef<Weather>("none");
+  const prevAbilityFieldRef = useRef<Field>("none");
+
   useEffect(() => {
     const allAbilities = [
       attackerAData.abilityName,
@@ -103,18 +115,25 @@ export function DamageCalculator() {
       defenderData2.abilityName,
     ];
 
-    let newWeather: Weather = "none";
-    let newField: Field = "none";
+    let abilityWeather: Weather = "none";
+    let abilityField: Field = "none";
 
     for (const name of allAbilities) {
       if (!name) continue;
       const effect = getAbilityConditionEffect(name);
-      if (effect?.weather) newWeather = effect.weather;
-      if (effect?.field) newField = effect.field;
+      if (effect?.weather) abilityWeather = effect.weather;
+      if (effect?.field) abilityField = effect.field;
     }
 
-    setWeather(newWeather);
-    setField(newField);
+    // 特性由来の天候が変わった場合のみ更新（手動変更を上書きしない）
+    if (abilityWeather !== prevAbilityWeatherRef.current) {
+      prevAbilityWeatherRef.current = abilityWeather;
+      setWeather(abilityWeather);
+    }
+    if (abilityField !== prevAbilityFieldRef.current) {
+      prevAbilityFieldRef.current = abilityField;
+      setField(abilityField);
+    }
   }, [
     attackerAData.abilityName,
     attackerBData.abilityName,
@@ -146,45 +165,93 @@ export function DamageCalculator() {
     const hasAnyDefender = defender1Ready || defender2Ready;
     if (!hasAnyAttacker || !hasAnyDefender) return null;
 
+    // 攻撃側サイドの全特性を収集（わざわいシリーズ等の場に影響する特性用）
+    const resolveAbilityName = (jaName: string): string | undefined => {
+      if (!jaName) return undefined;
+      return getAbilityByName(jaName)?.name || undefined;
+    };
+    const allAttackerSideAbilities = [
+      resolveAbilityName(attackerAData.abilityName),
+      resolveAbilityName(attackerBData.abilityName),
+    ].filter((a): a is string => !!a);
+    const allDefenderSideAbilities = [
+      resolveAbilityName(defenderData1.abilityName),
+      resolveAbilityName(defenderData2.abilityName),
+    ].filter((a): a is string => !!a);
+
     const makeInput = (
       attacker: AttackerData,
       defender: DefenderData,
       isSpread: boolean
     ): DamageCalculationInput => {
       const isPhysical = attacker.moveCategory === "Physical";
+      // 技の英語名とフラグを取得
+      const moveData = attacker.moveName ? getMoveByName(attacker.moveName) : null;
+      const moveEnglishName = moveData?.name || "";
+      const moveFlags = getMoveFlags(moveEnglishName, moveData?.shortDesc);
+
+      // 特殊技のステータス参照を解決
+      let attackerAttack: number;
+      let defenderDefense: number;
+      if (moveFlags.usesDefenseAsAttack) {
+        // ボディプレス: 攻撃側の防御実数値を使用
+        attackerAttack = attacker.defenseStat;
+      } else {
+        attackerAttack = isPhysical ? attacker.attackStat : attacker.specialAttackStat;
+      }
+      if (moveFlags.targetsPhysicalDefense) {
+        // サイコショック等: 特殊技だが防御側の物理防御を使用
+        defenderDefense = defender.defenseStat;
+      } else {
+        defenderDefense = isPhysical ? defender.defenseStat : defender.specialDefenseStat;
+      }
+
       return {
+        moveName: moveEnglishName,
         movePower: attacker.movePower,
         moveType: attacker.moveType,
         moveCategory: attacker.moveCategory,
+        moveFlags,
         attackerLevel: 50,
-        attackerAttack: isPhysical ? attacker.attackStat : attacker.specialAttackStat,
+        attackerAttack,
         attackerTypes: attacker.pokemonTypes,
-        defenderDefense: isPhysical ? defender.defenseStat : defender.specialDefenseStat,
+        defenderDefense,
         defenderTypes: defender.pokemonTypes,
         defenderMaxHp: defender.hpStat,
         condition: {
           weather,
           field,
           attackerStatStages: {
-            attack: isPhysical ? attacker.attackRank : 0,
+            attack: moveFlags.usesDefenseAsAttack
+              ? attacker.defenseRank
+              : isPhysical ? attacker.attackRank : 0,
             defense: 0,
-            specialAttack: isPhysical ? 0 : attacker.specialAttackRank,
+            specialAttack: moveFlags.usesDefenseAsAttack
+              ? 0
+              : isPhysical ? 0 : attacker.specialAttackRank,
             specialDefense: 0,
             speed: 0,
           },
           defenderStatStages: {
             attack: 0,
-            defense: isPhysical ? defender.defenseRank : 0,
+            defense: (isPhysical || moveFlags.targetsPhysicalDefense) ? defender.defenseRank : 0,
             specialAttack: 0,
-            specialDefense: isPhysical ? 0 : defender.specialDefenseRank,
+            specialDefense: (!isPhysical && !moveFlags.targetsPhysicalDefense) ? defender.specialDefenseRank : 0,
             speed: 0,
           },
+          isDoubleBattle: true,
           isHelpingHand,
           isSpreadMove: isSpread,
           isCriticalHit,
+          attackerAbility: attacker.abilityName ? (getAbilityByName(attacker.abilityName)?.name || undefined) : undefined,
+          defenderAbility: defender.abilityName ? (getAbilityByName(defender.abilityName)?.name || undefined) : undefined,
           attackerItem: attacker.itemName ? (getItemByName(attacker.itemName)?.name || attacker.itemName) : undefined,
           defenderItem: defender.itemName ? (getItemByName(defender.itemName)?.name || defender.itemName) : undefined,
           attackerBurned: attacker.isBurned,
+          reflect: isReflect,
+          lightScreen: isLightScreen,
+          allAttackerSideAbilities,
+          allDefenderSideAbilities,
         },
       };
     };
@@ -208,7 +275,7 @@ export function DamageCalculator() {
     } : null;
 
     return { target1, target2 };
-  }, [attackerAData, attackerBData, defenderData1, defenderData2, weather, field, isHelpingHand, isCriticalHit, autoSpreadA, autoSpreadB, attackerAReady, attackerBReady, defender1Ready, defender2Ready]);
+  }, [attackerAData, attackerBData, defenderData1, defenderData2, weather, field, isHelpingHand, isCriticalHit, isReflect, isLightScreen, autoSpreadA, autoSpreadB, attackerAReady, attackerBReady, defender1Ready, defender2Ready]);
 
   // 攻撃側 ↔ 防御側 入れ替え
   const handleSwapSides = useCallback(() => {
@@ -321,10 +388,14 @@ export function DamageCalculator() {
         field={field}
         isHelpingHand={isHelpingHand}
         isCriticalHit={isCriticalHit}
+        isReflect={isReflect}
+        isLightScreen={isLightScreen}
         onWeatherChange={setWeather}
         onFieldChange={setField}
         onHelpingHandChange={setIsHelpingHand}
         onCriticalHitChange={setIsCriticalHit}
+        onReflectChange={setIsReflect}
+        onLightScreenChange={setIsLightScreen}
       />
 
       {/* 詳細設定（折りたたみ）— IV、能力ランクのみ */}

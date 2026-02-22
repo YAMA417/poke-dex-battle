@@ -3,7 +3,12 @@ import type { DoubleBattleResult, TargetResult } from "@/types/damage";
 import type { DamageResult as DamageResultType } from "@poke-dex-battle/shared";
 import { CheckCircle, AlertTriangle, XCircle, ChevronDown, ChevronUp } from "lucide-react";
 
-type DamageLabel = "確定" | "乱数" | "不可";
+type DamageLabelCategory = "ko" | "chance" | "fail";
+
+interface DamageLabel {
+  text: string;
+  category: DamageLabelCategory;
+}
 
 interface DoubleBattleDamageResultProps {
   result: DoubleBattleResult | null;
@@ -18,24 +23,41 @@ interface DoubleBattleDamageResultProps {
 }
 
 function getDamageLabel(result: DamageResultType): DamageLabel {
-  if (result.minPercent >= 100) return "確定";
-  if (result.maxPercent >= 100) return "乱数";
-  return "不可";
+  const { guaranteed, possible } = result;
+
+  // 倒せない場合
+  if (guaranteed === Infinity && possible === Infinity) {
+    return { text: "不可", category: "fail" };
+  }
+
+  // guaranteed === possible なら確定N発
+  if (guaranteed === possible) {
+    return {
+      text: `確定${guaranteed}発`,
+      category: guaranteed === 1 ? "ko" : "chance",
+    };
+  }
+
+  // guaranteed !== possible なら乱数N発
+  return {
+    text: `乱数${guaranteed}発`,
+    category: "chance",
+  };
 }
 
-function getLabelIcon(label: DamageLabel) {
-  switch (label) {
-    case "確定": return <CheckCircle className="w-4 h-4 text-verdict-ko" />;
-    case "乱数": return <AlertTriangle className="w-4 h-4 text-verdict-chance" />;
-    case "不可": return <XCircle className="w-4 h-4 text-verdict-fail" />;
+function getLabelIcon(category: DamageLabelCategory) {
+  switch (category) {
+    case "ko": return <CheckCircle className="w-4 h-4 text-verdict-ko" />;
+    case "chance": return <AlertTriangle className="w-4 h-4 text-verdict-chance" />;
+    case "fail": return <XCircle className="w-4 h-4 text-verdict-fail" />;
   }
 }
 
-function getLabelColorClass(label: DamageLabel): string {
-  switch (label) {
-    case "確定": return "text-verdict-ko font-bold";
-    case "乱数": return "text-verdict-chance font-semibold";
-    case "不可": return "text-verdict-fail";
+function getLabelColorClass(category: DamageLabelCategory): string {
+  switch (category) {
+    case "ko": return "text-verdict-ko font-bold";
+    case "chance": return "text-verdict-chance font-semibold";
+    case "fail": return "text-verdict-fail";
   }
 }
 
@@ -58,16 +80,22 @@ function PatternBadge({ label, result, isBest }: {
   if (!result) return null;
 
   const damageLabel = getDamageLabel(result);
-  const icon = getLabelIcon(damageLabel);
-  const colorClass = getLabelColorClass(damageLabel);
+  const icon = getLabelIcon(damageLabel.category);
+  const colorClass = getLabelColorClass(damageLabel.category);
 
   return (
-    <div className={`flex items-center gap-1 text-sm px-2 py-1 rounded ${
+    <div className={`flex items-center gap-1.5 text-sm px-2 py-1.5 rounded ${
       isBest ? "bg-accent border border-primary/20 shadow-sm" : ""
     }`}>
-      <span className="text-xs text-muted-foreground">{label}:</span>
+      <span className="text-xs text-muted-foreground whitespace-nowrap">{label}:</span>
       {icon}
-      <span className={colorClass}>{damageLabel}</span>
+      <span className={colorClass}>{damageLabel.text}</span>
+      <span className="font-mono text-xs tabular-nums text-muted-foreground">
+        {result.minPercent.toFixed(1)}%〜{result.maxPercent.toFixed(1)}%
+      </span>
+      <span className="font-mono text-xs tabular-nums text-muted-foreground">
+        ({result.minDamage}〜{result.maxDamage})
+      </span>
     </div>
   );
 }

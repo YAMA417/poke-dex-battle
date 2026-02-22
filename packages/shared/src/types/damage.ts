@@ -36,6 +36,12 @@ export interface BattleCondition {
   attackerItem?: string;
   defenderItem?: string;
   attackerBurned?: boolean; // やけど状態（物理攻撃0.5倍）
+  // 壁
+  reflect?: boolean; // リフレクター（物理ダメージ0.5倍）
+  lightScreen?: boolean; // ひかりのかべ（特殊ダメージ0.5倍）
+  // 場の全特性（わざわいシリーズ等、味方を含む全ポケモンの特性）
+  allAttackerSideAbilities?: string[];
+  allDefenderSideAbilities?: string[];
 }
 
 /** 特性の種類（Phase 1: 基本10個） */
@@ -107,6 +113,9 @@ export interface BattleContext {
   isHelpingHand?: boolean;
   reflect?: boolean;
   lightScreen?: boolean;
+  // 場の全特性（わざわいシリーズ等の場に影響する特性を含む）
+  allAttackerSideAbilities?: string[];
+  allDefenderSideAbilities?: string[];
 }
 
 /** 持ち物の種類（Phase 1: 基本10個） */
@@ -127,11 +136,19 @@ export interface MoveFlags {
   isPunchMove?: boolean; // パンチ技か
   isRecoilMove?: boolean; // 反動技か
   isContactMove?: boolean; // 接触技か
+  isBiteMove?: boolean; // キバ技か（がんじょうあご用）
+  isAuraMove?: boolean; // 波動技か（メガランチャー用）
+  hasSecondaryEffect?: boolean; // 追加効果ありか（ちからずく用）
+  // 特殊ステータス参照
+  usesDefenseAsAttack?: boolean; // 攻撃側の防御で計算（ボディプレス）
+  targetsPhysicalDefense?: boolean; // 特殊技だが防御側の物理防御で計算（サイコショック等）
+  usesTargetAttack?: boolean; // 防御側の攻撃で計算（イカサマ）
 }
 
 /** ダメージ計算の入力 */
 export interface DamageCalculationInput {
   // 技情報
+  moveName?: string; // 技の英語名（天候依存の威力変動判定用）
   movePower: number;
   moveType: PokemonType;
   moveCategory: "Physical" | "Special";

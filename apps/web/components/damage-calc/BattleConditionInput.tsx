@@ -16,10 +16,14 @@ interface BattleConditionInputProps {
   field: Field;
   isHelpingHand: boolean;
   isCriticalHit: boolean;
+  isReflect: boolean;
+  isLightScreen: boolean;
   onWeatherChange: (weather: Weather) => void;
   onFieldChange: (field: Field) => void;
   onHelpingHandChange: (checked: boolean) => void;
   onCriticalHitChange: (checked: boolean) => void;
+  onReflectChange: (checked: boolean) => void;
+  onLightScreenChange: (checked: boolean) => void;
 }
 
 export function BattleConditionInput({
@@ -27,10 +31,14 @@ export function BattleConditionInput({
   field,
   isHelpingHand,
   isCriticalHit,
+  isReflect,
+  isLightScreen,
   onWeatherChange,
   onFieldChange,
   onHelpingHandChange,
   onCriticalHitChange,
+  onReflectChange,
+  onLightScreenChange,
 }: BattleConditionInputProps) {
   return (
     <Card className="border-t-2 border-t-primary/60">
@@ -97,6 +105,30 @@ export function BattleConditionInput({
             />
             <Label htmlFor="criticalHit" className="text-xs font-normal cursor-pointer">
               急所
+            </Label>
+          </div>
+
+          {/* リフレクター */}
+          <div className="flex items-center space-x-2 pb-1">
+            <Checkbox
+              id="reflect"
+              checked={isReflect}
+              onCheckedChange={onReflectChange}
+            />
+            <Label htmlFor="reflect" className="text-xs font-normal cursor-pointer">
+              リフレクター（物理0.5倍）
+            </Label>
+          </div>
+
+          {/* ひかりのかべ */}
+          <div className="flex items-center space-x-2 pb-1">
+            <Checkbox
+              id="lightScreen"
+              checked={isLightScreen}
+              onCheckedChange={onLightScreenChange}
+            />
+            <Label htmlFor="lightScreen" className="text-xs font-normal cursor-pointer">
+              ひかりのかべ（特殊0.5倍）
             </Label>
           </div>
         </div>

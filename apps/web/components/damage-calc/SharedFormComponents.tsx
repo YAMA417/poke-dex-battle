@@ -64,19 +64,60 @@ export function NatureModifierCompact({ value, onChange }: NatureModifierCompact
 
 // --- 努力値プリセット（Labelなし、ボタン+Inputのみ） ---
 
-export function EvPreset({ value, onChange }: {
-  value: number; onChange: (ev: number) => void;
+export function EvPreset({ value, onChange, calcStatFn }: {
+  value: number;
+  onChange: (ev: number) => void;
+  calcStatFn?: (ev: number) => number;
 }) {
+  // +ボタン: 実数値が変わる次のEVにジャンプ
+  const handleIncrement = () => {
+    if (!calcStatFn || value >= 252) return;
+    const currentStat = calcStatFn(value);
+    for (let ev = value + 4; ev <= 252; ev += 4) {
+      if (calcStatFn(ev) !== currentStat) {
+        onChange(ev);
+        return;
+      }
+    }
+  };
+
+  // -ボタン: 実数値が変わる前のEVにジャンプ
+  const handleDecrement = () => {
+    if (!calcStatFn || value <= 0) return;
+    const currentStat = calcStatFn(value);
+    for (let ev = value - 4; ev >= 0; ev -= 4) {
+      if (calcStatFn(ev) !== currentStat) {
+        onChange(ev);
+        return;
+      }
+    }
+    if (value > 0) onChange(0);
+  };
+
+  const btnBase = "px-2 py-1 text-xs rounded border";
+
   return (
     <div className="flex gap-1 items-center">
       <button type="button" onClick={() => onChange(252)}
-        className={`px-2 py-1 text-xs rounded border ${value === 252 ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>
+        className={`${btnBase} ${value === 252 ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>
         252
       </button>
       <button type="button" onClick={() => onChange(0)}
-        className={`px-2 py-1 text-xs rounded border ${value === 0 ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>
+        className={`${btnBase} ${value === 0 ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>
         0
       </button>
+      {calcStatFn && (
+        <>
+          <button type="button" onClick={handleDecrement} disabled={value <= 0}
+            className={`${btnBase} hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed`}>
+            −
+          </button>
+          <button type="button" onClick={handleIncrement} disabled={value >= 252}
+            className={`${btnBase} hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed`}>
+            +
+          </button>
+        </>
+      )}
       <Input type="number" min={0} max={252} step={4} value={value}
         onChange={(e) => onChange(Math.max(0, Math.min(252, parseInt(e.target.value) || 0)))}
         className="h-7 w-16 text-xs" />

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { usePokemonSearch } from "@/hooks/usePokemonSearch";
 import type { PokemonType, StatStage } from "@poke-dex-battle/shared";
-import { calcOtherStat, reverseCalcOtherEv, getAllPokemon, getCompetitiveItemNames } from "@poke-dex-battle/shared";
+import { calcOtherStat, reverseCalcOtherEv, getAllPokemon, getCompetitiveItemNames, getMoveByName, getMoveFlags } from "@poke-dex-battle/shared";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MoveInput } from "./MoveInput";
 import { NatureModifierCompact, EvPreset, TypeBadges } from "./SharedFormComponents";
@@ -34,12 +34,16 @@ export interface AttackerData {
   moveTarget: string;
   attackBaseStat: number;
   specialAttackBaseStat: number;
+  defenseBaseStat: number;
   attackStat: number;
   specialAttackStat: number;
+  defenseStat: number;
   attackModifier: 1.1 | 1.0 | 0.9;
   specialAttackModifier: 1.1 | 1.0 | 0.9;
+  defenseModifier: 1.1 | 1.0 | 0.9;
   attackRank: StatStage;
   specialAttackRank: StatStage;
+  defenseRank: StatStage;
   abilityName: string;
   itemName: string;
   isBurned: boolean;
@@ -66,6 +70,8 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
   const [attackIv, setAttackIv] = useState(31);
   const [spAtkEv, setSpAtkEv] = useState(252);
   const [spAtkIv, setSpAtkIv] = useState(31);
+  const [defEv, setDefEv] = useState(0);
+  const [defIv, setDefIv] = useState(31);
 
   const { data: pokemonData } = usePokemonSearch(data.pokemonName);
 
@@ -104,16 +110,19 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
       const d = dataRef.current;
       const atkBase = pokemonData.baseStats.attack;
       const spAtkBase = pokemonData.baseStats.specialAttack;
+      const defBase = pokemonData.baseStats.defense;
       const firstAbility = pokemonData.abilities[0];
 
       onDataChange({
         ...d,
         attackBaseStat: atkBase,
         specialAttackBaseStat: spAtkBase,
+        defenseBaseStat: defBase,
         pokemonTypes: pokemonData.types,
         abilityName: firstAbility?.nameJa ?? "",
         attackStat: calcOtherStat(atkBase, attackIv, attackEv, 50, d.attackModifier),
         specialAttackStat: calcOtherStat(spAtkBase, spAtkIv, spAtkEv, 50, d.specialAttackModifier),
+        defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -121,9 +130,22 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
 
   // rerender-derived-state-no-effect: ステータスはイベントハンドラで直接計算
   const isPhysical = data.moveCategory === "Physical";
-  const currentModifier = isPhysical ? data.attackModifier : data.specialAttackModifier;
-  const currentStat = isPhysical ? data.attackStat : data.specialAttackStat;
-  const statLabel = isPhysical ? "攻撃" : "特攻";
+
+  // 特殊技フラグの判定（ボディプレス等）
+  const moveData = data.moveName ? getMoveByName(data.moveName) : null;
+  const moveFlags = moveData ? getMoveFlags(moveData.name, moveData.shortDesc) : null;
+  const usesDefenseAsAttack = moveFlags?.usesDefenseAsAttack ?? false;
+
+  // ボディプレス時は防御ステータスを使用
+  const currentModifier = usesDefenseAsAttack
+    ? data.defenseModifier
+    : isPhysical ? data.attackModifier : data.specialAttackModifier;
+  const currentStat = usesDefenseAsAttack
+    ? data.defenseStat
+    : isPhysical ? data.attackStat : data.specialAttackStat;
+  const statLabel = usesDefenseAsAttack
+    ? "防御→攻撃"
+    : isPhysical ? "攻撃" : "特攻";
 
   if (displayMode === "compact") {
     return (
@@ -140,6 +162,7 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
             id={`${idPrefix}-pokemon-name`}
             options={pokemonOptions}
             onSelect={(name) => onDataChange({ ...data, pokemonName: name })}
+            onClear={() => onDataChange({ ...data, pokemonName: "", pokemonTypes: [], abilityName: "" })}
             placeholder="ポケモン名"
             value={data.pokemonName}
           />
@@ -177,17 +200,24 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
                   value={currentStat}
                   onChange={(e) => {
                     const targetStat = Math.max(1, parseInt(e.target.value) || 1);
-                    const baseStat = isPhysical ? data.attackBaseStat : data.specialAttackBaseStat;
-                    const iv = isPhysical ? attackIv : spAtkIv;
-                    const mod = isPhysical ? data.attackModifier : data.specialAttackModifier;
-                    const newEv = reverseCalcOtherEv(targetStat, baseStat, iv, 50, mod);
-                    const actualStat = calcOtherStat(baseStat, iv, newEv, 50, mod);
-                    if (isPhysical) {
-                      setAttackEv(newEv);
-                      onDataChange({ ...data, attackStat: actualStat });
+                    if (usesDefenseAsAttack) {
+                      const newEv = reverseCalcOtherEv(targetStat, data.defenseBaseStat, defIv, 50, data.defenseModifier);
+                      const actualStat = calcOtherStat(data.defenseBaseStat, defIv, newEv, 50, data.defenseModifier);
+                      setDefEv(newEv);
+                      onDataChange({ ...data, defenseStat: actualStat });
                     } else {
-                      setSpAtkEv(newEv);
-                      onDataChange({ ...data, specialAttackStat: actualStat });
+                      const baseStat = isPhysical ? data.attackBaseStat : data.specialAttackBaseStat;
+                      const iv = isPhysical ? attackIv : spAtkIv;
+                      const mod = isPhysical ? data.attackModifier : data.specialAttackModifier;
+                      const newEv = reverseCalcOtherEv(targetStat, baseStat, iv, 50, mod);
+                      const actualStat = calcOtherStat(baseStat, iv, newEv, 50, mod);
+                      if (isPhysical) {
+                        setAttackEv(newEv);
+                        onDataChange({ ...data, attackStat: actualStat });
+                      } else {
+                        setSpAtkEv(newEv);
+                        onDataChange({ ...data, specialAttackStat: actualStat });
+                      }
                     }
                   }}
                   className="h-6 w-16 text-xs font-bold tabular-nums text-right"
@@ -198,7 +228,13 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
               <NatureModifierCompact
                 value={currentModifier}
                 onChange={(mod) => {
-                  if (isPhysical) {
+                  if (usesDefenseAsAttack) {
+                    onDataChange({
+                      ...data,
+                      defenseModifier: mod,
+                      defenseStat: calcOtherStat(data.defenseBaseStat, defIv, defEv, 50, mod),
+                    });
+                  } else if (isPhysical) {
                     onDataChange({
                       ...data,
                       attackModifier: mod,
@@ -215,9 +251,15 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
               />
               <span className="text-xs text-muted-foreground">EV</span>
               <EvPreset
-                value={isPhysical ? attackEv : spAtkEv}
+                value={usesDefenseAsAttack ? defEv : isPhysical ? attackEv : spAtkEv}
                 onChange={(newEv) => {
-                  if (isPhysical) {
+                  if (usesDefenseAsAttack) {
+                    setDefEv(newEv);
+                    onDataChange({
+                      ...data,
+                      defenseStat: calcOtherStat(data.defenseBaseStat, defIv, newEv, 50, data.defenseModifier),
+                    });
+                  } else if (isPhysical) {
                     setAttackEv(newEv);
                     onDataChange({
                       ...data,
@@ -231,6 +273,17 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
                     });
                   }
                 }}
+                calcStatFn={(ev) => {
+                  if (usesDefenseAsAttack) {
+                    return calcOtherStat(data.defenseBaseStat, defIv, ev, 50, data.defenseModifier);
+                  }
+                  return calcOtherStat(
+                    isPhysical ? data.attackBaseStat : data.specialAttackBaseStat,
+                    isPhysical ? attackIv : spAtkIv,
+                    ev, 50,
+                    isPhysical ? data.attackModifier : data.specialAttackModifier,
+                  );
+                }}
               />
             </div>
           </div>
@@ -239,10 +292,12 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
           <div className="space-y-1">
             <Label className="text-xs">{statLabel}ランク</Label>
             <Select
-              value={(isPhysical ? data.attackRank : data.specialAttackRank).toString()}
+              value={(usesDefenseAsAttack ? data.defenseRank : isPhysical ? data.attackRank : data.specialAttackRank).toString()}
               onValueChange={(v: string) => {
                 const rank = parseInt(v) as StatStage;
-                if (isPhysical) {
+                if (usesDefenseAsAttack) {
+                  onDataChange({ ...data, defenseRank: rank });
+                } else if (isPhysical) {
                   onDataChange({ ...data, attackRank: rank });
                 } else {
                   onDataChange({ ...data, specialAttackRank: rank });
@@ -309,10 +364,16 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
         <div className="space-y-1">
           <Label className="text-xs">{statLabel}個体値</Label>
           <Input type="number" min={0} max={31}
-            value={isPhysical ? attackIv : spAtkIv}
+            value={usesDefenseAsAttack ? defIv : isPhysical ? attackIv : spAtkIv}
             onChange={(e) => {
               const iv = Math.max(0, Math.min(31, parseInt(e.target.value) || 0));
-              if (isPhysical) {
+              if (usesDefenseAsAttack) {
+                setDefIv(iv);
+                onDataChange({
+                  ...data,
+                  defenseStat: calcOtherStat(data.defenseBaseStat, iv, defEv, 50, data.defenseModifier),
+                });
+              } else if (isPhysical) {
                 setAttackIv(iv);
                 onDataChange({
                   ...data,
