@@ -14,7 +14,8 @@ import {
   isSpreadMoveTarget,
 } from "@poke-dex-battle/shared";
 import type { DoubleBattleResult } from "@/types/damage";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { ArrowLeftRight } from "lucide-react";
 import type { AttackerData } from "./AttackerInput";
 import { AttackerInput } from "./AttackerInput";
 import { BattleConditionInput } from "./BattleConditionInput";
@@ -132,13 +133,18 @@ export function DamageCalculator() {
     [attackerBData.moveTarget, bothDefendersPresent]
   );
 
-  // rerender-derived-state-no-effect: ダメージ結果はレンダー中に導出
-  const result = useMemo<DoubleBattleResult | null>(() => {
-    const isReady =
-      attackerAData.pokemonName && attackerAData.moveName &&
-      attackerBData.pokemonName && attackerBData.moveName;
+  // 各攻撃側・防御側の準備状態
+  const attackerAReady = !!(attackerAData.pokemonName && attackerAData.moveName);
+  const attackerBReady = !!(attackerBData.pokemonName && attackerBData.moveName);
+  const defender1Ready = !!defenderData1.pokemonName;
+  const defender2Ready = !!defenderData2.pokemonName;
 
-    if (!isReady) return null;
+  // rerender-derived-state-no-effect: ダメージ結果はレンダー中に導出（部分計算対応）
+  const result = useMemo<DoubleBattleResult | null>(() => {
+    // 攻撃側が1体以上 & 防御側が1体以上あれば計算開始
+    const hasAnyAttacker = attackerAReady || attackerBReady;
+    const hasAnyDefender = defender1Ready || defender2Ready;
+    if (!hasAnyAttacker || !hasAnyDefender) return null;
 
     const makeInput = (
       attacker: AttackerData,
@@ -183,24 +189,66 @@ export function DamageCalculator() {
       };
     };
 
-    const t1A = calculateDamage(makeInput(attackerAData, defenderData1, autoSpreadA));
-    const t1B = calculateDamage(makeInput(attackerBData, defenderData1, autoSpreadB));
-    const t2A = calculateDamage(makeInput(attackerAData, defenderData2, autoSpreadA));
-    const t2B = calculateDamage(makeInput(attackerBData, defenderData2, autoSpreadB));
+    // 各ペアリングを個別に計算（準備ができているもののみ）
+    const t1A = (attackerAReady && defender1Ready) ? calculateDamage(makeInput(attackerAData, defenderData1, autoSpreadA)) : null;
+    const t1B = (attackerBReady && defender1Ready) ? calculateDamage(makeInput(attackerBData, defenderData1, autoSpreadB)) : null;
+    const t2A = (attackerAReady && defender2Ready) ? calculateDamage(makeInput(attackerAData, defenderData2, autoSpreadA)) : null;
+    const t2B = (attackerBReady && defender2Ready) ? calculateDamage(makeInput(attackerBData, defenderData2, autoSpreadB)) : null;
 
-    return {
-      target1: {
-        attackerAOnly: t1A,
-        attackerBOnly: t1B,
-        combined: combineDamage(t1A, t1B, defenderData1.hpStat),
-      },
-      target2: {
-        attackerAOnly: t2A,
-        attackerBOnly: t2B,
-        combined: combineDamage(t2A, t2B, defenderData2.hpStat),
-      },
-    };
-  }, [attackerAData, attackerBData, defenderData1, defenderData2, weather, field, isHelpingHand, isCriticalHit, autoSpreadA, autoSpreadB]);
+    const target1 = (t1A || t1B) ? {
+      attackerAOnly: t1A,
+      attackerBOnly: t1B,
+      combined: (t1A && t1B) ? combineDamage(t1A, t1B, defenderData1.hpStat) : null,
+    } : null;
+
+    const target2 = (t2A || t2B) ? {
+      attackerAOnly: t2A,
+      attackerBOnly: t2B,
+      combined: (t2A && t2B) ? combineDamage(t2A, t2B, defenderData2.hpStat) : null,
+    } : null;
+
+    return { target1, target2 };
+  }, [attackerAData, attackerBData, defenderData1, defenderData2, weather, field, isHelpingHand, isCriticalHit, autoSpreadA, autoSpreadB, attackerAReady, attackerBReady, defender1Ready, defender2Ready]);
+
+  // 攻撃側 ↔ 防御側 入れ替え
+  const handleSwapSides = useCallback(() => {
+    const oldAttackerA = attackerAData;
+    const oldAttackerB = attackerBData;
+    const oldDefender1 = defenderData1;
+    const oldDefender2 = defenderData2;
+
+    // 防御側 → 攻撃側（ポケモン名・特性・持ち物を移し、技はリセット）
+    setAttackerAData({
+      ...DEFAULT_ATTACKER_DATA,
+      pokemonName: oldDefender1.pokemonName,
+      pokemonTypes: oldDefender1.pokemonTypes,
+      abilityName: oldDefender1.abilityName,
+      itemName: oldDefender1.itemName,
+    });
+    setAttackerBData({
+      ...DEFAULT_ATTACKER_DATA,
+      pokemonName: oldDefender2.pokemonName,
+      pokemonTypes: oldDefender2.pokemonTypes,
+      abilityName: oldDefender2.abilityName,
+      itemName: oldDefender2.itemName,
+    });
+
+    // 攻撃側 → 防御側（ポケモン名・特性・持ち物を移す）
+    setDefenderData1({
+      ...DEFAULT_DEFENDER_DATA,
+      pokemonName: oldAttackerA.pokemonName,
+      pokemonTypes: oldAttackerA.pokemonTypes,
+      abilityName: oldAttackerA.abilityName,
+      itemName: oldAttackerA.itemName,
+    });
+    setDefenderData2({
+      ...DEFAULT_DEFENDER_DATA,
+      pokemonName: oldAttackerB.pokemonName,
+      pokemonTypes: oldAttackerB.pokemonTypes,
+      abilityName: oldAttackerB.abilityName,
+      itemName: oldAttackerB.itemName,
+    });
+  }, [attackerAData, attackerBData, defenderData1, defenderData2]);
 
   if (!isMounted) {
     return null;
@@ -226,8 +274,17 @@ export function DamageCalculator() {
           />
         </div>
 
-        {/* 中央カラム: 結果 */}
-        <div className="order-2">
+        {/* 中央カラム: 入れ替えボタン + 結果 */}
+        <div className="order-2 space-y-2">
+          <button
+            type="button"
+            onClick={handleSwapSides}
+            className="w-full flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors border rounded-lg hover:bg-accent"
+            title="攻撃側と防御側を入れ替える"
+          >
+            <ArrowLeftRight className="h-4 w-4" />
+            <span>入れ替え</span>
+          </button>
           <DoubleBattleDamageResult
             result={result}
             target1Hp={defenderData1.hpStat}

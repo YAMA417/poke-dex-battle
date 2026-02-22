@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { usePokemonSearch } from "@/hooks/usePokemonSearch";
 import type { PokemonType, StatStage } from "@poke-dex-battle/shared";
-import { calcHpStat, calcOtherStat, getAllPokemon, getCompetitiveItemNames } from "@poke-dex-battle/shared";
+import { calcHpStat, calcOtherStat, reverseCalcHpEv, reverseCalcOtherEv, getAllPokemon, getCompetitiveItemNames } from "@poke-dex-battle/shared";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { NatureModifierCompact, EvPreset, TypeBadges } from "./SharedFormComponents";
 import { generateIdPrefix } from "@/utils/id";
@@ -139,9 +139,22 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <Label className="text-xs">HP</Label>
-              <span className="text-xs text-muted-foreground">
-                実数値: <span className="font-bold text-foreground tabular-nums">{data.hpStat}</span>
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">実数値:</span>
+                <Input
+                  type="number"
+                  min={1}
+                  value={data.hpStat}
+                  onChange={(e) => {
+                    const targetStat = Math.max(1, parseInt(e.target.value) || 1);
+                    const newEv = reverseCalcHpEv(targetStat, data.hpBaseStat, hpIv, 50);
+                    const actualStat = calcHpStat(data.hpBaseStat, hpIv, newEv, 50);
+                    setHpEv(newEv);
+                    onDataChange({ ...data, hpStat: actualStat });
+                  }}
+                  className="h-6 w-16 text-xs font-bold tabular-nums text-right"
+                />
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">EV</span>
@@ -156,9 +169,22 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <Label className="text-xs">防御</Label>
-              <span className="text-xs text-muted-foreground">
-                実数値: <span className="font-bold text-foreground tabular-nums">{data.defenseStat}</span>
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">実数値:</span>
+                <Input
+                  type="number"
+                  min={1}
+                  value={data.defenseStat}
+                  onChange={(e) => {
+                    const targetStat = Math.max(1, parseInt(e.target.value) || 1);
+                    const newEv = reverseCalcOtherEv(targetStat, data.defenseBaseStat, defIv, 50, data.defenseModifier);
+                    const actualStat = calcOtherStat(data.defenseBaseStat, defIv, newEv, 50, data.defenseModifier);
+                    setDefEv(newEv);
+                    onDataChange({ ...data, defenseStat: actualStat });
+                  }}
+                  className="h-6 w-16 text-xs font-bold tabular-nums text-right"
+                />
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <NatureModifierCompact
@@ -184,9 +210,22 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <Label className="text-xs">特防</Label>
-              <span className="text-xs text-muted-foreground">
-                実数値: <span className="font-bold text-foreground tabular-nums">{data.specialDefenseStat}</span>
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">実数値:</span>
+                <Input
+                  type="number"
+                  min={1}
+                  value={data.specialDefenseStat}
+                  onChange={(e) => {
+                    const targetStat = Math.max(1, parseInt(e.target.value) || 1);
+                    const newEv = reverseCalcOtherEv(targetStat, data.specialDefenseBaseStat, spDefIv, 50, data.specialDefenseModifier);
+                    const actualStat = calcOtherStat(data.specialDefenseBaseStat, spDefIv, newEv, 50, data.specialDefenseModifier);
+                    setSpDefEv(newEv);
+                    onDataChange({ ...data, specialDefenseStat: actualStat });
+                  }}
+                  className="h-6 w-16 text-xs font-bold tabular-nums text-right"
+                />
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <NatureModifierCompact

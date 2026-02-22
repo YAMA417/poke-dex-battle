@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import type { DoubleBattleResult } from "@/types/damage";
+import type { DoubleBattleResult, TargetResult } from "@/types/damage";
 import type { DamageResult as DamageResultType } from "@poke-dex-battle/shared";
 import { CheckCircle, AlertTriangle, XCircle, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -39,22 +39,24 @@ function getLabelColorClass(label: DamageLabel): string {
   }
 }
 
-function getBestPatternIndex(results: {
-  attackerAOnly: DamageResultType;
-  attackerBOnly: DamageResultType;
-  combined: DamageResultType;
-}): number {
-  const percents = [
-    results.attackerAOnly.minPercent,
-    results.attackerBOnly.minPercent,
-    results.combined.minPercent,
-  ];
-  return percents.indexOf(Math.max(...percents));
+function getBestPatternIndex(results: (DamageResultType | null)[]): number {
+  let bestIdx = -1;
+  let bestPercent = -1;
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i];
+    if (r && r.minPercent > bestPercent) {
+      bestPercent = r.minPercent;
+      bestIdx = i;
+    }
+  }
+  return bestIdx;
 }
 
 function PatternBadge({ label, result, isBest }: {
-  label: string; result: DamageResultType; isBest?: boolean;
+  label: string; result: DamageResultType | null; isBest?: boolean;
 }) {
+  if (!result) return null;
+
   const damageLabel = getDamageLabel(result);
   const icon = getLabelIcon(damageLabel);
   const colorClass = getLabelColorClass(damageLabel);
@@ -70,7 +72,8 @@ function PatternBadge({ label, result, isBest }: {
   );
 }
 
-function DamageRow({ label, result }: { label: string; result: DamageResultType }) {
+function DamageRow({ label, result }: { label: string; result: DamageResultType | null }) {
+  if (!result) return null;
   return (
     <div className="flex justify-between items-center py-1">
       <span className="text-xs text-muted-foreground">{label}</span>
@@ -82,9 +85,29 @@ function DamageRow({ label, result }: { label: string; result: DamageResultType 
   );
 }
 
+function TargetSection({ targetName, results, patternLabels }: {
+  targetName: string;
+  results: TargetResult;
+  patternLabels: string[];
+}) {
+  const allResults = [results.attackerAOnly, results.attackerBOnly, results.combined];
+  const bestIdx = getBestPatternIndex(allResults);
+
+  return (
+    <div className="space-y-1">
+      <span className="text-sm font-semibold">{targetName}</span>
+      <div className="flex flex-wrap gap-2">
+        {allResults.map((r, i) => (
+          <PatternBadge key={patternLabels[i]} label={patternLabels[i]} result={r} isBest={i === bestIdx} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function TargetDetailRows({ label, results, patternLabels }: {
   label: string;
-  results: { attackerAOnly: DamageResultType; attackerBOnly: DamageResultType; combined: DamageResultType };
+  results: TargetResult;
   patternLabels: string[];
 }) {
   return (
@@ -98,18 +121,18 @@ function TargetDetailRows({ label, results, patternLabels }: {
 }
 
 export function DoubleBattleDamageResult({
-  result, target1Hp, target2Hp, target1Name, target2Name,
+  result, target1Name, target2Name,
   attacker1Name, attacker2Name,
   isDetailNumbersOpen, onToggleDetailNumbers,
 }: DoubleBattleDamageResultProps) {
-  // 動的ラベル: ポケモン名があれば使用、なければフォールバック
   const patternLabels = [
     attacker1Name ? `${attacker1Name}のみ` : "攻撃1のみ",
     attacker2Name ? `${attacker2Name}のみ` : "攻撃2のみ",
     "集中",
   ];
 
-  if (!result) {
+  // 結果なし or 両ターゲットとも null
+  if (!result || (!result.target1 && !result.target2)) {
     return (
       <Card className="border-dashed">
         <CardContent className="py-8">
@@ -121,39 +144,28 @@ export function DoubleBattleDamageResult({
     );
   }
 
-  const target1Best = getBestPatternIndex(result.target1);
-  const target2Best = getBestPatternIndex(result.target2);
-  const target1Results = [result.target1.attackerAOnly, result.target1.attackerBOnly, result.target1.combined];
-  const target2Results = [result.target2.attackerAOnly, result.target2.attackerBOnly, result.target2.combined];
-
   return (
     <Card>
       <CardContent className="py-4 space-y-2">
         {/* 防御側1 */}
-        <div className="space-y-1">
-          <span className="text-sm font-semibold">
-            {target1Name || "防御側 1"}
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {target1Results.map((r, i) => (
-              <PatternBadge key={patternLabels[i]} label={patternLabels[i]} result={r} isBest={i === target1Best} />
-            ))}
-          </div>
-        </div>
+        {result.target1 && (
+          <TargetSection
+            targetName={target1Name || "防御側 1"}
+            results={result.target1}
+            patternLabels={patternLabels}
+          />
+        )}
 
-        <div className="border-t" />
+        {result.target1 && result.target2 && <div className="border-t" />}
 
         {/* 防御側2 */}
-        <div className="space-y-1">
-          <span className="text-sm font-semibold">
-            {target2Name || "防御側 2"}
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {target2Results.map((r, i) => (
-              <PatternBadge key={patternLabels[i]} label={patternLabels[i]} result={r} isBest={i === target2Best} />
-            ))}
-          </div>
-        </div>
+        {result.target2 && (
+          <TargetSection
+            targetName={target2Name || "防御側 2"}
+            results={result.target2}
+            patternLabels={patternLabels}
+          />
+        )}
 
         {/* 数値詳細トグル */}
         <button type="button" onClick={onToggleDetailNumbers}
@@ -165,16 +177,20 @@ export function DoubleBattleDamageResult({
         {/* 数値詳細（折りたたみ） */}
         {isDetailNumbersOpen && (
           <div className="pt-2 border-t space-y-4">
-            <TargetDetailRows
-              label={target1Name || "防御側 1"}
-              results={result.target1}
-              patternLabels={patternLabels}
-            />
-            <TargetDetailRows
-              label={target2Name || "防御側 2"}
-              results={result.target2}
-              patternLabels={patternLabels}
-            />
+            {result.target1 && (
+              <TargetDetailRows
+                label={target1Name || "防御側 1"}
+                results={result.target1}
+                patternLabels={patternLabels}
+              />
+            )}
+            {result.target2 && (
+              <TargetDetailRows
+                label={target2Name || "防御側 2"}
+                results={result.target2}
+                patternLabels={patternLabels}
+              />
+            )}
           </div>
         )}
       </CardContent>

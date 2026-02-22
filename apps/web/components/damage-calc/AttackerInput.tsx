@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { usePokemonSearch } from "@/hooks/usePokemonSearch";
 import type { PokemonType, StatStage } from "@poke-dex-battle/shared";
-import { calcOtherStat, getAllPokemon, getCompetitiveItemNames } from "@poke-dex-battle/shared";
+import { calcOtherStat, reverseCalcOtherEv, getAllPokemon, getCompetitiveItemNames } from "@poke-dex-battle/shared";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MoveInput } from "./MoveInput";
 import { NatureModifierCompact, EvPreset, TypeBadges } from "./SharedFormComponents";
@@ -169,15 +169,35 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <Label className="text-xs">{statLabel}</Label>
-              <span className="text-xs text-muted-foreground">
-                実数値: <span className="font-bold text-foreground tabular-nums">{currentStat}</span>
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">実数値:</span>
+                <Input
+                  type="number"
+                  min={1}
+                  value={currentStat}
+                  onChange={(e) => {
+                    const targetStat = Math.max(1, parseInt(e.target.value) || 1);
+                    const baseStat = isPhysical ? data.attackBaseStat : data.specialAttackBaseStat;
+                    const iv = isPhysical ? attackIv : spAtkIv;
+                    const mod = isPhysical ? data.attackModifier : data.specialAttackModifier;
+                    const newEv = reverseCalcOtherEv(targetStat, baseStat, iv, 50, mod);
+                    const actualStat = calcOtherStat(baseStat, iv, newEv, 50, mod);
+                    if (isPhysical) {
+                      setAttackEv(newEv);
+                      onDataChange({ ...data, attackStat: actualStat });
+                    } else {
+                      setSpAtkEv(newEv);
+                      onDataChange({ ...data, specialAttackStat: actualStat });
+                    }
+                  }}
+                  className="h-6 w-16 text-xs font-bold tabular-nums text-right"
+                />
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <NatureModifierCompact
                 value={currentModifier}
                 onChange={(mod) => {
-                  // rerender-move-effect-to-event: modifier変更時にstatも即座に再計算
                   if (isPhysical) {
                     onDataChange({
                       ...data,
@@ -197,7 +217,6 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
               <EvPreset
                 value={isPhysical ? attackEv : spAtkEv}
                 onChange={(newEv) => {
-                  // rerender-move-effect-to-event: EV変更時にstatも即座に再計算
                   if (isPhysical) {
                     setAttackEv(newEv);
                     onDataChange({
