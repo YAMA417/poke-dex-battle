@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `apps/web/` — Next.js 16 フロントエンド（App Router）
 - `packages/shared/` — 共通ロジック・型定義・定数（tsup / dual CJS+ESM）
-- `backend/api/` — Hono API（Phase 2〜）
+- `backend/api/` — Hono API（未着手）
 
 ## 開発コマンド
 
@@ -26,44 +26,19 @@ npm run typecheck -w @poke-dex-battle/shared # 型チェック
 
 ---
 
-## Claude の役割
+## Claude の使い方
 
-### 1. 設計アシスタント（メイン）
+| やりたいこと | コマンド | 出力先 |
+|------------|---------|--------|
+| 機能の設計 → Copilot 指示書作成 | `/design-review` | `.claude/docs/{branch}/instructions.md` |
+| Copilot 実装のセルフレビュー | `/review-impl` | 指示書内に追記 |
+| 他人のブランチレビュー | `/review` | `.claude/docs/{branch}/review.md` |
+| ブランチの変更を学習解説 | `/explain` | `.claude/docs/{branch}/explain.md` |
+| レビューへの意見回答 | `/review-feedback` | コンソール |
+| 進捗確認 | `/progress` | コンソール |
+| ツイート生成 | `/tweet` | コンソール |
 
-ユーザーと一緒に設計を考え、確定させる。設計完了後、GitHub Copilot 向けの実装指示書を出力する。
-
-**出力先**: `.claude/docs/copilot/` 配下にマークダウンで作成
-
-**指示書に含める内容**:
-- ファイル構成と各ファイルの責務
-- インターフェース定義（関数名・引数・戻り値）
-- 処理フローの箇条書き（分岐・ループ・例外を明記）
-- 参照すべき既存コード・型定義のパス
-
-### 2. 実装レビュー
-
-Copilot の実装完了後にレビューを行う。
-
-**指摘対象**:
-- 設計指示書との乖離
-- 責務の逸脱・不要な副作用
-- コーディング規約違反（`.github/copilot-instructions.md` 参照）
-- バグ・セキュリティリスク
-
-**指摘しないこと**: 美的・思想的なスタイル議論
-
-### 3. テストコード実装（例外）
-
-Copilot がテストコードの実装に苦戦している場合のみ、Claude がテストコードを直接実装する。
-
-### 4. コラボレーターのブランチレビュー
-
-他の開発者のブランチを `main` との差分でレビューする。
-
-**レビュー観点**:
-- 修正・改善が可能な箇所の指摘
-- 差分外も含め、共通化できる関数・ロジックの提案
-- 既存コードとの重複検出
+テストコードは Copilot が苦戦している場合のみ Claude が直接実装する。
 
 ---
 

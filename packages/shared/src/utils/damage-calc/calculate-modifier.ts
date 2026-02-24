@@ -3,6 +3,7 @@ import type { BattleContext, CalcMove, CalcPokemon } from "../../types/damage";
 import {
   calculateDefenderAbilityModifier,
   calculateDefenderItemModifier,
+  calculateFieldModifier,
   calculateStab,
   calculateWeatherModifier,
 } from "../damage-calc";
@@ -14,6 +15,7 @@ interface ModifierResult {
   stab: number;
   typeEffectiveness: number;
   weatherModifier: number;
+  fieldModifier: number;
 }
 
 /**
@@ -50,8 +52,19 @@ export function calculateModifier(
   minDamage = Math.floor(minDamage * weatherModifier);
   maxDamage = Math.floor(maxDamage * weatherModifier);
 
+  // 2.5. Field (フィールド補正) - Weather直後、Critical前
+  const fieldModifier = calculateFieldModifier(
+    move.type,
+    context.field || "none",
+  );
+  minDamage = Math.floor(minDamage * fieldModifier);
+  maxDamage = Math.floor(maxDamage * fieldModifier);
+
   // 3. Critical (急所補正) - BEFORE random
-  const criticalModifier = move.isCritical ? 1.5 : 1.0;
+  // スナイパー (Sniper): 急所時 1.5倍 → 2.25倍
+  const criticalModifier = move.isCritical
+    ? (attacker.ability === "Sniper" ? 2.25 : 1.5)
+    : 1.0;
   minDamage = Math.floor(minDamage * criticalModifier);
   maxDamage = Math.floor(maxDamage * criticalModifier);
 
@@ -60,32 +73,40 @@ export function calculateModifier(
   maxDamage = Math.floor(maxDamage * 1.0);
 
   // 5. STAB (タイプ一致補正) - AFTER random
+  // 適応力 (Adaptability) 対応: calculateStab に攻撃側特性を渡す
   const stab = calculateStab(
     move.type,
     attacker.types,
     attacker.teraType,
     attacker.isTerastallized,
+    attacker.ability,
   );
   minDamage = Math.floor(minDamage * stab);
   maxDamage = Math.floor(maxDamage * stab);
 
   // 6. Type (タイプ相性) - AFTER random
   const typeEffectiveness = calcTypeEffectiveness(move.type, defender.types);
-  minDamage = Math.floor(minDamage * typeEffectiveness);
-  maxDamage = Math.floor(maxDamage * typeEffectiveness);
+
+  // 色眼鏡 (Tinted Lens): 効果いまひとつの技が2倍
+  const effectiveTypeMultiplier = (attacker.ability === "Tinted Lens" && typeEffectiveness < 1)
+    ? typeEffectiveness * 2
+    : typeEffectiveness;
+
+  minDamage = Math.floor(minDamage * effectiveTypeMultiplier);
+  maxDamage = Math.floor(maxDamage * effectiveTypeMultiplier);
 
   // 7. "other" modifiers (ダメージ補正のみ) - AFTER Type
-  // 壁: リフレクターと光の壁
   const otherModifiers: number[] = [];
 
-  // リフレクター: 物理技で0.5倍（急所時は無視）
+  // リフレクター/ひかりのかべ: ダブル 2732/4096 ≒ 0.667倍、シングル 0.5倍（急所時は無視）
+  const screenModifier = context.isDoubleBattle ? 2732 / 4096 : 0.5;
+
   if (context.reflect && move.category === "Physical" && !move.isCritical) {
-    otherModifiers.push(0.5);
+    otherModifiers.push(screenModifier);
   }
 
-  // ひかりのかべ: 特殊技で0.5倍（急所時は無視）
   if (context.lightScreen && move.category === "Special" && !move.isCritical) {
-    otherModifiers.push(0.5);
+    otherModifiers.push(screenModifier);
   }
 
   // いのちのたま: ダメージ1.3倍
@@ -101,6 +122,7 @@ export function calculateModifier(
     move.flags,
     defender.currentHp,
     defender.maxHp,
+    move.category,
   );
   if (defenderAbilityModifier !== 1.0) {
     otherModifiers.push(defenderAbilityModifier);
@@ -127,5 +149,6 @@ export function calculateModifier(
     stab,
     typeEffectiveness,
     weatherModifier,
+    fieldModifier,
   };
 }

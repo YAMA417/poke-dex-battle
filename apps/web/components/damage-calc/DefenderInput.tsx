@@ -11,28 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAbilitySearch } from "@/hooks/useAbilitySearch";
-import { useHydrationSafe } from "@/hooks/useHydrationSafe";
-import { useItemSearch } from "@/hooks/useItemSearch";
 import { usePokemonSearch } from "@/hooks/usePokemonSearch";
 import type { PokemonType, StatStage } from "@poke-dex-battle/shared";
-import { calcHpStat, getAllPokemon } from "@poke-dex-battle/shared";
-import { useEffect, useMemo, useState } from "react";
-import { NatureModifierRadio } from "./NatureModifierRadio";
-import { PokemonStatInput } from "./PokemonStatInput";
+import { calcHpStat, calcOtherStat, reverseCalcHpEv, reverseCalcOtherEv, getAllPokemon, getCompetitiveItemNames } from "@poke-dex-battle/shared";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { NatureModifierCompact, EvPreset, TypeBadges } from "./SharedFormComponents";
 import { generateIdPrefix } from "@/utils/id";
 
 const STAT_STAGES: StatStage[] = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6];
-
-
-
-interface DefenderInputProps {
-  onDataChange: (data: DefenderData) => void;
-  title: string;
-  idKey: string;
-  isDetailsOpen: boolean;
-  onToggleDetails: () => void;
-}
 
 export interface DefenderData {
   pokemonName: string;
@@ -51,45 +37,30 @@ export interface DefenderData {
   itemName: string;
 }
 
-export function DefenderInput({
-  onDataChange,
-  title,
-  idKey,
-  isDetailsOpen,
-  onToggleDetails,
-}: DefenderInputProps) {
-  const isMounted = useHydrationSafe();
-  const idPrefix = useMemo(() => generateIdPrefix(title, idKey), [title, idKey]);
-  const [pokemonName, setPokemonName] = useState("");
-  const [pokemonTypes, setPokemonTypes] = useState<PokemonType[]>([]);
+interface DefenderInputProps {
+  data: DefenderData;
+  onDataChange: (data: DefenderData) => void;
+  idKey: string;
+  displayMode: "compact" | "full";
+}
 
-  const [hpBaseStat, setHpBaseStat] = useState(100);
-  const [defenseBaseStat, setDefenseBaseStat] = useState(100);
-  const [specialDefenseBaseStat, setSpecialDefenseBaseStat] = useState(100);
+export function DefenderInput({ data, onDataChange, idKey, displayMode }: DefenderInputProps) {
+  const idPrefix = useMemo(() => generateIdPrefix(data.pokemonName || "defender", idKey), [data.pokemonName, idKey]);
 
-  const [hpStat, setHpStat] = useState(207);
-  const [defenseStat, setDefenseStat] = useState(152);
-  const [specialDefenseStat, setSpecialDefenseStat] = useState(152);
+  // useRef で最新の data を保持（useEffect 内のステールクロージャ防止）
+  const dataRef = useRef(data);
+  dataRef.current = data;
 
-  const [defenseModifier, setDefenseModifier] = useState<1.1 | 1.0 | 0.9>(1.0);
-  const [specialDefenseModifier, setSpecialDefenseModifier] = useState<
-    1.1 | 1.0 | 0.9
-  >(1.0);
-
-  const [defenseRank, setDefenseRank] = useState<StatStage>(0);
-  const [specialDefenseRank, setSpecialDefenseRank] = useState<StatStage>(0);
-  const [abilityName, setAbilityName] = useState("");
-  const [itemName, setItemName] = useState("");
-
-  const [hpMode, setHpMode] = useState<"manual" | "auto">("auto");
+  // EV/IV の内部 state
+  const [hpEv, setHpEv] = useState(0);
   const [hpIv, setHpIv] = useState(31);
-  const [hpEv, setHpEv] = useState(252);
+  const [defEv, setDefEv] = useState(0);
+  const [defIv, setDefIv] = useState(31);
+  const [spDefEv, setSpDefEv] = useState(0);
+  const [spDefIv, setSpDefIv] = useState(31);
 
-  const { data: pokemonData } = usePokemonSearch(pokemonName);
-  const { data: abilityData } = useAbilitySearch(abilityName);
-  const { data: itemData } = useItemSearch(itemName);
+  const { data: pokemonData } = usePokemonSearch(data.pokemonName);
 
-  // ポケモン名のオプションリストを生成
   const pokemonOptions = useMemo(() => {
     return getAllPokemon().map((pokemon) => ({
       label: pokemon.nameJa,
@@ -98,415 +69,289 @@ export function DefenderInput({
     }));
   }, []);
 
-  // ポケモンデータを取得したら種族値・タイプ・第1特性を自動反映
+  // 特性オプション
+  const abilityOptions = useMemo(() => {
+    if (pokemonData?.abilities) {
+      return pokemonData.abilities.map((a) => ({
+        label: `${a.nameJa}${a.isHidden ? " (夢)" : ""}`,
+        value: a.nameJa,
+        id: `ability-${a.name}`,
+      }));
+    }
+    return [];
+  }, [pokemonData]);
+
+  // 持ち物オプション（競技用のみ）
+  const itemOptions = useMemo(() => {
+    return getCompetitiveItemNames().map((item) => ({
+      label: item.nameJa,
+      value: item.nameJa,
+      id: `item-${item.id}`,
+    }));
+  }, []);
+
+  // ポケモンデータ取得時に種族値・タイプ・第1特性を自動反映
   useEffect(() => {
     if (pokemonData?.baseStats) {
-      setHpBaseStat(pokemonData.baseStats.hp);
-      setDefenseBaseStat(pokemonData.baseStats.defense);
-      setSpecialDefenseBaseStat(pokemonData.baseStats.specialDefense);
-      setPokemonTypes(pokemonData.types);
-
-      // 第1特性を自動入力
+      const d = dataRef.current;
+      const hpBase = pokemonData.baseStats.hp;
+      const defBase = pokemonData.baseStats.defense;
+      const spDefBase = pokemonData.baseStats.specialDefense;
       const firstAbility = pokemonData.abilities[0];
-      if (firstAbility) {
-        setAbilityName(firstAbility.nameJa);
-      }
 
-      notifyChange({
-        hpBaseStat: pokemonData.baseStats.hp,
-        defenseBaseStat: pokemonData.baseStats.defense,
-        specialDefenseBaseStat: pokemonData.baseStats.specialDefense,
+      onDataChange({
+        ...d,
+        hpBaseStat: hpBase,
+        defenseBaseStat: defBase,
+        specialDefenseBaseStat: spDefBase,
         pokemonTypes: pokemonData.types,
         abilityName: firstAbility?.nameJa ?? "",
+        hpStat: calcHpStat(hpBase, hpIv, hpEv, 50),
+        defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
+        specialDefenseStat: calcOtherStat(spDefBase, spDefIv, spDefEv, 50, d.specialDefenseModifier),
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pokemonData]);
 
-  const notifyChange = (updates: Partial<DefenderData>) => {
-    const data: DefenderData = {
-      pokemonName,
-      pokemonTypes,
-      hpBaseStat,
-      defenseBaseStat,
-      specialDefenseBaseStat,
-      hpStat,
-      defenseStat,
-      specialDefenseStat,
-      defenseModifier,
-      specialDefenseModifier,
-      defenseRank,
-      specialDefenseRank,
-      abilityName,
-      itemName,
-      ...updates,
-    };
-    onDataChange(data);
-  };
+  // rerender-derived-state-no-effect: ステータスはイベントハンドラで直接計算
 
-  const calculateHp = (base: number, iv: number, ev: number) => {
-    return calcHpStat(base, iv, ev, 50);
-  };
+  if (displayMode === "compact") {
+    return (
+      <Card className="border-t-2 border-t-primary/60">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">
+            {data.pokemonName || "ポケモンを選択"}
+          </CardTitle>
+          <TypeBadges types={data.pokemonTypes} />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {/* ポケモン名 */}
+          <Autocomplete
+            id={`${idPrefix}-pokemon-name`}
+            options={pokemonOptions}
+            onSelect={(name) => onDataChange({ ...data, pokemonName: name })}
+            onClear={() => onDataChange({ ...data, pokemonName: "", pokemonTypes: [], abilityName: "" })}
+            placeholder="ポケモン名"
+            value={data.pokemonName}
+          />
 
-  // HP種族値が変更されたら自動で再計算
-  useEffect(() => {
-    if (hpMode === "auto") {
-      const calculated = calculateHp(hpBaseStat, hpIv, hpEv);
-      setHpStat(calculated);
-      notifyChange({ hpStat: calculated });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hpBaseStat, hpMode, hpIv, hpEv]);
+          {/* HP */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs">HP</Label>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">実数値:</span>
+                <Input
+                  type="number"
+                  min={1}
+                  value={data.hpStat}
+                  onChange={(e) => {
+                    const targetStat = Math.max(1, parseInt(e.target.value) || 1);
+                    const newEv = reverseCalcHpEv(targetStat, data.hpBaseStat, hpIv, 50);
+                    const actualStat = calcHpStat(data.hpBaseStat, hpIv, newEv, 50);
+                    setHpEv(newEv);
+                    onDataChange({ ...data, hpStat: actualStat });
+                  }}
+                  className="h-6 w-16 text-xs font-bold tabular-nums text-right"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">EV</span>
+              <EvPreset value={hpEv} onChange={(newEv) => {
+                setHpEv(newEv);
+                onDataChange({ ...data, hpStat: calcHpStat(data.hpBaseStat, hpIv, newEv, 50) });
+              }} calcStatFn={(ev) => calcHpStat(data.hpBaseStat, hpIv, ev, 50)} />
+            </div>
+          </div>
 
-  if (!isMounted) {
-    return null;
-  }
+          {/* 防御 */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs">防御</Label>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">実数値:</span>
+                <Input
+                  type="number"
+                  min={1}
+                  value={data.defenseStat}
+                  onChange={(e) => {
+                    const targetStat = Math.max(1, parseInt(e.target.value) || 1);
+                    const newEv = reverseCalcOtherEv(targetStat, data.defenseBaseStat, defIv, 50, data.defenseModifier);
+                    const actualStat = calcOtherStat(data.defenseBaseStat, defIv, newEv, 50, data.defenseModifier);
+                    setDefEv(newEv);
+                    onDataChange({ ...data, defenseStat: actualStat });
+                  }}
+                  className="h-6 w-16 text-xs font-bold tabular-nums text-right"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <NatureModifierCompact
+                value={data.defenseModifier}
+                onChange={(mod) => onDataChange({
+                  ...data,
+                  defenseModifier: mod,
+                  defenseStat: calcOtherStat(data.defenseBaseStat, defIv, defEv, 50, mod),
+                })}
+              />
+              <span className="text-xs text-muted-foreground">EV</span>
+              <EvPreset value={defEv} onChange={(newEv) => {
+                setDefEv(newEv);
+                onDataChange({
+                  ...data,
+                  defenseStat: calcOtherStat(data.defenseBaseStat, defIv, newEv, 50, data.defenseModifier),
+                });
+              }} calcStatFn={(ev) => calcOtherStat(data.defenseBaseStat, defIv, ev, 50, data.defenseModifier)} />
+            </div>
+          </div>
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Layer 1: 基本情報 (常に表示) */}
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor={`${idPrefix}-pokemon-name`}>ポケモン名</Label>
+          {/* 特防 */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs">特防</Label>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">実数値:</span>
+                <Input
+                  type="number"
+                  min={1}
+                  value={data.specialDefenseStat}
+                  onChange={(e) => {
+                    const targetStat = Math.max(1, parseInt(e.target.value) || 1);
+                    const newEv = reverseCalcOtherEv(targetStat, data.specialDefenseBaseStat, spDefIv, 50, data.specialDefenseModifier);
+                    const actualStat = calcOtherStat(data.specialDefenseBaseStat, spDefIv, newEv, 50, data.specialDefenseModifier);
+                    setSpDefEv(newEv);
+                    onDataChange({ ...data, specialDefenseStat: actualStat });
+                  }}
+                  className="h-6 w-16 text-xs font-bold tabular-nums text-right"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <NatureModifierCompact
+                value={data.specialDefenseModifier}
+                onChange={(mod) => onDataChange({
+                  ...data,
+                  specialDefenseModifier: mod,
+                  specialDefenseStat: calcOtherStat(data.specialDefenseBaseStat, spDefIv, spDefEv, 50, mod),
+                })}
+              />
+              <span className="text-xs text-muted-foreground">EV</span>
+              <EvPreset value={spDefEv} onChange={(newEv) => {
+                setSpDefEv(newEv);
+                onDataChange({
+                  ...data,
+                  specialDefenseStat: calcOtherStat(data.specialDefenseBaseStat, spDefIv, newEv, 50, data.specialDefenseModifier),
+                });
+              }} calcStatFn={(ev) => calcOtherStat(data.specialDefenseBaseStat, spDefIv, ev, 50, data.specialDefenseModifier)} />
+            </div>
+          </div>
+
+          {/* 能力ランク */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs">防御ランク</Label>
+              <Select value={data.defenseRank.toString()}
+                onValueChange={(v: string) => onDataChange({ ...data, defenseRank: parseInt(v) as StatStage })}>
+                <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {STAT_STAGES.map((s) => (
+                    <SelectItem key={s} value={s.toString()}>{s > 0 ? `+${s}` : s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">特防ランク</Label>
+              <Select value={data.specialDefenseRank.toString()}
+                onValueChange={(v: string) => onDataChange({ ...data, specialDefenseRank: parseInt(v) as StatStage })}>
+                <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {STAT_STAGES.map((s) => (
+                    <SelectItem key={s} value={s.toString()}>{s > 0 ? `+${s}` : s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* 特性 */}
+          <div className="space-y-1">
+            <Label className="text-xs">特性</Label>
             <Autocomplete
-              id={`${idPrefix}-pokemon-name`}
-              options={pokemonOptions}
-              onSelect={(selectedValue) => {
-                setPokemonName(selectedValue);
-                notifyChange({ pokemonName: selectedValue });
-              }}
-              placeholder="ポケモン名を入力"
+              id={`${idPrefix}-ability`}
+              options={abilityOptions}
+              onSelect={(name) => onDataChange({ ...data, abilityName: name })}
+              placeholder="特性"
+              value={data.abilityName}
             />
           </div>
 
-          {/* HP */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium">HP</h3>
-            <div className="space-y-2">
-              <Label htmlFor={`${idPrefix}-hp-base-stat`}>HP種族値</Label>
-              <Input
-                id={`${idPrefix}-hp-base-stat`}
-                type="number"
-                min={1}
-                max={255}
-                value={hpBaseStat}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const value = parseInt(e.target.value) || 1;
-                  setHpBaseStat(value);
-                  if (hpMode === "auto") {
-                    const calculated = calculateHp(value, hpIv, hpEv);
-                    setHpStat(calculated);
-                    notifyChange({ hpBaseStat: value, hpStat: calculated });
-                  } else {
-                    notifyChange({ hpBaseStat: value });
-                  }
-                }}
-              />
-            </div>
-
-            <div className="space-y-3 p-4 border rounded-lg">
-              <div className="flex justify-between items-center">
-                <Label>HP</Label>
-                <button
-                  type="button"
-                  className="text-xs px-2 py-1 border rounded hover:bg-accent"
-                  onClick={() => {
-                    if (hpMode === "manual") {
-                      const calculated = calculateHp(hpBaseStat, hpIv, hpEv);
-                      setHpStat(calculated);
-                      setHpMode("auto");
-                      notifyChange({ hpStat: calculated });
-                    } else {
-                      setHpMode("manual");
-                    }
-                  }}
-                >
-                  {hpMode === "manual" ? "自動計算に切替" : "手動入力に切替"}
-                </button>
-              </div>
-
-              {hpMode === "manual" ? (
-                <Input
-                  type="number"
-                  min={1}
-                  value={hpStat}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    const value = parseInt(e.target.value) || 1;
-                    setHpStat(value);
-                    notifyChange({ hpStat: value });
-                  }}
-                  placeholder="実数値を入力"
-                />
-              ) : (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label htmlFor={`${idPrefix}-hp-iv`} className="text-xs">
-                        個体値 (IV)
-                      </Label>
-                      <Input
-                        id={`${idPrefix}-hp-iv`}
-                        type="number"
-                        min={0}
-                        max={31}
-                        value={hpIv}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          const value = Math.max(
-                            0,
-                            Math.min(31, parseInt(e.target.value) || 0)
-                          );
-                          setHpIv(value);
-                          const calculated = calculateHp(hpBaseStat, value, hpEv);
-                          setHpStat(calculated);
-                          notifyChange({ hpStat: calculated });
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label htmlFor={`${idPrefix}-hp-ev`} className="text-xs">
-                        努力値 (EV)
-                      </Label>
-                      <Input
-                        id={`${idPrefix}-hp-ev`}
-                        type="number"
-                        min={0}
-                        max={252}
-                        step={4}
-                        value={hpEv}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          const value = Math.max(
-                            0,
-                            Math.min(252, parseInt(e.target.value) || 0)
-                          );
-                          setHpEv(value);
-                          const calculated = calculateHp(hpBaseStat, hpIv, value);
-                          setHpStat(calculated);
-                          notifyChange({ hpStat: calculated });
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    実数値:{" "}
-                    <span className="font-bold text-foreground">{hpStat}</span>
-                  </div>
-                </div>
-              )}
-            </div>
+          {/* 持ち物 */}
+          <div className="space-y-1">
+            <Label className="text-xs">持ち物</Label>
+            <Autocomplete
+              id={`${idPrefix}-item`}
+              options={itemOptions}
+              onSelect={(name) => onDataChange({ ...data, itemName: name })}
+              placeholder="持ち物"
+              value={data.itemName}
+            />
           </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // displayMode === "full" — 詳細設定（IVのみ）
+  return (
+    <Card className="border-t-2 border-t-primary/60">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm">{data.pokemonName || "防御側"} 詳細</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {/* HP 個体値 */}
+        <div className="space-y-1">
+          <Label className="text-xs">HP個体値</Label>
+          <Input type="number" min={0} max={31} value={hpIv}
+            onChange={(e) => {
+              const iv = Math.max(0, Math.min(31, parseInt(e.target.value) || 0));
+              setHpIv(iv);
+              onDataChange({ ...data, hpStat: calcHpStat(data.hpBaseStat, iv, hpEv, 50) });
+            }}
+            className="h-7 text-xs" />
         </div>
 
-        {/* 詳細設定トグルボタン */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <button
-              type="button"
-              onClick={onToggleDetails}
-              className="bg-background px-2 text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
-            >
-              {isDetailsOpen ? "詳細を隠す" : "詳細設定を表示"}
-              <span
-                className={`transform transition-transform ${isDetailsOpen ? "rotate-180" : ""}`}
-              >
-                ▼
-              </span>
-            </button>
-          </div>
+        {/* 防御個体値 */}
+        <div className="space-y-1">
+          <Label className="text-xs">防御個体値</Label>
+          <Input type="number" min={0} max={31} value={defIv}
+            onChange={(e) => {
+              const iv = Math.max(0, Math.min(31, parseInt(e.target.value) || 0));
+              setDefIv(iv);
+              onDataChange({
+                ...data,
+                defenseStat: calcOtherStat(data.defenseBaseStat, iv, defEv, 50, data.defenseModifier),
+              });
+            }}
+            className="h-7 text-xs" />
         </div>
 
-        {/* Layer 2: 詳細設定 (初期非表示) */}
-        {isDetailsOpen && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-200">
-            {/* 防御 */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium">防御</h3>
-              <div className="space-y-2">
-                <Label htmlFor={`${idPrefix}-defense-base-stat`}>防御種族値</Label>
-                <Input
-                  id={`${idPrefix}-defense-base-stat`}
-                  type="number"
-                  min={1}
-                  max={255}
-                  value={defenseBaseStat}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    const value = parseInt(e.target.value) || 1;
-                    setDefenseBaseStat(value);
-                    notifyChange({ defenseBaseStat: value });
-                  }}
-                />
-              </div>
-
-              <div className="space-y-3 p-4 border rounded-lg">
-                <NatureModifierRadio
-                  statName="防御"
-                  value={defenseModifier}
-                  onChange={(modifier) => {
-                    setDefenseModifier(modifier);
-                    notifyChange({ defenseModifier: modifier });
-                  }}
-                />
-                <PokemonStatInput
-                  label="防御"
-                  statType="defense"
-                  level={50}
-                  natureModifier={defenseModifier}
-                  baseStat={defenseBaseStat}
-                  value={defenseStat}
-                  onChange={(value) => {
-                    setDefenseStat(value);
-                    notifyChange({ defenseStat: value });
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* 特防 */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium">特防</h3>
-              <div className="space-y-2">
-                <Label htmlFor={`${idPrefix}-special-defense-base-stat`}>
-                  特防種族値
-                </Label>
-                <Input
-                  id={`${idPrefix}-special-defense-base-stat`}
-                  type="number"
-                  min={1}
-                  max={255}
-                  value={specialDefenseBaseStat}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    const value = parseInt(e.target.value) || 1;
-                    setSpecialDefenseBaseStat(value);
-                    notifyChange({ specialDefenseBaseStat: value });
-                  }}
-                />
-              </div>
-
-              <div className="space-y-3 p-4 border rounded-lg">
-                <NatureModifierRadio
-                  statName="特防"
-                  value={specialDefenseModifier}
-                  onChange={(modifier) => {
-                    setSpecialDefenseModifier(modifier);
-                    notifyChange({ specialDefenseModifier: modifier });
-                  }}
-                />
-                <PokemonStatInput
-                  label="特防"
-                  statType="specialDefense"
-                  level={50}
-                  natureModifier={specialDefenseModifier}
-                  baseStat={specialDefenseBaseStat}
-                  value={specialDefenseStat}
-                  onChange={(value) => {
-                    setSpecialDefenseStat(value);
-                    notifyChange({ specialDefenseStat: value });
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium">能力ランク</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor={`${idPrefix}-defense-rank`}>防御ランク</Label>
-                  <Select
-                    value={defenseRank.toString()}
-                    onValueChange={(value: string) => {
-                      const rank = parseInt(value) as StatStage;
-                      setDefenseRank(rank);
-                      notifyChange({ defenseRank: rank });
-                    }}
-                  >
-                    <SelectTrigger id={`${idPrefix}-defense-rank`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STAT_STAGES.map((stage) => (
-                        <SelectItem key={stage} value={stage.toString()}>
-                          {stage > 0 ? `+${stage}` : stage}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`${idPrefix}-special-defense-rank`}>
-                    特防ランク
-                  </Label>
-                  <Select
-                    value={specialDefenseRank.toString()}
-                    onValueChange={(value: string) => {
-                      const rank = parseInt(value) as StatStage;
-                      setSpecialDefenseRank(rank);
-                      notifyChange({ specialDefenseRank: rank });
-                    }}
-                  >
-                    <SelectTrigger id={`${idPrefix}-special-defense-rank`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STAT_STAGES.map((stage) => (
-                        <SelectItem key={stage} value={stage.toString()}>
-                          {stage > 0 ? `+${stage}` : stage}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium">その他</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor={`${idPrefix}-ability`}>特性</Label>
-                  <Input
-                    id={`${idPrefix}-ability`}
-                    type="text"
-                    value={abilityName}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      setAbilityName(e.target.value);
-                      notifyChange({ abilityName: e.target.value });
-                    }}
-                    placeholder="特性名を入力"
-                  />
-                  {abilityData && (
-                    <p className="text-xs text-muted-foreground">
-                      {abilityData.nameJa}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`${idPrefix}-item`}>持ち物</Label>
-                  <Input
-                    id={`${idPrefix}-item`}
-                    type="text"
-                    value={itemName}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      setItemName(e.target.value);
-                      notifyChange({ itemName: e.target.value });
-                    }}
-                    placeholder="持ち物名を入力"
-                  />
-                  {itemData && (
-                    <p className="text-xs text-muted-foreground">
-                      {itemData.nameJa}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* 特防個体値 */}
+        <div className="space-y-1">
+          <Label className="text-xs">特防個体値</Label>
+          <Input type="number" min={0} max={31} value={spDefIv}
+            onChange={(e) => {
+              const iv = Math.max(0, Math.min(31, parseInt(e.target.value) || 0));
+              setSpDefIv(iv);
+              onDataChange({
+                ...data,
+                specialDefenseStat: calcOtherStat(data.specialDefenseBaseStat, iv, spDefEv, 50, data.specialDefenseModifier),
+              });
+            }}
+            className="h-7 text-xs" />
+        </div>
       </CardContent>
     </Card>
   );

@@ -1,4 +1,4 @@
-import type { MoveFlags, StatStage, Weather } from "../types/damage";
+import type { Field, MoveFlags, StatStage, Weather } from "../types/damage";
 import type { PokemonType } from "../types/pokemon";
 
 /**
@@ -33,20 +33,30 @@ export function calculateStab(
   attackerTypes: PokemonType[],
   attackerTeraType?: PokemonType,
   isTerastallized?: boolean,
+  attackerAbility?: string,
 ): number {
+  const isAdaptability = attackerAbility === "Adaptability";
+
   // テラスタル使用時
   if (isTerastallized && attackerTeraType) {
     // テラスタイプと技タイプが一致
     if (attackerTeraType === moveType) {
-      // 元のタイプにも含まれていた場合は2.0倍、そうでなければ1.5倍
-      return attackerTypes.includes(moveType) ? 2.0 : 1.5;
+      // 元のタイプにも含まれていた場合: 通常2.0倍、適応力2.25倍
+      if (attackerTypes.includes(moveType)) {
+        return isAdaptability ? 2.25 : 2.0;
+      }
+      // 元のタイプと不一致: 通常1.5倍、適応力2.0倍
+      return isAdaptability ? 2.0 : 1.5;
     }
     // テラスタイプと不一致の場合は補正なし
     return 1.0;
   }
 
-  // 通常時: 元のタイプと一致すれば1.5倍
-  return attackerTypes.includes(moveType) ? 1.5 : 1.0;
+  // 通常時: 元のタイプと一致すれば 通常1.5倍、適応力2.0倍
+  if (attackerTypes.includes(moveType)) {
+    return isAdaptability ? 2.0 : 1.5;
+  }
+  return 1.0;
 }
 
 /**
@@ -90,11 +100,13 @@ export function calculateDefenderAbilityModifier(
   moveFlags?: MoveFlags,
   currentHp?: number,
   maxHp?: number,
+  moveCategory?: "Physical" | "Special",
 ): number {
   if (!ability) return 1.0;
 
   switch (ability) {
     case "Multiscale": // マルチスケイル: HP満タン時ダメージ0.5倍
+    case "Shadow Shield": // ファントムガード: HP満タン時ダメージ0.5倍
       if (currentHp && maxHp && currentHp === maxHp) {
         return 0.5;
       }
@@ -111,6 +123,9 @@ export function calculateDefenderAbilityModifier(
 
     case "Thick Fat": // あついしぼう: 炎・氷技を0.5倍
       return moveType === "Fire" || moveType === "Ice" ? 0.5 : 1.0;
+
+    case "Ice Scales": // こおりのりんぷん: 特殊ダメージ0.5倍
+      return moveCategory === "Special" ? 0.5 : 1.0;
 
     default:
       return 1.0;
@@ -201,6 +216,27 @@ export function calculateWeatherModifier(
     if (moveType === "Fire") return 0.5;
   }
   return 1.0;
+}
+
+/**
+ * フィールド補正を計算
+ */
+export function calculateFieldModifier(
+  moveType: PokemonType,
+  field: Field,
+): number {
+  switch (field) {
+    case "electric":
+      return moveType === "Electric" ? 1.3 : 1.0;
+    case "grassy":
+      return moveType === "Grass" ? 1.3 : 1.0;
+    case "psychic":
+      return moveType === "Psychic" ? 1.3 : 1.0;
+    case "misty":
+      return moveType === "Dragon" ? 0.5 : 1.0;
+    default:
+      return 1.0;
+  }
 }
 
 // 旧API互換のための re-export

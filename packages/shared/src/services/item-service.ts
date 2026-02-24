@@ -1,4 +1,5 @@
 import type { ItemData, ShowdownItem } from "../types";
+import { COMPETITIVE_ITEM_IDS } from "../constants/competitive-items";
 
 const itemsById: Record<string, ShowdownItem> =
   require("../data/showdown/items.json");
@@ -77,4 +78,21 @@ export function getAllItemNames(): Array<{
     name: item.name,
     nameJa: item.nameJa,
   }));
+}
+
+/**
+ * ランクバトルで使用される競技用アイテムの名前一覧を取得
+ */
+export function getCompetitiveItemNames(): Array<{
+  id: string;
+  name: string;
+  nameJa: string;
+}> {
+  return Object.values(itemsById)
+    .filter((item) => COMPETITIVE_ITEM_IDS.has(item.id))
+    .map((item) => ({
+      id: item.id,
+      name: item.name,
+      nameJa: item.nameJa,
+    }));
 }

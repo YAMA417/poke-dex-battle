@@ -1,8 +1,14 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { DoubleBattleResult } from "@/types/damage";
+import { Card, CardContent } from "@/components/ui/card";
+import type { DoubleBattleResult, TargetResult } from "@/types/damage";
 import type { DamageResult as DamageResultType } from "@poke-dex-battle/shared";
+import { CheckCircle, AlertTriangle, XCircle, ChevronDown, ChevronUp } from "lucide-react";
 
-type DamageLabel = "確定" | "確定ライン" | "乱数" | "超乱数" | "不可";
+type DamageLabelCategory = "ko" | "chance" | "fail";
+
+interface DamageLabel {
+  text: string;
+  category: DamageLabelCategory;
+}
 
 interface DoubleBattleDamageResultProps {
   result: DoubleBattleResult | null;
@@ -10,177 +16,156 @@ interface DoubleBattleDamageResultProps {
   target2Hp?: number;
   target1Name?: string;
   target2Name?: string;
+  attacker1Name?: string;
+  attacker2Name?: string;
+  isDetailNumbersOpen: boolean;
+  onToggleDetailNumbers: () => void;
 }
 
-/**
- * Determines the damage label based on the result
- * - "確定": 100% guaranteed to KO
- * - "確定ライン": Above 100% at minimum
- * - "乱数": Between 50% and 100%
- * - "超乱数": Between 20% and 50%
- * - "不可": Cannot KO
- */
 function getDamageLabel(result: DamageResultType): DamageLabel {
-  const { minPercent, maxPercent } = result;
+  const { guaranteed, possible } = result;
 
-  if (minPercent >= 100) {
-    return "確定";
-  } else if (maxPercent >= 100) {
-    return "確定ライン";
-  } else if (minPercent >= 50) {
-    return "乱数";
-  } else if (minPercent >= 20) {
-    return "超乱数";
+  // 倒せない場合
+  if (guaranteed === Infinity && possible === Infinity) {
+    return { text: "不可", category: "fail" };
   }
-  return "不可";
+
+  // guaranteed === possible なら確定N発
+  if (guaranteed === possible) {
+    return {
+      text: `確定${guaranteed}発`,
+      category: guaranteed === 1 ? "ko" : "chance",
+    };
+  }
+
+  // guaranteed !== possible なら乱数N発
+  return {
+    text: `乱数${guaranteed}発`,
+    category: "chance",
+  };
 }
 
-/**
- * Gets the color class based on damage label
- */
-function getLabelColorClass(label: DamageLabel): string {
-  switch (label) {
-    case "確定":
-      return "text-green-600 font-bold";
-    case "確定ライン":
-      return "text-blue-600 font-semibold";
-    case "乱数":
-      return "text-orange-500 font-medium";
-    case "超乱数":
-      return "text-orange-400";
-    case "不可":
-      return "text-red-400";
+function getLabelIcon(category: DamageLabelCategory) {
+  switch (category) {
+    case "ko": return <CheckCircle className="w-4 h-4 text-verdict-ko" />;
+    case "chance": return <AlertTriangle className="w-4 h-4 text-verdict-chance" />;
+    case "fail": return <XCircle className="w-4 h-4 text-verdict-fail" />;
   }
 }
 
-/**
- * Determines the best attack pattern (highest minimum damage) for a target
- */
-function getBestPatternLabel(results: {
-  attackerAOnly: DamageResultType;
-  attackerBOnly: DamageResultType;
-  combined: DamageResultType;
-}): string {
-  const patterns = [
-    { label: "Aのみ", result: results.attackerAOnly },
-    { label: "Bのみ", result: results.attackerBOnly },
-    { label: "集中", result: results.combined },
-  ];
-
-  const bestPattern = patterns.reduce((prev, current) =>
-    current.result.minPercent > prev.result.minPercent ? current : prev
-  );
-
-  return bestPattern.label;
+function getLabelColorClass(category: DamageLabelCategory): string {
+  switch (category) {
+    case "ko": return "text-verdict-ko font-bold";
+    case "chance": return "text-verdict-chance font-semibold";
+    case "fail": return "text-verdict-fail";
+  }
 }
 
-interface DamageRowProps {
-  label: string;
-  result: DamageResultType;
+function getBestPatternIndex(results: (DamageResultType | null)[]): number {
+  let bestIdx = -1;
+  let bestPercent = -1;
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i];
+    if (r && r.minPercent > bestPercent) {
+      bestPercent = r.minPercent;
+      bestIdx = i;
+    }
+  }
+  return bestIdx;
 }
 
-function DamageRow({ label, result }: DamageRowProps) {
-  const { minPercent, maxPercent } = result;
+function PatternBadge({ label, result, isBest }: {
+  label: string; result: DamageResultType | null; isBest?: boolean;
+}) {
+  if (!result) return null;
+
   const damageLabel = getDamageLabel(result);
-  const colorClass = getLabelColorClass(damageLabel);
+  const icon = getLabelIcon(damageLabel.category);
+  const colorClass = getLabelColorClass(damageLabel.category);
 
   return (
-    <div className="flex justify-between items-center py-2 border-b last:border-b-0">
-      <div className="text-sm font-medium text-muted-foreground">{label}</div>
-      <div className="flex items-center gap-3">
-        <div>
-          <span className="font-mono font-semibold">
-            {minPercent.toFixed(1)}%〜{maxPercent.toFixed(1)}%
-          </span>
-        </div>
-        <div className={`text-xs font-medium min-w-16 text-right ${colorClass}`}>
-          {damageLabel}
-        </div>
+    <div className={`flex items-center gap-1.5 text-sm px-2 py-1.5 rounded ${
+      isBest ? "bg-accent border border-primary/20 shadow-sm" : ""
+    }`}>
+      <span className="text-xs text-muted-foreground whitespace-nowrap">{label}:</span>
+      {icon}
+      <span className={colorClass}>{damageLabel.text}</span>
+      <span className="font-mono text-xs tabular-nums text-muted-foreground">
+        {result.minPercent.toFixed(1)}%〜{result.maxPercent.toFixed(1)}%
+      </span>
+      <span className="font-mono text-xs tabular-nums text-muted-foreground">
+        ({result.minDamage}〜{result.maxDamage})
+      </span>
+    </div>
+  );
+}
+
+function DamageRow({ label, result }: { label: string; result: DamageResultType | null }) {
+  if (!result) return null;
+  return (
+    <div className="flex justify-between items-center py-1">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="font-mono text-xs tabular-nums">
+        {result.minPercent.toFixed(1)}%〜{result.maxPercent.toFixed(1)}%
+        ({result.minDamage}〜{result.maxDamage})
+      </span>
+    </div>
+  );
+}
+
+function TargetSection({ targetName, results, patternLabels }: {
+  targetName: string;
+  results: TargetResult;
+  patternLabels: string[];
+}) {
+  const allResults = [results.attackerAOnly, results.attackerBOnly, results.combined];
+  const bestIdx = getBestPatternIndex(allResults);
+
+  return (
+    <div className="space-y-1">
+      <span className="text-sm font-semibold">{targetName}</span>
+      <div className="flex flex-wrap gap-2">
+        {allResults.map((r, i) => (
+          <PatternBadge key={patternLabels[i]} label={patternLabels[i]} result={r} isBest={i === bestIdx} />
+        ))}
       </div>
     </div>
   );
 }
 
-interface TargetSectionProps {
-  targetLabel: string;
-  targetName?: string;
-  targetHp?: number;
-  results: {
-    attackerAOnly: DamageResultType;
-    attackerBOnly: DamageResultType;
-    combined: DamageResultType;
-  };
-}
-
-function TargetSection({
-  targetLabel,
-  targetName,
-  targetHp,
-  results,
-}: TargetSectionProps) {
-  // Determine the best strategy (which pattern has highest min damage)
-  const patterns = [
-    { label: "Aのみ", result: results.attackerAOnly },
-    { label: "Bのみ", result: results.attackerBOnly },
-    { label: "集中", result: results.combined },
-  ];
-
-  const bestPatternLabel = getBestPatternLabel(results);
-  const bestPattern = patterns.find((p) => p.label === bestPatternLabel);
-
+function TargetDetailRows({ label, results, patternLabels }: {
+  label: string;
+  results: TargetResult;
+  patternLabels: string[];
+}) {
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <h3 className="text-base font-semibold">{targetLabel}</h3>
-        {targetName && (
-          <span className="text-sm text-muted-foreground">{targetName}</span>
-        )}
-        {targetHp !== undefined && (
-          <span className="text-sm text-muted-foreground">
-            HP: {targetHp}
-          </span>
-        )}
-      </div>
-
-      <div className="space-y-1">
-        {patterns.map((pattern) => {
-          const isBest = pattern.label === bestPatternLabel;
-          return (
-            <div
-              key={pattern.label}
-              className={`rounded px-3 ${isBest ? "bg-blue-50 dark:bg-blue-950" : ""
-                }`}
-            >
-              <DamageRow
-                label={
-                  isBest ? `${pattern.label} ⭐` : pattern.label
-                }
-                result={pattern.result}
-              />
-            </div>
-          );
-        })}
-      </div>
+    <div>
+      <h4 className="text-xs font-semibold mb-1">{label}</h4>
+      <DamageRow label={patternLabels[0]} result={results.attackerAOnly} />
+      <DamageRow label={patternLabels[1]} result={results.attackerBOnly} />
+      <DamageRow label={patternLabels[2]} result={results.combined} />
     </div>
   );
 }
 
 export function DoubleBattleDamageResult({
-  result,
-  target1Hp,
-  target2Hp,
-  target1Name,
-  target2Name,
+  result, target1Name, target2Name,
+  attacker1Name, attacker2Name,
+  isDetailNumbersOpen, onToggleDetailNumbers,
 }: DoubleBattleDamageResultProps) {
-  if (!result) {
+  const patternLabels = [
+    attacker1Name ? `${attacker1Name}のみ` : "攻撃1のみ",
+    attacker2Name ? `${attacker2Name}のみ` : "攻撃2のみ",
+    "集中",
+  ];
+
+  // 結果なし or 両ターゲットとも null
+  if (!result || (!result.target1 && !result.target2)) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>ダメージ計算結果</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-sm">
-            攻撃側・防御側のポケモンと技を入力すると自動で計算されます
+      <Card className="border-dashed">
+        <CardContent className="py-8">
+          <p className="text-muted-foreground text-sm text-center">
+            ポケモンと技を入力すると<br />自動で計算されます
           </p>
         </CardContent>
       </Card>
@@ -189,56 +174,53 @@ export function DoubleBattleDamageResult({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>【計算結果】</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-8">
-        <TargetSection
-          targetLabel="対象①"
-          targetName={target1Name}
-          targetHp={target1Hp}
-          results={result.target1}
-        />
+      <CardContent className="py-4 space-y-2">
+        {/* 防御側1 */}
+        {result.target1 && (
+          <TargetSection
+            targetName={target1Name || "防御側 1"}
+            results={result.target1}
+            patternLabels={patternLabels}
+          />
+        )}
 
-        <div className="border-t pt-8" />
+        {result.target1 && result.target2 && <div className="border-t" />}
 
-        <TargetSection
-          targetLabel="対象②"
-          targetName={target2Name}
-          targetHp={target2Hp}
-          results={result.target2}
-        />
+        {/* 防御側2 */}
+        {result.target2 && (
+          <TargetSection
+            targetName={target2Name || "防御側 2"}
+            results={result.target2}
+            patternLabels={patternLabels}
+          />
+        )}
 
-        {/* Strategy Recommendation */}
-        <div className="border-t pt-6 mt-6">
-          <h4 className="text-sm font-semibold mb-3 text-muted-foreground">
-            判定サマリー
-          </h4>
+        {/* 数値詳細トグル */}
+        <button type="button" onClick={onToggleDetailNumbers}
+          className="w-full pt-2 text-xs text-muted-foreground hover:text-foreground text-center flex items-center justify-center gap-1">
+          {isDetailNumbersOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          {isDetailNumbersOpen ? "数値を隠す" : "数値を見る"}
+        </button>
 
-          {(() => {
-            const target1Best = getBestPatternLabel(result.target1);
-            const target2Best = getBestPatternLabel(result.target2);
-
-            return (
-              <div className="space-y-2 text-sm">
-                <div>
-                  <span className="text-muted-foreground">対象①：</span>
-                  <span className="font-medium">{target1Best}</span>
-                  <span className="text-xs text-muted-foreground ml-2">
-                    が最適
-                  </span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">対象②：</span>
-                  <span className="font-medium">{target2Best}</span>
-                  <span className="text-xs text-muted-foreground ml-2">
-                    が最適
-                  </span>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
+        {/* 数値詳細（折りたたみ） */}
+        {isDetailNumbersOpen && (
+          <div className="pt-2 border-t space-y-4">
+            {result.target1 && (
+              <TargetDetailRows
+                label={target1Name || "防御側 1"}
+                results={result.target1}
+                patternLabels={patternLabels}
+              />
+            )}
+            {result.target2 && (
+              <TargetDetailRows
+                label={target2Name || "防御側 2"}
+                results={result.target2}
+                patternLabels={patternLabels}
+              />
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

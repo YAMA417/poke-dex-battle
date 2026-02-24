@@ -70,6 +70,38 @@ export function calcOtherStat(
 }
 
 /**
+ * HP実数値から努力値を逆算（最小EVを返す）
+ * 到達不可能な場合は最も近いEV（252）を返す
+ */
+export function reverseCalcHpEv(targetStat: number, base: number, iv: number, level: number): number {
+  for (let ev = 0; ev <= 252; ev += 4) {
+    if (calcHpStat(base, iv, ev, level) >= targetStat) {
+      return ev;
+    }
+  }
+  return 252;
+}
+
+/**
+ * HP以外の実数値から努力値を逆算（最小EVを返す）
+ * 到達不可能な場合は最も近いEV（252）を返す
+ */
+export function reverseCalcOtherEv(
+  targetStat: number,
+  base: number,
+  iv: number,
+  level: number,
+  natureModifier: number
+): number {
+  for (let ev = 0; ev <= 252; ev += 4) {
+    if (calcOtherStat(base, iv, ev, level, natureModifier) >= targetStat) {
+      return ev;
+    }
+  }
+  return 252;
+}
+
+/**
  * 全ステータスの実数値を計算
  */
 export function calcActualStats(

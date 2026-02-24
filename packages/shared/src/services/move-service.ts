@@ -91,14 +91,49 @@ function resolveSpeciesId(pokemonName: string): string | null {
 }
 
 /**
+ * フォーム違いの場合、ベースフォームのIDを取得
+ * 例: zamazentacrowned → zamazenta
+ */
+function resolveBaseSpeciesId(speciesId: string): string | null {
+  const species = speciesById[speciesId];
+  if (!species) return null;
+
+  // num が同じでIDが異なるベースフォームを探す
+  for (const [id, s] of Object.entries(speciesById)) {
+    if (s.num === species.num && id !== speciesId && id.length < speciesId.length) {
+      return id;
+    }
+  }
+  return null;
+}
+
+/**
+ * フォーム + ベースフォームの learnset を合成して返す
+ */
+function getMergedLearnset(speciesId: string): ShowdownLearnsetEntry | null {
+  const entry = learnsetsData[speciesId];
+  const baseId = resolveBaseSpeciesId(speciesId);
+  const baseEntry = baseId ? learnsetsData[baseId] : null;
+
+  if (!entry && !baseEntry) return null;
+  if (!baseEntry) return entry;
+  if (!entry) return baseEntry;
+
+  // フォーム固有の技 + ベースフォームの技を合成
+  return {
+    level: [...new Set([...entry.level, ...baseEntry.level])],
+    machine: [...new Set([...entry.machine, ...baseEntry.machine])],
+  };
+}
+
+/**
  * ポケモン別の習得技一覧を取得（レベル技 + わざマシン）
  */
 export function getLearnset(pokemonName: string): string[] {
   const speciesId = resolveSpeciesId(pokemonName);
   if (!speciesId) return [];
-  const entry = learnsetsData[speciesId];
+  const entry = getMergedLearnset(speciesId);
   if (!entry) return [];
-  // 重複を除いた統合リスト
   return [...new Set([...entry.level, ...entry.machine])];
 }
 
@@ -108,7 +143,7 @@ export function getLearnset(pokemonName: string): string[] {
 export function getLevelMoves(pokemonName: string): string[] {
   const speciesId = resolveSpeciesId(pokemonName);
   if (!speciesId) return [];
-  return learnsetsData[speciesId]?.level ?? [];
+  return getMergedLearnset(speciesId)?.level ?? [];
 }
 
 /**
@@ -117,7 +152,7 @@ export function getLevelMoves(pokemonName: string): string[] {
 export function getMachineMoves(pokemonName: string): string[] {
   const speciesId = resolveSpeciesId(pokemonName);
   if (!speciesId) return [];
-  return learnsetsData[speciesId]?.machine ?? [];
+  return getMergedLearnset(speciesId)?.machine ?? [];
 }
 
 /**

@@ -15,11 +15,12 @@ export interface AutocompleteProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'onSelect'> {
   options: AutocompleteOption[];
   onSelect: (value: string) => void;
+  onClear?: () => void;
   isLoading?: boolean;
 }
 
 export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps>(
-  ({ options, onSelect, isLoading, className, ...props }, ref) => {
+  ({ options, onSelect, onClear, isLoading, className, ...props }, ref) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const listboxId = React.useId();
     const [open, setOpen] = React.useState(false);
@@ -27,6 +28,7 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
       typeof props.value === "string" ? props.value : ""
     );
     const [highlightedIndex, setHighlightedIndex] = React.useState<number>(-1);
+    const [previousValue, setPreviousValue] = React.useState<string>("");
 
     // props.valueの変更を監視して inputValue を同期
     React.useEffect(() => {
@@ -52,12 +54,16 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
       }
     }, [filteredOptions, highlightedIndex]);
 
-    // コンテナ外クリックでドロップダウンを閉じる
+    // コンテナ外クリックでドロップダウンを閉じ、未選択なら元の値に戻す
     React.useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
         if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
           setOpen(false);
           setHighlightedIndex(-1);
+          // 何も選択せずに外をクリックした場合、元の値に戻す
+          if (previousValue && inputValue === "") {
+            setInputValue(previousValue);
+          }
         }
       };
 
@@ -107,9 +113,23 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
           e.preventDefault();
           setOpen(false);
           setHighlightedIndex(-1);
+          // 元の値に戻す
+          if (previousValue) {
+            setInputValue(previousValue);
+          }
           break;
       }
     };
+
+    const handleClear = () => {
+      setInputValue("");
+      setPreviousValue("");
+      setOpen(false);
+      setHighlightedIndex(-1);
+      onClear?.();
+    };
+
+    const showClearButton = onClear && inputValue && !open;
 
     return (
       <div className="relative w-full" ref={containerRef}>
@@ -123,14 +143,32 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
             setHighlightedIndex(-1);
           }}
           onKeyDown={handleKeyDown}
-          onFocus={() => setOpen(true)}
-          className={cn("w-full", className)}
+          onFocus={() => {
+            setOpen(true);
+            // フォーカス時に入力をクリアして全オプションを表示
+            setPreviousValue(inputValue);
+            setInputValue("");
+          }}
+          className={cn("w-full", showClearButton && "pr-8", className)}
           autoComplete="off"
           role="combobox"
           aria-expanded={open}
           aria-autocomplete="list"
           aria-controls={open ? listboxId : undefined}
         />
+        {showClearButton && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-0.5"
+            aria-label="選択を解除"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        )}
 
         {open && filteredOptions.length > 0 && (
           <div
@@ -138,34 +176,47 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
             role="listbox"
             className="absolute top-full left-0 right-0 z-50 mt-1 border border-input bg-background rounded-md shadow-md max-h-60 overflow-y-auto"
           >
-            {filteredOptions.map((option, index) => {
-              const prevGroup = index > 0 ? filteredOptions[index - 1].group : undefined;
-              const showGroupHeader = option.group && option.group !== prevGroup;
-              return (
-                <React.Fragment key={option.id || `${option.value}-${index}`}>
-                  {showGroupHeader && (
-                    <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 sticky top-0">
-                      {option.group}
+            {(() => {
+              // グループごとにまとめてセクション化（sticky ヘッダーが正しく切り替わるように）
+              const groups: { group: string | undefined; items: { option: AutocompleteOption; globalIndex: number }[] }[] = [];
+              for (let i = 0; i < filteredOptions.length; i++) {
+                const option = filteredOptions[i];
+                const lastGroup = groups[groups.length - 1];
+                if (!lastGroup || lastGroup.group !== option.group) {
+                  groups.push({ group: option.group, items: [{ option, globalIndex: i }] });
+                } else {
+                  lastGroup.items.push({ option, globalIndex: i });
+                }
+              }
+
+              return groups.map((section, sectionIndex) => (
+                <div key={section.group ?? `section-${sectionIndex}`}>
+                  {section.group && (
+                    <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted sticky top-0 z-10 border-b border-border">
+                      {section.group}
                     </div>
                   )}
-                  <button
-                    role="option"
-                    aria-selected={highlightedIndex === index}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      handleSelect(option.value, option.label);
-                    }}
-                    onMouseEnter={() => setHighlightedIndex(index)}
-                    className={cn(
-                      "w-full px-3 py-2 text-left text-sm focus:bg-accent focus:outline-none",
-                      highlightedIndex === index ? "bg-accent" : "hover:bg-accent"
-                    )}
-                  >
-                    {option.label}
-                  </button>
-                </React.Fragment>
-              );
-            })}
+                  {section.items.map(({ option, globalIndex }) => (
+                    <button
+                      key={option.id || `${option.value}-${globalIndex}`}
+                      role="option"
+                      aria-selected={highlightedIndex === globalIndex}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleSelect(option.value, option.label);
+                      }}
+                      onMouseEnter={() => setHighlightedIndex(globalIndex)}
+                      className={cn(
+                        "w-full px-3 py-2 text-left text-sm focus:bg-accent focus:outline-none",
+                        highlightedIndex === globalIndex ? "bg-accent" : "hover:bg-accent"
+                      )}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              ));
+            })()}
           </div>
         )}
       </div>

@@ -40,6 +40,7 @@ export {
   calculateAttackerItemModifier,
   calculateDefenderAbilityModifier,
   calculateDefenderItemModifier,
+  calculateFieldModifier,
   calculateStab,
   calculateWeatherModifier,
   getStatStageMultiplier,
@@ -68,10 +69,10 @@ export function calculateDamageV2(
   const finalPower = resolveBasePower(move, attacker, defender, context);
 
   // 2. 実効攻撃力を計算
-  const finalAttack = resolveEffectiveAttack(attacker, move);
+  const finalAttack = resolveEffectiveAttack(attacker, move, context, defender.ability);
 
   // 3. 実効防御力を計算
-  const finalDefense = resolveEffectiveDefense(defender, move);
+  const finalDefense = resolveEffectiveDefense(defender, move, attacker.ability, context);
 
   // 4. ベースダメージを計算
   const baseDamage = calculateBaseDamage(
@@ -82,7 +83,7 @@ export function calculateDamageV2(
   );
 
   // 5. 補正を適用（min/maxダメージに分岐）
-  const { minDamage, maxDamage, stab, typeEffectiveness, weatherModifier } =
+  const { minDamage, maxDamage, stab, typeEffectiveness, weatherModifier, fieldModifier } =
     calculateModifier(baseDamage, attacker, defender, move, context);
 
   // 6. HPを決定

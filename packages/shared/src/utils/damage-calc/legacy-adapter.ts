@@ -44,7 +44,7 @@ function convertAttacker(input: DamageCalculationInput): CalcPokemon {
     boosts,
     ability: input.condition.attackerAbility,
     item: input.condition.attackerItem,
-    status: "none",
+    status: input.condition.attackerBurned ? "burn" : "none",
     teraType: input.attackerTeraType,
     isTerastallized: input.condition.attackerTerastallized,
   };
@@ -56,28 +56,28 @@ function convertAttacker(input: DamageCalculationInput): CalcPokemon {
 function convertDefender(input: DamageCalculationInput): CalcPokemon {
   const { moveCategory, defenderDefense, defenderTypes } = input;
 
-  // 防御ステータスをmoveCategory に応じてマッピング
+  // サイコショック等: 特殊技だが物理防御を参照
+  const targetsPhysicalDefense = input.moveFlags?.targetsPhysicalDefense ?? false;
+  const usesPhysicalDef = moveCategory === "Physical" || targetsPhysicalDefense;
+
+  // 防御ステータスをマッピング（特殊技でも物理防御参照の場合は def に入れる）
   const stats = {
     hp: input.defenderMaxHp || 100,
     atk: 100,
-    def: moveCategory === "Physical" ? defenderDefense : 100,
+    def: usesPhysicalDef ? defenderDefense : 100,
     spa: 100,
-    spd: moveCategory === "Special" ? defenderDefense : 100,
+    spd: !usesPhysicalDef ? defenderDefense : 100,
     spe: 100,
   };
 
   // 防御側のランク補正を変換
+  const defRank = input.condition.defenderStatStages.defense as StatStage;
+  const spdRank = input.condition.defenderStatStages.specialDefense as StatStage;
   const boosts = {
     atk: 0 as StatStage,
-    def:
-      moveCategory === "Physical"
-        ? (input.condition.defenderStatStages.defense as StatStage)
-        : (0 as StatStage),
+    def: usesPhysicalDef ? defRank : (0 as StatStage),
     spa: 0 as StatStage,
-    spd:
-      moveCategory === "Special"
-        ? (input.condition.defenderStatStages.specialDefense as StatStage)
-        : (0 as StatStage),
+    spd: !usesPhysicalDef ? spdRank : (0 as StatStage),
     spe: 0 as StatStage,
   };
 
@@ -99,7 +99,7 @@ function convertDefender(input: DamageCalculationInput): CalcPokemon {
  */
 function convertMove(input: DamageCalculationInput): CalcMove {
   return {
-    name: "",
+    name: input.moveName || "",
     power: input.movePower,
     type: input.moveType,
     category: input.moveCategory,
@@ -118,9 +118,10 @@ function convertContext(input: DamageCalculationInput): BattleContext {
     isDoubleBattle: input.condition.isDoubleBattle,
     isSpreadMove: input.condition.isSpreadMove,
     isHelpingHand: input.condition.isHelpingHand,
-    // reflect と lightScreen は旧APIでは未対応のため undefined
-    reflect: undefined,
-    lightScreen: undefined,
+    reflect: input.condition.reflect,
+    lightScreen: input.condition.lightScreen,
+    allAttackerSideAbilities: input.condition.allAttackerSideAbilities,
+    allDefenderSideAbilities: input.condition.allDefenderSideAbilities,
   };
 }
 
