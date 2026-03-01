@@ -1,5 +1,12 @@
 import type { Pokemon } from './pokemon';
 
+/** パーティ関連定数 */
+export const MAX_PARTY_SIZE = 6;
+export const MAX_EV_TOTAL = 510;
+export const MAX_EV_PER_STAT = 252;
+export const MAX_MOVE_COUNT = 4;
+export const MAX_EV_CONTRIBUTION_TO_ACTUAL_STATS = 65;
+
 /** レギュレーション */
 export type Regulation = 'SV' | 'Champions';
 

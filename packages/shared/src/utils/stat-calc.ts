@@ -150,3 +150,94 @@ export function calcActualStats(
     ),
   };
 }
+
+/**
+ * EV配置が規則内か検証（総EV≤510、各ステータス≤252）
+ */
+export function isValidEvAllocation(evs: Stats): boolean {
+  const total = Object.values(evs).reduce((sum, val) => sum + val, 0);
+  return (
+    total <= 510 && 
+    evs.hp <= 252 &&
+    evs.attack <= 252 &&
+    evs.defense <= 252 &&
+    evs.specialAttack <= 252 &&
+    evs.specialDefense <= 252 &&
+    evs.speed <= 252
+  );
+}
+
+/**
+ * 実数値から「最も近い実現可能なEV」を見つける（単一ステータス）
+ * 到達不可能な場合も、最も近い値を返す（到達不可なら0）
+ */
+export function findClosestRealizableEv(
+  targetStat: number,
+  base: number,
+  iv: number,
+  level: number,
+  natureModifier: number,
+  isHp: boolean
+): { ev: number; actualStat: number } {
+  const maxEv = 252;
+  let bestEv = 0;
+  let bestStat = isHp 
+    ? calcHpStat(base, iv, 0, level) 
+    : calcOtherStat(base, iv, 0, level, natureModifier);
+  
+  for (let ev = 0; ev <= maxEv; ev += 4) {
+    const actual = isHp
+      ? calcHpStat(base, iv, ev, level)
+      : calcOtherStat(base, iv, ev, level, natureModifier);
+    
+    if (actual === targetStat) {
+      // 完全一致
+      return { ev, actualStat: actual };
+    }
+    
+    if (actual < targetStat) {
+      // より近い値を記録
+      bestEv = ev;
+      bestStat = actual;
+    } else {
+      // targetStat を超えた → 終了
+      break;
+    }
+  }
+  
+  return { ev: bestEv, actualStat: bestStat };
+}
+
+/**
+ * 単一ステータスのEVから寄与実数値を計算（ヘルパー関数）
+ * EV 0-3: 0
+ * EV 4: 1
+ * EV 5-11: 1
+ * EV 12: 2
+ * EV 13-19: 2
+ * EV 20: 3
+ * ...計算式: EV < 4 ? 0 : 1 + floor((EV - 4) / 8)
+ */
+function calculateSingleEvContribution(ev: number): number {
+  if (ev < 4) return 0;
+  return 1 + Math.floor((ev - 4) / 8);
+}
+
+/**
+ * EVから寄与される実数値の合計を計算
+ * 各ステータスのEVを新仕様で計算して合計
+ * EV0-3で0、EV4で1増加、以降8刻みで+1
+ * @param evs - 努力値オブジェクト
+ * @returns EVから寄与される実数値の合計（最大66）
+ */
+export function calcEvContributionToActualStats(evs: Stats): number {
+  return (
+    calculateSingleEvContribution(evs.hp) +
+    calculateSingleEvContribution(evs.attack) +
+    calculateSingleEvContribution(evs.defense) +
+    calculateSingleEvContribution(evs.specialAttack) +
+    calculateSingleEvContribution(evs.specialDefense) +
+    calculateSingleEvContribution(evs.speed)
+  );
+}
+
