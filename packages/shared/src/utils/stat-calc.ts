@@ -241,3 +241,54 @@ export function calcEvContributionToActualStats(evs: Stats): number {
   );
 }
 
+/**
+ * 実数値をEV＝0の基本値とEV増加分に分割する
+ * @param baseStats - 種族値
+ * @param ivs - 個体値
+ * @param evs - 努力値
+ * @param level - レベル
+ * @param nature - 性格
+ * @returns 各ステータスの { baseValue, evContribution } を含むオブジェクト
+ */
+export function splitActualStatsByEvContribution(
+  baseStats: BaseStats,
+  ivs: Stats,
+  evs: Stats,
+  level: number,
+  nature: Nature
+): Record<keyof Stats, { baseValue: number; evContribution: number }> {
+  // EV=0の状態での基本値を計算
+  const baseValues = calcActualStats(baseStats, ivs, { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0 }, level, nature);
+  
+  // 現在の実数値を計算
+  const currentValues = calcActualStats(baseStats, ivs, evs, level, nature);
+  
+  // 差分を計算（EV増加分）
+  return {
+    hp: {
+      baseValue: baseValues.hp,
+      evContribution: currentValues.hp - baseValues.hp,
+    },
+    attack: {
+      baseValue: baseValues.attack,
+      evContribution: currentValues.attack - baseValues.attack,
+    },
+    defense: {
+      baseValue: baseValues.defense,
+      evContribution: currentValues.defense - baseValues.defense,
+    },
+    specialAttack: {
+      baseValue: baseValues.specialAttack,
+      evContribution: currentValues.specialAttack - baseValues.specialAttack,
+    },
+    specialDefense: {
+      baseValue: baseValues.specialDefense,
+      evContribution: currentValues.specialDefense - baseValues.specialDefense,
+    },
+    speed: {
+      baseValue: baseValues.speed,
+      evContribution: currentValues.speed - baseValues.speed,
+    },
+  };
+}
+

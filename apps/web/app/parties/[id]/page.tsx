@@ -127,7 +127,7 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
                             </div>
                             {/* 実数値 */}
                             {species && (
-                                <ActualStatsDisplay pokemon={pk} baseStats={species.baseStats} />
+                                <ActualStatsDisplay pokemon={pk} baseStats={species.baseStats} showEvContribution={true} />
                             )}
                         </div>
                     );

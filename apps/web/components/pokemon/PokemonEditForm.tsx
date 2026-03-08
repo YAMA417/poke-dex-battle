@@ -13,9 +13,11 @@ import {
     calcHpStat,
     calcOtherStat,
     MAX_EV_CONTRIBUTION_TO_ACTUAL_STATS,
+    splitActualStatsByEvContribution,
 } from '@poke-dex-battle/shared';
 import { EVSlider } from './EVSlider';
 import { IVInputGrid } from './IVInputGrid';
+import { STAT_COLORS } from '@/lib/utils';
 import { AlertTriangle } from 'lucide-react';
 
 const NATURES: Nature[] = [
@@ -418,16 +420,34 @@ export function PokemonEditForm({ pokemon, species, onChange }: PokemonEditFormP
                         hp: 'H', attack: 'A', defense: 'B', specialAttack: 'C', specialDefense: 'D', speed: 'S'
                     };
                     const error = actualStatErrors[key];
+                    
+                    // EV増加分を計算
+                    const splitStats = splitActualStatsByEvContribution(
+                        species.baseStats,
+                        pokemon.ivs,
+                        pokemon.evs,
+                        pokemon.level,
+                        pokemon.nature as Nature
+                    );
+                    const split = splitStats[key];
+                    const max = key === 'hp' ? 230 : 200;
+                    const basePct = Math.min(100, (split.baseValue / max) * 100);
+                    const evPct = Math.min(100, (split.evContribution / max) * 100);
+                    
                     return (
                         <div key={key} className="space-y-1">
                             <div className="flex items-center gap-2">
                                 <span className={`text-xs font-bold w-4 ${isUp ? 'text-red-500' : isDown ? 'text-blue-500' : 'text-gray-500'}`}>
                                     {labels[key]}
                                 </span>
-                                <div className="flex-1 bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                                <div className="flex-1 bg-gray-200 rounded-full h-1.5 overflow-hidden flex">
                                     <div
-                                        className={`h-full rounded-full transition-all ${isUp ? 'bg-red-400' : isDown ? 'bg-blue-300' : 'bg-pokemon-blue'}`}
-                                        style={{ width: `${Math.min(100, (actualStats[key] / (key === 'hp' ? 230 : 200)) * 100)}%` }}
+                                        className={`h-full transition-all ${isUp ? 'bg-red-300' : isDown ? 'bg-blue-300' : STAT_COLORS.base}`}
+                                        style={{ width: `${basePct}%` }}
+                                    />
+                                    <div
+                                        className={`h-full transition-all ${STAT_COLORS.evContribution}`}
+                                        style={{ width: `${evPct}%` }}
                                     />
                                 </div>
                                 <input
@@ -453,6 +473,9 @@ export function PokemonEditForm({ pokemon, species, onChange }: PokemonEditFormP
                                         error ? 'border-amber-300 bg-amber-50' : 'border-gray-200'
                                     }`}
                                 />
+                                <div className="w-8 text-[10px] text-right text-gray-500">
+                                    +{split.evContribution}
+                                </div>
                                 {isUp && <span className="text-[10px] text-red-500">↑</span>}
                                 {isDown && <span className="text-[10px] text-blue-500">↓</span>}
                             </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { Pokemon } from '@poke-dex-battle/shared';
-import { calcActualStats, calcEvContributionToActualStats, MAX_EV_CONTRIBUTION_TO_ACTUAL_STATS } from '@poke-dex-battle/shared';
+import { calcActualStats, calcEvContributionToActualStats, MAX_EV_CONTRIBUTION_TO_ACTUAL_STATS, splitActualStatsByEvContribution } from '@poke-dex-battle/shared';
 import type { BaseStats, Nature, Stats } from '@poke-dex-battle/shared';
 
 const TYPE_COLORS: Record<string, string> = {
@@ -53,6 +53,18 @@ interface StatBarProps {
     colorClass?: string;
 }
 
+/**
+ * EV増加分を色分けして表示するバー
+ */
+interface StatBarWithEvProps {
+    label: string;
+    baseValue: number;
+    evContribution: number;
+    max?: number;
+    baseValueColor?: string;
+    evContributionColor?: string;
+}
+
 function StatBar({ label, value, max = 255, colorClass = 'bg-blue-500' }: StatBarProps) {
     const pct = Math.min(100, Math.round((value / max) * 100));
     return (
@@ -69,12 +81,60 @@ function StatBar({ label, value, max = 255, colorClass = 'bg-blue-500' }: StatBa
     );
 }
 
+/**
+ * 基本値とEV増加分を色分けして表示
+ */
+function StatBarWithEv({
+    label,
+    baseValue,
+    evContribution,
+    max = 255,
+    baseValueColor = 'bg-pokemon-blue',
+    evContributionColor = 'bg-orange-400',
+}: StatBarWithEvProps) {
+    const totalValue = baseValue + evContribution;
+    const totalPct = Math.min(100, Math.round((totalValue / max) * 100));
+    const basePct = Math.min(100, Math.round((baseValue / max) * 100));
+    const evPct = Math.min(100, Math.round((evContribution / max) * 100));
+
+    return (
+        <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 w-8 shrink-0 text-right">{label}</span>
+            <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden flex">
+                <div
+                    className={`h-full transition-all duration-300 ${baseValueColor}`}
+                    style={{ width: `${basePct}%` }}
+                />
+                <div
+                    className={`h-full transition-all duration-300 ${evContributionColor}`}
+                    style={{ width: `${evPct}%` }}
+                />
+            </div>
+            <div className="text-xs font-semibold w-6 text-right tabular-nums">
+                <span >{totalValue}</span>
+            </div>
+            <div className="text-xs font-semibold w-3 text-right tabular-nums">
+                <span className="text-gray-400 text-[10px]">+{evContribution}</span>
+            </div>
+        </div>
+    );
+}
+
 type ActualStatsDisplayProps = {
     pokemon: Pokemon;
     baseStats: BaseStats;
+    showEvContribution?: boolean;
+    baseValueColor?: string;
+    evContributionColor?: string;
 };
 
-export function ActualStatsDisplay({ pokemon, baseStats }: ActualStatsDisplayProps) {
+export function ActualStatsDisplay({
+    pokemon,
+    baseStats,
+    showEvContribution = false,
+    baseValueColor = 'bg-pokemon-blue',
+    evContributionColor = 'bg-orange-400',
+}: ActualStatsDisplayProps) {
     const actual = calcActualStats(
         baseStats,
         pokemon.ivs,
@@ -82,6 +142,17 @@ export function ActualStatsDisplay({ pokemon, baseStats }: ActualStatsDisplayPro
         pokemon.level,
         pokemon.nature as Nature
     );
+
+    // EV増加分を表示する場合、基本値とEV増加分を計算
+    const splitStats = showEvContribution
+        ? splitActualStatsByEvContribution(
+              baseStats,
+              pokemon.ivs,
+              pokemon.evs,
+              pokemon.level,
+              pokemon.nature as Nature
+          )
+        : null;
 
     const NATURE_UP_DOWN = getNatureEffect(pokemon.nature as Nature);
     const evContribution = calcEvContributionToActualStats(pokemon.evs);
@@ -120,6 +191,38 @@ export function ActualStatsDisplay({ pokemon, baseStats }: ActualStatsDisplayPro
             {stats.map(({ key, label, barColor }) => {
                 const isUp = NATURE_UP_DOWN.up === key;
                 const isDown = NATURE_UP_DOWN.down === key;
+
+                // EV増加分を表示する場合
+                if (showEvContribution && splitStats) {
+                    const split = splitStats[key];
+                    const max = key === 'hp' ? 230 : 200;
+
+                    return (
+                        <div key={key} className="flex items-center gap-1">
+                            <span
+                                className={`text-xs font-bold w-4 ${
+                                    isUp ? 'text-red-500' : isDown ? 'text-blue-500' : 'text-gray-500'
+                                }`}
+                            >
+                                {label}
+                            </span>
+                            <div className="flex-1">
+                                <StatBarWithEv
+                                    label=""
+                                    baseValue={split.baseValue}
+                                    evContribution={split.evContribution}
+                                    max={max}
+                                    baseValueColor={baseValueColor}
+                                    evContributionColor={evContributionColor}
+                                />
+                            </div>
+                            {isUp && <span className="text-[10px] text-red-500 font-bold">↑</span>}
+                            {isDown && <span className="text-[10px] text-blue-500 font-bold">↓</span>}
+                        </div>
+                    );
+                }
+
+                // 通常の表示（EV増加分なし）
                 return (
                     <div key={key} className="flex items-center gap-1">
                         <span
