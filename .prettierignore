@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.next/
+out/
+packages/shared/src/data/
+coverage/
+*.tsbuildinfo
