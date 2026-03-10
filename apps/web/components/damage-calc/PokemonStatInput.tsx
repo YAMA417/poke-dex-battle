@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { calcOtherStat } from "@poke-dex-battle/shared";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 type StatType = "attack" | "defense" | "specialAttack" | "specialDefense";
 
@@ -30,14 +30,15 @@ export function PokemonStatInput({
   const [mode, setMode] = useState<"manual" | "auto">("auto");
   const [iv, setIv] = useState(31);
   const [ev, setEv] = useState(252);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
   // natureModifier or baseStat が変更されたら自動で再計算
   useEffect(() => {
     if (mode === "auto") {
       const calculated = calcOtherStat(baseStat, iv, ev, level, natureModifier);
-      onChange(calculated);
+      onChangeRef.current(calculated);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [natureModifier, baseStat, mode, iv, ev, level]);
 
   const handleModeToggle = () => {
