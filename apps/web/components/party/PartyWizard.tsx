@@ -92,15 +92,17 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
             savedId = created.id;
             setPartyId(savedId);
         } else {
-            updateParty(savedId, { name: partyName.trim(), regulation, memo: memo || undefined });
+            // 制御フロー分析のため、変数に再代入して型を確定
+            const id = savedId;
+            updateParty(id, { name: partyName.trim(), regulation, memo: memo || undefined });
             // 既存ポケモンは全削除して再追加（差分管理は将来対応）
-            const existing = getParty(savedId);
-            existing?.pokemons.forEach((pk) => removePokemon(savedId!, pk.id));
+            const existing = getParty(id);
+            existing?.pokemons.forEach((pk) => removePokemon(id, pk.id));
         }
 
         // ポケモン追加
         pokemons.forEach(({ pokemon }) => {
-            addPokemon(savedId!, { ...pokemon, id: '' });
+            addPokemon(savedId, { ...pokemon, id: '' });
         });
 
         router.push(`/parties/${savedId}`);

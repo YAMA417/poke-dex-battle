@@ -58,7 +58,7 @@ export function PokemonEditForm({ pokemon, species, onChange }: PokemonEditFormP
         const isHp = stat === 'hp';
         const baseStat = species.baseStats[stat];
         const iv = pokemon.ivs[stat];
-        const natureModifier = isHp ? 1 : getNatureModifier(pokemon.nature as Nature, stat as keyof Omit<Stats, 'hp'>);
+        const natureModifier = isHp ? 1 : getNatureModifier(pokemon.nature, stat as keyof Omit<Stats, 'hp'>);
         
         // 最も近い実現可能な EV を取得
         const { ev: newEv, actualStat } = findClosestRealizableEv(
@@ -192,7 +192,7 @@ export function PokemonEditForm({ pokemon, species, onChange }: PokemonEditFormP
             {/* ── 性格 ── */}
             <section className="space-y-2">
                 <h4 className="text-sm font-bold text-gray-700 border-b pb-1">性格</h4>
-                <NatureSelector nature={pokemon.nature as Nature} onChange={(nature) => onChange({ nature })} />
+                <NatureSelector nature={pokemon.nature} onChange={(nature) => onChange({ nature })} />
             </section>
 
             {/* ── 技 ── */}

@@ -2,6 +2,20 @@ import type { Party } from '../types/party';
 import { validatePartyImport } from './party-validation';
 
 /**
+ * Type guard to check if value is an array of objects
+ */
+function isRecordArray(value: unknown): value is Record<string, unknown>[] {
+    return Array.isArray(value) && value.every(item => typeof item === 'object' && item !== null);
+}
+
+/**
+ * Type guard to check if object has the required createdAt property
+ */
+function hasDateProperty(obj: unknown, prop: string): obj is Record<string, unknown> & { [key: string]: unknown } {
+    return typeof obj === 'object' && obj !== null && prop in obj && typeof (obj as Record<string, unknown>)[prop] === 'string';
+}
+
+/**
  * パーティ配列をJSON文字列に変換
  */
 export function exportPartiesToJson(parties: Party[]): string {
@@ -25,11 +39,16 @@ export function importPartiesFromJson(json: string): Party[] {
         throw new Error(`インポートデータが不正です:\n${result.errors.join('\n')}`);
     }
 
+    // Type guard to ensure parsed is array of objects after validation
+    if (!isRecordArray(parsed)) {
+        throw new Error('パーティデータの形式が不正です。');
+    }
+
     // 日付文字列を Date オブジェクトに変換
-    const parties = (parsed as Record<string, unknown>[]).map((p) => ({
+    const parties = parsed.map((p) => ({
         ...p,
-        createdAt: new Date(p['createdAt'] as string),
-        updatedAt: new Date(p['updatedAt'] as string),
+        createdAt: new Date(String(p['createdAt'])),
+        updatedAt: new Date(String(p['updatedAt'])),
         pokemons: Array.isArray(p['pokemons']) ? p['pokemons'] : [],
     })) as Party[];
 

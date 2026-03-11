@@ -131,7 +131,7 @@ export function ActualStatsDisplay({
         pokemon.ivs,
         pokemon.evs,
         pokemon.level,
-        pokemon.nature as Nature
+        pokemon.nature
     );
 
     // EV増加分を表示する場合、基本値とEV増加分を計算
@@ -141,11 +141,11 @@ export function ActualStatsDisplay({
               pokemon.ivs,
               pokemon.evs,
               pokemon.level,
-              pokemon.nature as Nature
+              pokemon.nature
           )
         : null;
 
-    const NATURE_UP_DOWN = getNatureEffect(pokemon.nature as Nature);
+    const NATURE_UP_DOWN = getNatureEffect(pokemon.nature);
     const evContribution = calcEvContributionToActualStats(pokemon.evs);
     const isEvContributionAtMax = evContribution >= MAX_EV_CONTRIBUTION_TO_ACTUAL_STATS;
 

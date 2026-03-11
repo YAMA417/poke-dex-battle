@@ -26,7 +26,7 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
     }
 
     function handleDelete() {
-        if (confirm(`「${party!.name}」を削除しますか？`)) {
+        if (confirm(`「${party?.name ?? 'パーティ'}」を削除しますか？`)) {
             deleteParty(id);
             router.push('/parties');
         }
