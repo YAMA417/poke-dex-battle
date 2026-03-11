@@ -84,7 +84,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
         if (editingIdx >= idx && editingIdx > 0) setEditingIdx(editingIdx - 1);
     }
 
-    async function handleSave() {
+    function handleSave() {
         // パーティ保存
         let savedId = partyId;
         if (!savedId) {

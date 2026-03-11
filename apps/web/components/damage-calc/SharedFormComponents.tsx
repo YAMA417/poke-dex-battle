@@ -4,29 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { PokemonType } from "@poke-dex-battle/shared";
 import { getTypeDisplayName } from "@poke-dex-battle/shared";
-
-// --- タイプカラーマッピング ---
-
-const TYPE_COLORS: Record<string, string> = {
-  Normal: "bg-gray-400",
-  Fire: "bg-red-500",
-  Water: "bg-blue-500",
-  Electric: "bg-yellow-400",
-  Grass: "bg-green-500",
-  Ice: "bg-cyan-300",
-  Fighting: "bg-orange-700",
-  Poison: "bg-purple-500",
-  Ground: "bg-amber-600",
-  Flying: "bg-indigo-300",
-  Psychic: "bg-pink-500",
-  Bug: "bg-lime-500",
-  Rock: "bg-amber-700",
-  Ghost: "bg-purple-700",
-  Dragon: "bg-indigo-600",
-  Dark: "bg-gray-700",
-  Steel: "bg-gray-400",
-  Fairy: "bg-pink-300",
-};
+import { POKEMON_TYPE_COLORS } from "@/lib/constants";
 
 // --- 性格補正コンパクトボタン ---
 
@@ -135,7 +113,7 @@ export function TypeBadges({ types }: { types: PokemonType[] }) {
       {types.map((type) => (
         <span
           key={type}
-          className={`px-2 py-0.5 text-[10px] font-semibold text-white rounded ${TYPE_COLORS[type] ?? "bg-gray-500"}`}
+          className={`px-2 py-0.5 text-[10px] font-semibold text-white rounded ${POKEMON_TYPE_COLORS[type] ?? "bg-gray-500"}`}
         >
           {getTypeDisplayName(type, locale)}
         </span>

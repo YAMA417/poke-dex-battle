@@ -3,48 +3,9 @@
 import { Pokemon } from '@poke-dex-battle/shared';
 import { calcActualStats, calcEvContributionToActualStats, MAX_EV_CONTRIBUTION_TO_ACTUAL_STATS, splitActualStatsByEvContribution } from '@poke-dex-battle/shared';
 import type { BaseStats, Nature, Stats } from '@poke-dex-battle/shared';
-
-const TYPE_COLORS: Record<string, string> = {
-    Normal: 'bg-gray-400',
-    Fire: 'bg-orange-500',
-    Water: 'bg-blue-500',
-    Electric: 'bg-yellow-400',
-    Grass: 'bg-green-500',
-    Ice: 'bg-cyan-300',
-    Fighting: 'bg-red-700',
-    Poison: 'bg-purple-500',
-    Ground: 'bg-yellow-600',
-    Flying: 'bg-indigo-300',
-    Psychic: 'bg-pink-500',
-    Bug: 'bg-lime-500',
-    Rock: 'bg-yellow-800',
-    Ghost: 'bg-purple-800',
-    Dragon: 'bg-indigo-700',
-    Dark: 'bg-gray-800',
-    Steel: 'bg-gray-500',
-    Fairy: 'bg-pink-300',
-};
-
-const TYPE_LABELS: Record<string, string> = {
-    Normal: 'ノーマル',
-    Fire: 'ほのお',
-    Water: 'みず',
-    Electric: 'でんき',
-    Grass: 'くさ',
-    Ice: 'こおり',
-    Fighting: 'かくとう',
-    Poison: 'どく',
-    Ground: 'じめん',
-    Flying: 'ひこう',
-    Psychic: 'エスパー',
-    Bug: 'むし',
-    Rock: 'いわ',
-    Ghost: 'ゴースト',
-    Dragon: 'ドラゴン',
-    Dark: 'あく',
-    Steel: 'はがね',
-    Fairy: 'フェアリー',
-};
+import { POKEMON_TYPE_COLORS } from '@/lib/constants';
+import { POKEMON_TYPE_LABELS_JA } from '@poke-dex-battle/shared';
+import { STAT_COLORS } from '@/lib/utils';
 
 interface StatBarProps {
     label: string;
@@ -126,6 +87,31 @@ type ActualStatsDisplayProps = {
     showEvContribution?: boolean;
     baseValueColor?: string;
     evContributionColor?: string;
+    /**
+     * Callback when actual stat value is changed by user input.
+     * Only effective when showEvContribution is true.
+     */
+    onStatChange?: (stat: keyof Stats, targetValue: number) => void;
+    /**
+     * Validation errors for each stat.
+     * Only effective when showEvContribution is true.
+     */
+    statErrors?: Partial<Record<keyof Stats, string>>;
+    /**
+     * Controlled input values for stat editing.
+     * Only effective when showEvContribution is true.
+     */
+    actualStatInputs?: Partial<Record<keyof Stats, string>>;
+    /**
+     * Callback when stat input value changes (for controlled input).
+     * Only effective when showEvContribution is true.
+     */
+    onStatInputChange?: (stat: keyof Stats, value: string) => void;
+    /**
+     * Callback when stat input loses focus.
+     * Only effective when showEvContribution is true.
+     */
+    onStatInputBlur?: (stat: keyof Stats) => void;
 };
 
 export function ActualStatsDisplay({
@@ -134,6 +120,11 @@ export function ActualStatsDisplay({
     showEvContribution = false,
     baseValueColor = 'bg-pokemon-blue',
     evContributionColor = 'bg-orange-400',
+    onStatChange,
+    statErrors = {},
+    actualStatInputs = {},
+    onStatInputChange,
+    onStatInputBlur,
 }: ActualStatsDisplayProps) {
     const actual = calcActualStats(
         baseStats,
@@ -196,9 +187,10 @@ export function ActualStatsDisplay({
                 if (showEvContribution && splitStats) {
                     const split = splitStats[key];
                     const max = key === 'hp' ? 230 : 200;
+                    const error = statErrors?.[key];
 
                     return (
-                        <div key={key} className="flex items-center gap-1">
+                        <div key={key} className={`flex items-center gap-1 ${error ? 'rounded p-1 bg-amber-50' : ''}`}>
                             <span
                                 className={`text-xs font-bold w-4 ${
                                     isUp ? 'text-red-500' : isDown ? 'text-blue-500' : 'text-gray-500'
@@ -206,18 +198,32 @@ export function ActualStatsDisplay({
                             >
                                 {label}
                             </span>
-                            <div className="flex-1">
-                                <StatBarWithEv
-                                    label=""
-                                    baseValue={split.baseValue}
-                                    evContribution={split.evContribution}
-                                    max={max}
-                                    baseValueColor={baseValueColor}
-                                    evContributionColor={evContributionColor}
-                                />
+                            <div className="flex-1 flex items-center gap-2">
+                                <div className="flex-1">
+                                    <StatBarWithEv
+                                        label=""
+                                        baseValue={split.baseValue}
+                                        evContribution={split.evContribution}
+                                        max={max}
+                                        baseValueColor={baseValueColor}
+                                        evContributionColor={evContributionColor}
+                                    />
+                                </div>
+                                {/* 実数値入力フィールド（onStatChange が渡された場合のみ） */}
+                                {onStatChange && (
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        value={actualStatInputs[key] ?? (split.baseValue + split.evContribution)}
+                                        onChange={(e) => onStatInputChange?.(key, e.target.value)}
+                                        onBlur={() => onStatInputBlur?.(key)}
+                                        className={`w-16 text-right text-xs border rounded px-1 py-0.5 tabular-nums focus:outline-none focus:ring-1 focus:ring-pokemon-blue ${
+                                            error ? 'border-amber-300 bg-white' : 'border-gray-200'
+                                        }`}
+                                    />
+                                )}
                             </div>
-                            {isUp && <span className="text-[10px] text-red-500 font-bold">↑</span>}
-                            {isDown && <span className="text-[10px] text-blue-500 font-bold">↓</span>}
+                            {error && <span className="text-[10px] text-amber-600 ml-1 max-w-[100px] text-right">{error}</span>}
                         </div>
                     );
                 }
@@ -239,8 +245,6 @@ export function ActualStatsDisplay({
                                 colorClass={isUp ? 'bg-red-400' : isDown ? 'bg-blue-300' : barColor}
                             />
                         </div>
-                        {isUp && <span className="text-[10px] text-red-500 font-bold">↑</span>}
-                        {isDown && <span className="text-[10px] text-blue-500 font-bold">↓</span>}
                     </div>
                 );
             })}
@@ -248,10 +252,10 @@ export function ActualStatsDisplay({
             <div className="pt-2 flex items-center gap-1">
                 <span className="text-xs text-gray-500">テラスタイプ:</span>
                 <span
-                    className={`text-xs text-white px-2 py-0.5 rounded-full font-semibold ${TYPE_COLORS[pokemon.teraType] ?? 'bg-gray-400'
+                    className={`text-xs text-white px-2 py-0.5 rounded-full font-semibold ${POKEMON_TYPE_COLORS[pokemon.teraType] ?? 'bg-gray-400'
                         }`}
                 >
-                    {TYPE_LABELS[pokemon.teraType] ?? pokemon.teraType}
+                    {POKEMON_TYPE_LABELS_JA[pokemon.teraType] ?? pokemon.teraType}
                 </span>
             </div>
         </div>

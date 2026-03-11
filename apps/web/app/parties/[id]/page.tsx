@@ -4,23 +4,15 @@ import { use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePartyStore } from '@/hooks/use-party-store';
-import { ExportImportPanel } from '@/components/party/ExportImportPanel';
 import { getPokemonByName } from '@poke-dex-battle/shared';
 import { ActualStatsDisplay } from '@/components/pokemon/ActualStatsDisplay';
+import { POKEMON_TYPE_COLORS } from '@/lib/constants';
 import { ChevronLeft, Edit, Trash2, Copy, Download } from 'lucide-react';
-
-const TYPE_COLOR: Record<string, string> = {
-    Normal: 'bg-gray-400', Fire: 'bg-orange-500', Water: 'bg-blue-500', Electric: 'bg-yellow-400',
-    Grass: 'bg-green-500', Ice: 'bg-cyan-300', Fighting: 'bg-red-700', Poison: 'bg-purple-500',
-    Ground: 'bg-yellow-600', Flying: 'bg-indigo-300', Psychic: 'bg-pink-500', Bug: 'bg-lime-500',
-    Rock: 'bg-yellow-800', Ghost: 'bg-purple-800', Dragon: 'bg-indigo-700', Dark: 'bg-gray-800',
-    Steel: 'bg-gray-500', Fairy: 'bg-pink-300',
-};
 
 export default function PartyDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const router = useRouter();
-    const { getParty, deleteParty, duplicateParty, exportParty } = usePartyStore();
+    const { getParty, deleteParty, duplicateParty } = usePartyStore();
     const party = getParty(id);
 
     if (!party) {
@@ -92,7 +84,7 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
                                     {pk.nickname && <div className="text-xs text-gray-400">{species?.nameJa}</div>}
                                     <div className="flex gap-1 mt-1">
                                         {species?.types.map((t) => (
-                                            <span key={t} className={`text-[10px] text-white px-1.5 py-0.5 rounded-full font-semibold ${TYPE_COLOR[t] ?? 'bg-gray-400'}`}>
+                                            <span key={t} className={`text-[10px] text-white px-1.5 py-0.5 rounded-full font-semibold ${POKEMON_TYPE_COLORS[t] ?? 'bg-gray-400'}`}>
                                                 {t}
                                             </span>
                                         ))}
@@ -103,7 +95,7 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
                             <div className="grid grid-cols-3 gap-1 text-center text-[11px] text-gray-500">
                                 <div className="bg-gray-50 rounded-lg px-1 py-1">
                                     <div className="font-bold text-gray-700">テラス</div>
-                                    <div className={`text-[10px] text-white px-1 py-0.5 rounded-full inline-block mt-0.5 ${TYPE_COLOR[pk.teraType] ?? 'bg-gray-400'}`}>{pk.teraType}</div>
+                                    <div className={`text-[10px] text-white px-1 py-0.5 rounded-full inline-block mt-0.5 ${POKEMON_TYPE_COLORS[pk.teraType] ?? 'bg-gray-400'}`}>{pk.teraType}</div>
                                 </div>
                                 <div className="bg-gray-50 rounded-lg px-1 py-1">
                                     <div className="font-bold text-gray-700">持ち物</div>
@@ -118,7 +110,7 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
                             <div className="space-y-1">
                                 {pk.moves.slice(0, 4).map((m, i) => (
                                     <div key={i} className="flex items-center gap-1.5 text-xs text-gray-700">
-                                        <span className={`w-2 h-2 rounded-full shrink-0 ${TYPE_COLOR[m.type] ?? 'bg-gray-300'}`} />
+                                        <span className={`w-2 h-2 rounded-full shrink-0 ${POKEMON_TYPE_COLORS[m.type] ?? 'bg-gray-300'}`} />
                                         {m.name}
                                         {m.power && <span className="text-gray-400 ml-auto tabular-nums">威力{m.power}</span>}
                                     </div>
@@ -139,15 +131,6 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
                         <Link href={`/parties/${id}/edit`} className="mt-3 text-sm text-pokemon-blue hover:underline">編集して追加 →</Link>
                     </div>
                 )}
-            </div>
-
-            {/* エクスポートパネル */}
-            <div className="border-t pt-4">
-                <ExportImportPanel
-                    onExport={() => exportParty(id)}
-                    onImport={() => { }}
-                    label="このパーティ"
-                />
             </div>
         </div>
     );

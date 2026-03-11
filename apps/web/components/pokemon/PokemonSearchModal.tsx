@@ -3,24 +3,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { searchPokemon } from '@poke-dex-battle/shared';
 import type { PokemonSpeciesData } from '@poke-dex-battle/shared';
+import { POKEMON_TYPE_COLORS } from '@/lib/constants';
+import { POKEMON_TYPE_LABELS_JA } from '@poke-dex-battle/shared';
 import { X, Search } from 'lucide-react';
-
-const TYPE_COLORS: Record<string, string> = {
-    Normal: 'bg-gray-400', Fire: 'bg-orange-500', Water: 'bg-blue-500',
-    Electric: 'bg-yellow-400', Grass: 'bg-green-500', Ice: 'bg-cyan-300',
-    Fighting: 'bg-red-700', Poison: 'bg-purple-500', Ground: 'bg-yellow-600',
-    Flying: 'bg-indigo-300', Psychic: 'bg-pink-500', Bug: 'bg-lime-500',
-    Rock: 'bg-yellow-800', Ghost: 'bg-purple-800', Dragon: 'bg-indigo-700',
-    Dark: 'bg-gray-800', Steel: 'bg-gray-500', Fairy: 'bg-pink-300',
-};
-
-const TYPE_LABELS_JA: Record<string, string> = {
-    Normal: 'ノーマル', Fire: 'ほのお', Water: 'みず', Electric: 'でんき',
-    Grass: 'くさ', Ice: 'こおり', Fighting: 'かくとう', Poison: 'どく',
-    Ground: 'じめん', Flying: 'ひこう', Psychic: 'エスパー', Bug: 'むし',
-    Rock: 'いわ', Ghost: 'ゴースト', Dragon: 'ドラゴン', Dark: 'あく',
-    Steel: 'はがね', Fairy: 'フェアリー',
-};
 
 interface PokemonSearchModalProps {
     open: boolean;
@@ -39,7 +24,7 @@ export function PokemonSearchModal({ open, onClose, onSelect, disabledIds = [] }
     useEffect(() => {
         if (open) {
             setQuery('');
-            setResults(searchPokemon('').slice(0, 20));
+            setResults(searchPokemon(''));
             setTimeout(() => inputRef.current?.focus(), 50);
         }
     }, [open]);
@@ -49,8 +34,8 @@ export function PokemonSearchModal({ open, onClose, onSelect, disabledIds = [] }
         if (timerRef.current) clearTimeout(timerRef.current);
         timerRef.current = setTimeout(() => {
             const res = value.trim()
-                ? searchPokemon(value).slice(0, 30)
-                : searchPokemon('').slice(0, 20);
+                ? searchPokemon(value)
+                : searchPokemon('');
             setResults(res);
         }, 180);
     }, []);
@@ -120,9 +105,9 @@ export function PokemonSearchModal({ open, onClose, onSelect, disabledIds = [] }
                                                 {sp.types.map((t) => (
                                                     <span
                                                         key={t}
-                                                        className={`text-[10px] text-white px-1.5 py-0.5 rounded-full font-semibold ${TYPE_COLORS[t] ?? 'bg-gray-400'}`}
+                                                        className={`text-[10px] text-white px-1.5 py-0.5 rounded-full font-semibold ${POKEMON_TYPE_COLORS[t] ?? 'bg-gray-400'}`}
                                                     >
-                                                        {TYPE_LABELS_JA[t] ?? t}
+                                                        {POKEMON_TYPE_LABELS_JA[t] ?? t}
                                                     </span>
                                                 ))}
                                             </div>

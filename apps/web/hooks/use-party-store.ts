@@ -28,11 +28,6 @@ interface PartyStore {
     addPokemon: (partyId: string, pokemon: Pokemon) => void;
     updatePokemon: (partyId: string, pokemonId: string, data: Partial<Pokemon>) => void;
     removePokemon: (partyId: string, pokemonId: string) => void;
-
-    // Import / Export
-    exportParty: (id: string) => string;
-    exportAll: () => string;
-    importParties: (json: string) => void;
 }
 
 export const usePartyStore = create<PartyStore>()(
@@ -120,29 +115,6 @@ export const usePartyStore = create<PartyStore>()(
                     if (!party) return;
                     party.pokemons = party.pokemons.filter((pk) => pk.id !== pokemonId);
                     party.updatedAt = new Date();
-                });
-            },
-
-            exportParty: (id) => {
-                const party = get().parties.find((p) => p.id === id);
-                if (!party) return '[]';
-                return exportPartiesToJson([party]);
-            },
-
-            exportAll: () => exportPartiesToJson(get().parties),
-
-            importParties: (json) => {
-                const imported = importPartiesFromJson(json);
-                set((state) => {
-                    for (const p of imported) {
-                        // 重複IDは上書き
-                        const idx = state.parties.findIndex((ep) => ep.id === p.id);
-                        if (idx !== -1) {
-                            state.parties[idx] = p;
-                        } else {
-                            state.parties.push(p);
-                        }
-                    }
                 });
             },
         })),

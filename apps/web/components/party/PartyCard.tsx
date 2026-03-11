@@ -4,14 +4,16 @@ import Link from 'next/link';
 import { Copy, Trash2, Edit, MoreVertical } from 'lucide-react';
 import { useState } from 'react';
 import type { Party } from '@poke-dex-battle/shared';
-
-const TYPE_COLORS: Record<string, string> = {
-    Normal: 'bg-gray-400', Fire: 'bg-orange-500', Water: 'bg-blue-500', Electric: 'bg-yellow-400',
-    Grass: 'bg-green-500', Ice: 'bg-cyan-300', Fighting: 'bg-red-700', Poison: 'bg-purple-500',
-    Ground: 'bg-yellow-600', Flying: 'bg-indigo-300', Psychic: 'bg-pink-500', Bug: 'bg-lime-500',
-    Rock: 'bg-yellow-800', Ghost: 'bg-purple-800', Dragon: 'bg-indigo-700', Dark: 'bg-gray-800',
-    Steel: 'bg-gray-500', Fairy: 'bg-pink-300',
-};
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { POKEMON_TYPE_COLORS } from '@/lib/constants';
 
 const REGULATION_LABELS: Record<string, string> = { SV: 'スカーレット・バイオレット', Champions: 'チャンピオンズ' };
 
@@ -23,10 +25,11 @@ interface PartyCardProps {
 
 export function PartyCard({ party, onDuplicate, onDelete }: PartyCardProps) {
     const [menuOpen, setMenuOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     // パーティの主なタイプを抽出してグラデーション背景を生成
     const primaryType = party.pokemons[0]?.teraType ?? 'Normal';
-    const gradientFrom = TYPE_COLORS[primaryType] ?? 'bg-blue-400';
+    const gradientFrom = POKEMON_TYPE_COLORS[primaryType] ?? 'bg-blue-400';
 
     return (
         <div className={`relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden group`}>
@@ -70,7 +73,7 @@ export function PartyCard({ party, onDuplicate, onDelete }: PartyCardProps) {
                                         <Copy size={14} /> 複製
                                     </button>
                                     <button
-                                        onClick={() => { onDelete(party.id); setMenuOpen(false); }}
+                                        onClick={() => { setDeleteDialogOpen(true); setMenuOpen(false); }}
                                         className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
                                     >
                                         <Trash2 size={14} /> 削除
@@ -122,6 +125,32 @@ export function PartyCard({ party, onDuplicate, onDelete }: PartyCardProps) {
                     </p>
                 )}
             </div>
+
+            {/* 削除確認ダイアログ */}
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>パーティを削除しますか？</DialogTitle>
+                        <DialogDescription>
+                            「{party.name}」を削除します。この操作は取り消せません。
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2">
+                        <DialogClose className="px-4 py-2 border border-gray-200 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+                            キャンセル
+                        </DialogClose>
+                        <button
+                            onClick={() => {
+                                onDelete(party.id);
+                                setDeleteDialogOpen(false);
+                            }}
+                            className="px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors"
+                        >
+                            削除
+                        </button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
