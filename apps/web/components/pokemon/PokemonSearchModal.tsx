@@ -81,7 +81,7 @@ export function PokemonSearchModal({ open, onClose, onSelect, disabledIds = [] }
                             {results.map((sp) => {
                                 const disabled = disabledIds.includes(sp.id);
                                 return (
-                                    <li key={sp.id}>
+                                    <li key={sp.name}>
                                         <button
                                             disabled={disabled}
                                             onClick={() => { onSelect(sp); onClose(); }}
