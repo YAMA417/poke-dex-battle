@@ -1,10 +1,12 @@
 'use client';
 
-import { use } from 'react';
+import { use, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePartyStore } from '@/hooks/use-party-store';
-import { getPokemonByName } from '@poke-dex-battle/shared';
+import { useAllPokemon } from '@/hooks/useApiData';
+import { toSpeciesData } from '@/lib/api-adapters';
+import type { PokemonSpeciesData } from '@poke-dex-battle/shared';
 import { ActualStatsDisplay } from '@/components/pokemon/ActualStatsDisplay';
 import { POKEMON_TYPE_COLORS } from '@/lib/constants';
 import { ChevronLeft, Edit, Trash2, Copy, Download } from 'lucide-react';
@@ -14,6 +16,21 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
   const router = useRouter();
   const { getParty, deleteParty, duplicateParty } = usePartyStore();
   const party = getParty(id);
+
+  // API経由で全ポケモンデータを取得し、名前→種族データのMapを構築
+  const { data: allPokemonRaw } = useAllPokemon();
+  const allPokemonByName = useMemo(() => {
+    if (!allPokemonRaw) return new Map<string, PokemonSpeciesData>();
+    const map = new Map<string, PokemonSpeciesData>();
+    for (const row of allPokemonRaw) {
+      const sp = toSpeciesData(row);
+      if (sp) {
+        map.set(sp.nameJa, sp);
+        map.set(sp.name, sp);
+      }
+    }
+    return map;
+  }, [allPokemonRaw]);
 
   if (!party) {
     return (
@@ -89,7 +106,7 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
       {/* ポケモングリッド */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {party.pokemons.map((pk) => {
-          const species = getPokemonByName(pk.speciesName);
+          const species = allPokemonByName.get(pk.speciesName) ?? null;
           return (
             <div
               key={pk.id}

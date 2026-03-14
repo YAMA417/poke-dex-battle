@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Regulation, Pokemon, PokemonSpeciesData } from '@poke-dex-battle/shared';
-import { getPokemonByName } from '@poke-dex-battle/shared';
+import { useAllPokemon } from '@/hooks/useApiData';
+import { toSpeciesData } from '@/lib/api-adapters';
 import { usePartyStore } from '@/hooks/use-party-store';
 import { PokemonSearchModal } from '@/components/pokemon/PokemonSearchModal';
 import { PokemonEditForm } from '@/components/pokemon/PokemonEditForm';
@@ -46,21 +47,41 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
 
   const existingParty = initialPartyId ? getParty(initialPartyId) : undefined;
 
+  // API経由で全ポケモンデータを取得
+  const { data: allPokemonRaw } = useAllPokemon();
+  const allPokemonByName = useMemo(() => {
+    if (!allPokemonRaw) return new Map<string, PokemonSpeciesData>();
+    const map = new Map<string, PokemonSpeciesData>();
+    for (const row of allPokemonRaw) {
+      const sp = toSpeciesData(row);
+      if (sp) {
+        map.set(sp.nameJa, sp);
+        map.set(sp.name, sp);
+      }
+    }
+    return map;
+  }, [allPokemonRaw]);
+
   // Step 1 state
   const [partyName, setPartyName] = useState(existingParty?.name ?? '');
   const [regulation, setRegulation] = useState<Regulation>(existingParty?.regulation ?? 'SV');
   const [memo, setMemo] = useState(existingParty?.memo ?? '');
 
   // Step 2/3 state
-  const [pokemons, setPokemons] = useState<{ pokemon: Pokemon; species: PokemonSpeciesData }[]>(
-    () => {
-      if (!existingParty) return [];
-      return existingParty.pokemons.flatMap((pk) => {
-        const sp = getPokemonByName(pk.speciesName);
-        return sp ? [{ pokemon: pk, species: sp }] : [];
-      });
-    }
-  );
+  const [pokemons, setPokemons] = useState<{ pokemon: Pokemon; species: PokemonSpeciesData }[]>([]);
+  const [pokemonsInitialized, setPokemonsInitialized] = useState(false);
+
+  // 既存パーティのポケモンをAPI取得後に復元
+  useEffect(() => {
+    if (pokemonsInitialized || !existingParty || allPokemonByName.size === 0) return;
+    const restored = existingParty.pokemons.flatMap((pk) => {
+      const sp = allPokemonByName.get(pk.speciesName);
+      return sp ? [{ pokemon: pk, species: sp }] : [];
+    });
+    setPokemons(restored);
+    setPokemonsInitialized(true);
+  }, [existingParty, allPokemonByName, pokemonsInitialized]);
+
   const [searchOpen, setSearchOpen] = useState(false);
   const [editingIdx, setEditingIdx] = useState<number>(0);
   const [step, setStep] = useState<Step>(1);

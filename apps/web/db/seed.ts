@@ -102,18 +102,14 @@ async function seed() {
   console.log(`Items: ${itemRows.length}件`);
 
   // Learnsets
-  const learnsetRows = Object.entries(learnsetsData).map(
-    ([speciesId, data]: [string, any]) => ({
-      speciesId,
-      level: data.level ?? [],
-      machine: data.machine ?? [],
-    })
-  );
+  const learnsetRows = Object.entries(learnsetsData).map(([speciesId, data]: [string, any]) => ({
+    speciesId,
+    level: data.level ?? [],
+    machine: data.machine ?? [],
+  }));
   // speciesテーブルに存在するIDのみ投入（外部キー制約）
   const speciesIds = new Set(speciesRows.map((s) => s.id));
-  const validLearnsetRows = learnsetRows.filter((l) =>
-    speciesIds.has(l.speciesId)
-  );
+  const validLearnsetRows = learnsetRows.filter((l) => speciesIds.has(l.speciesId));
   await db.insert(learnsets).values(validLearnsetRows);
   console.log(
     `Learnsets: ${validLearnsetRows.length}件 (スキップ: ${learnsetRows.length - validLearnsetRows.length}件)`

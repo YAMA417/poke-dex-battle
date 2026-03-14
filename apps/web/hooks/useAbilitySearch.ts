@@ -1,31 +1,15 @@
-import type { AbilityData } from '@poke-dex-battle/shared';
-import { getAbilityByName } from '@poke-dex-battle/shared';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
+import { useAbilityByName } from './useApiData';
+import { toAbilityData } from '@/lib/api-adapters';
 
 export function useAbilitySearch(abilityName: string) {
-  const [data, setData] = useState<AbilityData | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const name = abilityName?.trim() || null;
+  const { data: raw, error, isLoading } = useAbilityByName(name);
+  const data = useMemo(() => toAbilityData(raw), [raw]);
 
-  useEffect(() => {
-    if (!abilityName || abilityName.trim().length === 0) {
-      setData(null);
-      setError(null);
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      const result = getAbilityByName(abilityName);
-      if (result) {
-        setData(result);
-        setError(null);
-      } else {
-        setData(null);
-        setError(`特性「${abilityName}」が見つかりませんでした`);
-      }
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [abilityName]);
-
-  return { data, loading: false, error };
+  return {
+    data,
+    loading: isLoading,
+    error: !isLoading && name && !data ? `特性「${abilityName}」が見つかりませんでした` : null,
+  };
 }

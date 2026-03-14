@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import type { Move, MoveData, PokemonSpeciesData } from '@poke-dex-battle/shared';
-import { getLearnset, getMoveByName, getDuplicateMoveIds } from '@poke-dex-battle/shared';
+import { getDuplicateMoveIds } from '@poke-dex-battle/shared';
+import { useLearnset, useAllMoves } from '@/hooks/useApiData';
+import { toMoveData } from '@/lib/api-adapters';
 import { POKEMON_TYPE_COLORS } from '@/lib/constants';
 import { POKEMON_TYPE_LABELS_JA } from '@poke-dex-battle/shared';
 import { AlertTriangle } from 'lucide-react';
@@ -21,18 +23,49 @@ interface MoveSlotEditorProps {
 }
 
 export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps) {
-  const [learnset, setLearnset] = useState<MoveData[]>([]);
+  // showdown id を導出（species.name が英語名の場合も対応）
+  const pokemonId = species.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const { data: learnsetData } = useLearnset(pokemonId);
+  const { data: allMovesRaw } = useAllMoves();
+
+  // 全技の id→MoveData マップ
+  const moveByIdMap = useMemo(() => {
+    if (!allMovesRaw) return new Map<string, MoveData>();
+    const map = new Map<string, MoveData>();
+    for (const row of allMovesRaw) {
+      const md = toMoveData(row);
+      if (md) map.set(row.id, md);
+    }
+    return map;
+  }, [allMovesRaw]);
+
+  // 全技の name→MoveData マップ（表示名逆引き用）
+  const moveByNameMap = useMemo(() => {
+    if (!allMovesRaw) return new Map<string, MoveData>();
+    const map = new Map<string, MoveData>();
+    for (const row of allMovesRaw) {
+      const md = toMoveData(row);
+      if (md) {
+        map.set(md.name, md);
+        map.set(md.nameJa, md);
+      }
+    }
+    return map;
+  }, [allMovesRaw]);
+
+  // learnset の技IDリストから MoveData 配列を構築
+  const learnset = useMemo<MoveData[]>(() => {
+    if (!learnsetData || moveByIdMap.size === 0) return [];
+    const allMoveIds = [
+      ...new Set([...(learnsetData.level ?? []), ...(learnsetData.machine ?? [])]),
+    ];
+    return allMoveIds.map((id) => moveByIdMap.get(id)).filter((m): m is MoveData => m != null);
+  }, [learnsetData, moveByIdMap]);
+
   const [moveSearch, setMoveSearch] = useState<string[]>(['', '', '', '']);
   const [moveResults, setMoveResults] = useState<MoveData[][]>([[], [], [], []]);
 
   const dupMoveIds = getDuplicateMoveIds(moves);
-
-  useEffect(() => {
-    const fetchedMoves = getLearnset(species.name)
-      .map((moveName) => getMoveByName(moveName))
-      .filter((m): m is MoveData => m !== null);
-    setLearnset(fetchedMoves);
-  }, [species.name]);
 
   function handleMoveSearch(slot: number, query: string) {
     const next = [...moveSearch];
@@ -97,7 +130,7 @@ export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps
                   {POKEMON_TYPE_LABELS_JA[move.type] ?? move.type}
                 </span>
                 <span className="flex-1 text-sm font-semibold text-gray-800">
-                  {getMoveByName(move.name)?.nameJa ?? move.name}
+                  {moveByNameMap.get(move.name)?.nameJa ?? move.name}
                 </span>
                 {move.power && <span className="text-xs text-gray-400">威力{move.power}</span>}
                 {isDup && <AlertTriangle size={14} className="text-amber-500" />}

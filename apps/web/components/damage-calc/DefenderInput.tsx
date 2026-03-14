@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useAllPokemon, useAllItems } from '@/hooks/useApiData';
 import { usePokemonSearch } from '@/hooks/usePokemonSearch';
 import type { PokemonType, StatStage } from '@poke-dex-battle/shared';
 import {
@@ -18,8 +19,6 @@ import {
   calcOtherStat,
   reverseCalcHpEv,
   reverseCalcOtherEv,
-  getAllPokemon,
-  getCompetitiveItemNames,
 } from '@poke-dex-battle/shared';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { NatureModifierCompact, EvPreset, TypeBadges } from './SharedFormComponents';
@@ -73,13 +72,14 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
 
   const { data: pokemonData } = usePokemonSearch(data.pokemonName);
 
+  const { data: allPokemon } = useAllPokemon();
   const pokemonOptions = useMemo(() => {
-    return getAllPokemon().map((pokemon) => ({
+    return (allPokemon ?? []).map((pokemon) => ({
       label: pokemon.nameJa,
       value: pokemon.nameJa,
       id: `pokemon-${pokemon.id}`,
     }));
-  }, []);
+  }, [allPokemon]);
 
   // 特性オプション
   const abilityOptions = useMemo(() => {
@@ -94,13 +94,14 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
   }, [pokemonData]);
 
   // 持ち物オプション（競技用のみ）
+  const { data: allItems } = useAllItems();
   const itemOptions = useMemo(() => {
-    return getCompetitiveItemNames().map((item) => ({
+    return (allItems ?? []).map((item) => ({
       label: item.nameJa,
       value: item.nameJa,
       id: `item-${item.id}`,
     }));
-  }, []);
+  }, [allItems]);
 
   // ポケモンデータ取得時に種族値・タイプ・第1特性を自動反映
   useEffect(() => {
