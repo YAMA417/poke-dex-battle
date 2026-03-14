@@ -22,6 +22,28 @@ export const POKEMON_TYPES: PokemonType[] = [
   'Fairy',
 ];
 
+/** タイプの日本語ラベル */
+export const POKEMON_TYPE_LABELS_JA: Record<PokemonType, string> = {
+  Normal: 'ノーマル',
+  Fire: 'ほのお',
+  Water: 'みず',
+  Electric: 'でんき',
+  Grass: 'くさ',
+  Ice: 'こおり',
+  Fighting: 'かくとう',
+  Poison: 'どく',
+  Ground: 'じめん',
+  Flying: 'ひこう',
+  Psychic: 'エスパー',
+  Bug: 'むし',
+  Rock: 'いわ',
+  Ghost: 'ゴースト',
+  Dragon: 'ドラゴン',
+  Dark: 'あく',
+  Steel: 'はがね',
+  Fairy: 'フェアリー',
+};
+
 /** タイプのラベル付きオプション（UI用） */
 export const POKEMON_TYPE_OPTIONS: { value: PokemonType; label: string }[] = [
   { value: "Normal", label: "ノーマル" },
