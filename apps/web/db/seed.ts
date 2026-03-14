@@ -1,12 +1,22 @@
-import 'dotenv/config';
+/**
+ * シードスクリプト（PokeAPIベース）
+ * PokeAPIから直接データを取得し、DBに投入する
+ */
 import { resolve } from 'path';
 import dotenv from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { species, moves, abilities, items, learnsets } from './schema';
-import { sql } from 'drizzle-orm';
+import {
+  games,
+  regulations,
+  pokemon,
+  moves,
+  abilities,
+  items,
+  learnsets,
+  regulationPokemon,
+} from './schema';
 
-// .env.local からDB接続情報を読み込み
 dotenv.config({ path: resolve(__dirname, '../.env.local') });
 
 const connectionString = process.env.DATABASE_URL;
@@ -18,105 +28,736 @@ if (!connectionString) {
 const client = postgres(connectionString, { prepare: false });
 const db = drizzle(client);
 
-// JSONデータの読み込み（__dirnameからの相対パス）
-const dataDir = resolve(__dirname, '../../../packages/shared/src/data/showdown');
-const speciesData = require(resolve(dataDir, 'species.json'));
-const movesData = require(resolve(dataDir, 'moves.json'));
-const abilitiesData = require(resolve(dataDir, 'abilities.json'));
-const itemsData = require(resolve(dataDir, 'items.json'));
-const learnsetsData = require(resolve(dataDir, 'learnsets.json'));
+// ---------------------------------------------------------------------------
+// PokeAPI ヘルパー
+// ---------------------------------------------------------------------------
+
+async function fetchWithRetry(url: string, retries = 3): Promise<any> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}: ${url}`);
+      return await res.json();
+    } catch (e) {
+      if (i === retries - 1) throw e;
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+  }
+}
+
+async function parallelFetch<T>(
+  items: string[],
+  fn: (item: string) => Promise<T>,
+  concurrency = 5
+): Promise<T[]> {
+  const results: T[] = [];
+  for (let i = 0; i < items.length; i += concurrency) {
+    const batch = items.slice(i, i + concurrency);
+    const batchResults = await Promise.all(batch.map(fn));
+    results.push(...batchResults);
+    if (i + concurrency < items.length) {
+      await new Promise((r) => setTimeout(r, 100));
+    }
+  }
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// 定数
+// ---------------------------------------------------------------------------
+
+const ADDITIONAL_REG_I_POKEMON = [
+  144, 145, 146, 150,
+  243, 244, 245, 249, 250,
+  377, 378, 379, 380, 381, 382, 383, 384,
+  480, 481, 482, 483, 484, 485, 486, 487, 488,
+  638, 639, 640, 641, 642, 643, 644, 645, 646,
+  789, 790, 791, 792, 800,
+  888, 889, 890, 891, 892, 894, 895, 896, 897, 898,
+  899, 901, 903, 905,
+];
+
+const RESTRICTED_POKEMON = new Set([
+  150, 249, 250, 382, 383, 384,
+  483, 484, 487,
+  643, 644, 646,
+  789, 790, 791, 792, 800,
+  888, 889, 890,
+  898,
+  1007, 1008, 1024,
+]);
+
+const SV_VERSION_GROUPS = new Set([
+  'scarlet-violet',
+  'the-teal-mask',
+  'the-indigo-disk',
+]);
+
+const VALID_LEARN_METHODS = new Set(['level-up', 'machine', 'egg']);
+
+// Showdown ID → PokeAPI item name 変換マップ
+const SHOWDOWN_TO_POKEAPI_ITEM: Record<string, string> = {
+  choiceband: 'choice-band',
+  choicescarf: 'choice-scarf',
+  choicespecs: 'choice-specs',
+  lifeorb: 'life-orb',
+  expertbelt: 'expert-belt',
+  muscleband: 'muscle-band',
+  wiseglasses: 'wise-glasses',
+  metronome: 'metronome',
+  scopelens: 'scope-lens',
+  leftovers: 'leftovers',
+  sitrusberry: 'sitrus-berry',
+  assaultvest: 'assault-vest',
+  eviolite: 'eviolite',
+  rockyhelmet: 'rocky-helmet',
+  blacksludge: 'black-sludge',
+  focussash: 'focus-sash',
+  focusband: 'focus-band',
+  mentalherb: 'mental-herb',
+  whiteherb: 'white-herb',
+  powerherb: 'power-herb',
+  safetygoggles: 'safety-goggles',
+  lightclay: 'light-clay',
+  occaberry: 'occa-berry',
+  passhoberry: 'passho-berry',
+  wacanberry: 'wacan-berry',
+  rindoberry: 'rindo-berry',
+  yacheberry: 'yache-berry',
+  chopleberry: 'chople-berry',
+  kebiaberry: 'kebia-berry',
+  shucaberry: 'shuca-berry',
+  cobaberry: 'coba-berry',
+  payapaberry: 'payapa-berry',
+  tangaberry: 'tanga-berry',
+  chartiberry: 'charti-berry',
+  kasibberry: 'kasib-berry',
+  habanberry: 'haban-berry',
+  colburberry: 'colbur-berry',
+  babiriberry: 'babiri-berry',
+  chilanberry: 'chilan-berry',
+  roseliberry: 'roseli-berry',
+  figyberry: 'figy-berry',
+  wikiberry: 'wiki-berry',
+  magoberry: 'mago-berry',
+  aguavberry: 'aguav-berry',
+  iapapaberry: 'iapapa-berry',
+  lumberry: 'lum-berry',
+  boosterenergy: 'booster-energy',
+  electricseed: 'electric-seed',
+  psychicseed: 'psychic-seed',
+  mistyseed: 'misty-seed',
+  grassyseed: 'grassy-seed',
+  clearamulet: 'clear-amulet',
+  mirrorherb: 'mirror-herb',
+  punchingglove: 'punching-glove',
+  covertcloak: 'covert-cloak',
+  loadeddice: 'loaded-dice',
+  weaknesspolicy: 'weakness-policy',
+  throatspray: 'throat-spray',
+  roomservice: 'room-service',
+  heavydutyboots: 'heavy-duty-boots',
+  blunderpolicy: 'blunder-policy',
+  terrainextender: 'terrain-extender',
+  absorbbulb: 'absorb-bulb',
+  luminousmoss: 'luminous-moss',
+  snowball: 'snowball',
+  cellbattery: 'cell-battery',
+  ejectbutton: 'eject-button',
+  ejectpack: 'eject-pack',
+  protectivepads: 'protective-pads',
+  redcard: 'red-card',
+  airballoon: 'air-balloon',
+  shedshell: 'shed-shell',
+  widelens: 'wide-lens',
+  ironball: 'iron-ball',
+  bindingband: 'binding-band',
+  bigroot: 'big-root',
+  lightball: 'light-ball',
+  thickclub: 'thick-club',
+};
+
+const COMPETITIVE_ITEM_IDS = Object.keys(SHOWDOWN_TO_POKEAPI_ITEM);
+
+// メガシンカポケモンID → メガストーン名 マッピング
+const MEGA_STONE_MAP: Record<string, string> = {
+  'venusaur-mega': 'venusaurite',
+  'charizard-mega-x': 'charizardite-x',
+  'charizard-mega-y': 'charizardite-y',
+  'blastoise-mega': 'blastoisinite',
+  'beedrill-mega': 'beedrillite',
+  'pidgeot-mega': 'pidgeotite',
+  'alakazam-mega': 'alakazite',
+  'slowbro-mega': 'slowbronite',
+  'gengar-mega': 'gengarite',
+  'kangaskhan-mega': 'kangaskhanite',
+  'pinsir-mega': 'pinsirite',
+  'gyarados-mega': 'gyaradosite',
+  'aerodactyl-mega': 'aerodactylite',
+  'mewtwo-mega-x': 'mewtwonite-x',
+  'mewtwo-mega-y': 'mewtwonite-y',
+  'ampharos-mega': 'ampharosite',
+  'steelix-mega': 'steelixite',
+  'scizor-mega': 'scizorite',
+  'heracross-mega': 'heracronite',
+  'houndoom-mega': 'houndoominite',
+  'tyranitar-mega': 'tyranitarite',
+  'sceptile-mega': 'sceptilite',
+  'blaziken-mega': 'blazikenite',
+  'swampert-mega': 'swampertite',
+  'gardevoir-mega': 'gardevoirite',
+  'sableye-mega': 'sablenite',
+  'mawile-mega': 'mawilite',
+  'aggron-mega': 'aggronite',
+  'medicham-mega': 'medichamite',
+  'manectric-mega': 'manectite',
+  'sharpedo-mega': 'sharpedonite',
+  'camerupt-mega': 'cameruptite',
+  'altaria-mega': 'altarianite',
+  'banette-mega': 'banettite',
+  'absol-mega': 'absolite',
+  'glalie-mega': 'glalitite',
+  'salamence-mega': 'salamencite',
+  'metagross-mega': 'metagrossite',
+  'latias-mega': 'latiasite',
+  'latios-mega': 'latiosite',
+  // レックウザはメガストーンなし（技「ガリョウテンセイ」でメガシンカ）→ fixed_itemはnull
+  'lopunny-mega': 'lopunnite',
+  'garchomp-mega': 'garchompite',
+  'lucario-mega': 'lucarionite',
+  'abomasnow-mega': 'abomasite',
+  'gallade-mega': 'galladite',
+  'audino-mega': 'audinite',
+  'diancie-mega': 'diancite',
+};
+
+// ---------------------------------------------------------------------------
+// ヘルパー関数
+// ---------------------------------------------------------------------------
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function getJaName(names: any[]): string {
+  const ja = names.find((n: any) => n.language.name === 'ja');
+  return ja?.name ?? '';
+}
+
+function getCategory(
+  num: number,
+  isLegendary: boolean,
+  isMythical: boolean
+): string {
+  if (isMythical) return 'mythical';
+  if (RESTRICTED_POKEMON.has(num)) return 'restricted';
+  if (isLegendary) return 'sub_legendary';
+  return 'normal';
+}
+
+function shouldIncludeVariety(name: string): boolean {
+  if (name.includes('-gmax')) return false;
+  if (name.includes('-totem')) return false;
+  if (name.startsWith('pikachu-') && name !== 'pikachu') return false;
+  if (name.includes('-starter')) return false;
+  if (name === 'terapagos-stellar') return false;
+  return true;
+}
+
+function extractIdFromUrl(url: string): number {
+  const parts = url.replace(/\/$/, '').split('/');
+  return parseInt(parts[parts.length - 1], 10);
+}
+
+function getStatsArray(data: any): number[] {
+  return data.stats
+    .sort((a: any, b: any) => a.stat.name.localeCompare(b.stat.name))
+    .map((s: any) => s.base_stat);
+}
+
+function getTypesArray(data: any): string[] {
+  return data.types
+    .sort((a: any, b: any) => a.slot - b.slot)
+    .map((t: any) => t.type.name);
+}
+
+function arraysEqual(a: any[], b: any[]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((v, i) => v === b[i]);
+}
+
+// ---------------------------------------------------------------------------
+// メイン処理
+// ---------------------------------------------------------------------------
+
+interface PokemonRow {
+  id: string;
+  num: number;
+  name: string;
+  nameJa: string;
+  types: string[];
+  hp: number;
+  atk: number;
+  def: number;
+  spa: number;
+  spd: number;
+  spe: number;
+  ability0: string;
+  ability1: string | null;
+  abilityH: string | null;
+  weightkg: number;
+  heightm: number;
+  category: string;
+  spriteUrl: string | null;
+  fixedItem: string | null;
+  fixedTeraType: string | null;
+}
+
+interface LearnsetRow {
+  pokemonId: string;
+  moveId: string;
+  method: string;
+  level: number;
+}
 
 async function seed() {
-  console.log('シード開始...');
+  console.log('シード開始...\n');
 
-  // 全テーブル削除（外部キー制約の順序に注意）
+  // -----------------------------------------------------------------------
+  // 1. 全国図鑑 1〜1025 の全ポケモンを対象とする
+  // -----------------------------------------------------------------------
+  const allNums = Array.from({ length: 1025 }, (_, i) => i + 1);
+  console.log(`対象ポケモン種: ${allNums.length}種\n`);
+
+  // -----------------------------------------------------------------------
+  // 1.5. SVレギュレーションIで使えるポケモンの全国図鑑番号を収集
+  // -----------------------------------------------------------------------
+  console.log('PokeAPIから図鑑データ取得中（レギュレーションI判定用）...');
+  const regINums = new Set<number>();
+
+  const dexUrls = [
+    'https://pokeapi.co/api/v2/pokedex/paldea',
+    'https://pokeapi.co/api/v2/pokedex/kitakami',
+    'https://pokeapi.co/api/v2/pokedex/blueberry',
+  ];
+
+  const dexData = await Promise.all(dexUrls.map((url) => fetchWithRetry(url)));
+  for (const dex of dexData) {
+    for (const entry of dex.pokemon_entries) {
+      regINums.add(extractIdFromUrl(entry.pokemon_species.url));
+    }
+  }
+
+  // 追加ポケモン
+  for (const num of ADDITIONAL_REG_I_POKEMON) {
+    regINums.add(num);
+  }
+
+  console.log(`レギュレーションI対象: ${regINums.size}種\n`);
+
+  // -----------------------------------------------------------------------
+  // 2. ポケモンデータ取得
+  // -----------------------------------------------------------------------
+  console.log('ポケモンデータ取得中...');
+  const allPokemonRows: PokemonRow[] = [];
+  const allLearnsetRows: LearnsetRow[] = [];
+  const allMoveIds = new Set<string>();
+  const allAbilityIds = new Set<string>();
+
+  let pokemonCount = 0;
+
+  await parallelFetch(
+    allNums.map(String),
+    async (numStr) => {
+      const num = parseInt(numStr, 10);
+
+      // species データ
+      const speciesData = await fetchWithRetry(
+        `https://pokeapi.co/api/v2/pokemon-species/${num}`
+      );
+      const nameJa = getJaName(speciesData.names);
+      const isLegendary: boolean = speciesData.is_legendary;
+      const isMythical: boolean = speciesData.is_mythical;
+      const category = getCategory(num, isLegendary, isMythical);
+
+      // varieties を処理
+      const varieties: Array<{
+        name: string;
+        url: string;
+        isDefault: boolean;
+      }> = speciesData.varieties.map((v: any) => ({
+        name: v.pokemon.name,
+        url: v.pokemon.url,
+        isDefault: v.is_default as boolean,
+      }));
+
+      // デフォルトフォルムのデータを先に取得
+      const defaultVariety = varieties.find((v) => v.isDefault);
+      if (!defaultVariety) {
+        pokemonCount++;
+        if (pokemonCount % 50 === 0) {
+          console.log(`  ${pokemonCount}体取得済み...`);
+        }
+        return;
+      }
+
+      const defaultData = await fetchWithRetry(defaultVariety.url);
+      const defaultStats = getStatsArray(defaultData);
+      const defaultTypes = getTypesArray(defaultData);
+
+      for (const variety of varieties) {
+        if (!shouldIncludeVariety(variety.name)) continue;
+
+        let pokemonData: any;
+
+        if (variety.isDefault) {
+          pokemonData = defaultData;
+        } else {
+          pokemonData = await fetchWithRetry(variety.url);
+          const varStats = getStatsArray(pokemonData);
+          const varTypes = getTypesArray(pokemonData);
+
+          // 種族値もタイプも同じなら見た目違い → スキップ
+          if (
+            arraysEqual(defaultStats, varStats) &&
+            arraysEqual(defaultTypes, varTypes)
+          ) {
+            continue;
+          }
+        }
+
+        const pokemonId = pokemonData.name as string;
+        const pokemonNum = num;
+
+        // フォルム名の日本語名: デフォルトフォルムはspecies名、それ以外もspecies名を使う
+        // （PokeAPIにはフォルム別日本語名がpokemon-formにあるが、多くは空なのでspecies名を使用）
+        const formNameJa = nameJa;
+
+        const typesList = pokemonData.types
+          .sort((a: any, b: any) => a.slot - b.slot)
+          .map((t: any) => capitalize(t.type.name));
+
+        const stats = pokemonData.stats;
+        const getStat = (name: string) =>
+          stats.find((s: any) => s.stat.name === name)?.base_stat ?? 0;
+
+        const abilitiesList = pokemonData.abilities.sort(
+          (a: any, b: any) => a.slot - b.slot
+        );
+        const ability0 =
+          abilitiesList.find((a: any) => a.slot === 1)?.ability.name ?? '';
+        const ability1 =
+          abilitiesList.find((a: any) => a.slot === 2)?.ability.name ?? null;
+        const abilityH =
+          abilitiesList.find((a: any) => a.is_hidden)?.ability.name ?? null;
+
+        // 特性ID収集
+        if (ability0) allAbilityIds.add(ability0);
+        if (ability1) allAbilityIds.add(ability1);
+        if (abilityH) allAbilityIds.add(abilityH);
+
+        const spriteUrl = pokemonData.sprites?.front_default ?? null;
+
+        allPokemonRows.push({
+          id: pokemonId,
+          num: pokemonNum,
+          name: pokemonData.name,
+          nameJa: formNameJa,
+          types: typesList,
+          hp: getStat('hp'),
+          atk: getStat('attack'),
+          def: getStat('defense'),
+          spa: getStat('special-attack'),
+          spd: getStat('special-defense'),
+          spe: getStat('speed'),
+          ability0,
+          ability1,
+          abilityH,
+          weightkg: pokemonData.weight / 10,
+          heightm: pokemonData.height / 10,
+          category,
+          spriteUrl,
+          fixedItem: MEGA_STONE_MAP[pokemonId] ?? null,
+          fixedTeraType: null,
+        });
+
+        // 覚える技（SVのみ）
+        for (const moveEntry of pokemonData.moves) {
+          const moveName: string = moveEntry.move.name;
+          const versionDetails: any[] = moveEntry.version_group_details;
+
+          for (const detail of versionDetails) {
+            const vgName: string = detail.version_group.name;
+            if (!SV_VERSION_GROUPS.has(vgName)) continue;
+
+            const method: string = detail.move_learn_method.name;
+            if (!VALID_LEARN_METHODS.has(method)) continue;
+
+            allMoveIds.add(moveName);
+            allLearnsetRows.push({
+              pokemonId,
+              moveId: moveName,
+              method,
+              level: detail.level_learned_at ?? 0,
+            });
+          }
+        }
+      }
+
+      pokemonCount++;
+      if (pokemonCount % 50 === 0) {
+        console.log(`  ${pokemonCount}体取得済み...`);
+      }
+    },
+    5
+  );
+
+  console.log(`ポケモン: ${allPokemonRows.length}体取得完了`);
+
+  // learnsets の重複除去（pokemonId + moveId + method でユニーク）
+  const learnsetMap = new Map<string, LearnsetRow>();
+  for (const row of allLearnsetRows) {
+    const key = `${row.pokemonId}|${row.moveId}|${row.method}`;
+    // 同じキーで level が大きい方を保持（level-up の場合最高レベルを記録）
+    const existing = learnsetMap.get(key);
+    if (!existing || row.level > existing.level) {
+      learnsetMap.set(key, row);
+    }
+  }
+  const uniqueLearnsets = [...learnsetMap.values()];
+
+  // -----------------------------------------------------------------------
+  // 3. 技データ取得
+  // -----------------------------------------------------------------------
+  console.log(`\n技データ取得中... (${allMoveIds.size}件)`);
+  const moveIdList = [...allMoveIds];
+
+  const moveRows = await parallelFetch(
+    moveIdList,
+    async (moveName) => {
+      const data = await fetchWithRetry(
+        `https://pokeapi.co/api/v2/move/${moveName}`
+      );
+      return {
+        id: moveName,
+        num: data.id as number,
+        name: data.name as string,
+        nameJa: getJaName(data.names),
+        type: capitalize(data.type.name),
+        category: capitalize(data.damage_class.name),
+        power: data.power as number | null,
+        accuracy: data.accuracy as number | null,
+        pp: data.pp as number,
+        priority: data.priority as number,
+        target: data.target.name as string,
+        shortDesc:
+          (
+            data.effect_entries.find(
+              (e: any) => e.language.name === 'en'
+            ) as any
+          )?.short_effect ?? null,
+      };
+    },
+    5
+  );
+  console.log(`技: ${moveRows.length}件取得完了`);
+
+  // -----------------------------------------------------------------------
+  // 4. 特性データ取得
+  // -----------------------------------------------------------------------
+  console.log(`\n特性データ取得中... (${allAbilityIds.size}件)`);
+  const abilityIdList = [...allAbilityIds];
+
+  const abilityRows = await parallelFetch(
+    abilityIdList,
+    async (abilityName) => {
+      const data = await fetchWithRetry(
+        `https://pokeapi.co/api/v2/ability/${abilityName}`
+      );
+      return {
+        id: abilityName,
+        num: data.id as number,
+        name: data.name as string,
+        nameJa: getJaName(data.names),
+        shortDesc:
+          (
+            data.effect_entries.find(
+              (e: any) => e.language.name === 'en'
+            ) as any
+          )?.short_effect ?? null,
+      };
+    },
+    5
+  );
+  console.log(`特性: ${abilityRows.length}件取得完了`);
+
+  // -----------------------------------------------------------------------
+  // 5. アイテムデータ取得
+  // -----------------------------------------------------------------------
+  console.log(`\nアイテムデータ取得中... (${COMPETITIVE_ITEM_IDS.length}件)`);
+
+  const itemRows = await parallelFetch(
+    COMPETITIVE_ITEM_IDS,
+    async (showdownId) => {
+      const pokeApiName = SHOWDOWN_TO_POKEAPI_ITEM[showdownId];
+      const data = await fetchWithRetry(
+        `https://pokeapi.co/api/v2/item/${pokeApiName}`
+      );
+      return {
+        id: pokeApiName,
+        num: data.id as number,
+        name: data.name as string,
+        nameJa: getJaName(data.names),
+        shortDesc:
+          (
+            data.effect_entries.find(
+              (e: any) => e.language.name === 'en'
+            ) as any
+          )?.short_effect ?? null,
+        isCompetitive: true,
+      };
+    },
+    5
+  );
+  console.log(`アイテム: ${itemRows.length}件取得完了`);
+
+  // メガストーンをPokeAPIから取得
+  console.log('\nメガストーン取得中...');
+  const megaStonesCategory = await fetchWithRetry('https://pokeapi.co/api/v2/item-category/mega-stones/');
+  const megaStoneNames: string[] = megaStonesCategory.items.map((i: any) => i.name);
+
+  const megaStoneRows = await parallelFetch(
+    megaStoneNames,
+    async (itemName) => {
+      const data = await fetchWithRetry(`https://pokeapi.co/api/v2/item/${itemName}`);
+      return {
+        id: itemName,
+        num: data.id as number,
+        name: data.name as string,
+        nameJa: getJaName(data.names),
+        shortDesc: (data.effect_entries.find((e: any) => e.language.name === 'en') as any)?.short_effect ?? null,
+        isCompetitive: false, // SVでは使えない
+      };
+    },
+    5
+  );
+  console.log(`メガストーン: ${megaStoneRows.length}件取得完了`);
+
+  // 既存のcompetitiveアイテムとメガストーンを合わせる
+  const allItemRows = [...itemRows, ...megaStoneRows];
+
+  // -----------------------------------------------------------------------
+  // 6. regulation_pokemon 準備
+  // -----------------------------------------------------------------------
+  const regIPokemonRows = allPokemonRows
+    .filter(
+      (p) =>
+        regINums.has(p.num) &&
+        p.category !== 'mythical' &&
+        !p.id.includes('-mega') // メガシンカは除外
+    )
+    .map((p) => ({
+      regulationId: 'sv-reg-i',
+      pokemonId: p.id,
+    }));
+
+  // -----------------------------------------------------------------------
+  // 7. DB投入前に存在しない moveId を持つ learnset を除外
+  // -----------------------------------------------------------------------
+  const validMoveIdSet = new Set(moveRows.map((m) => m.id));
+  const validPokemonIdSet = new Set(allPokemonRows.map((p) => p.id));
+  const filteredLearnsets = uniqueLearnsets.filter(
+    (l) => validMoveIdSet.has(l.moveId) && validPokemonIdSet.has(l.pokemonId)
+  );
+
+  // -----------------------------------------------------------------------
+  // 8. DB投入
+  // -----------------------------------------------------------------------
+  console.log('\nDB投入中...');
+
+  // DELETE（外部キー制約順）
+  console.log('  既存データ削除中...');
   await db.delete(learnsets);
-  await db.delete(species);
+  await db.delete(regulationPokemon);
+  await db.delete(pokemon);
   await db.delete(moves);
   await db.delete(abilities);
   await db.delete(items);
-  console.log('既存データ削除完了');
+  await db.delete(regulations);
+  await db.delete(games);
+  console.log('  既存データ削除完了');
 
-  // Species
-  const speciesRows = Object.values(speciesData).map((s: any) => ({
-    id: s.id,
-    num: s.num,
-    name: s.name,
-    nameJa: s.nameJa,
-    types: s.types,
-    hp: s.baseStats.hp,
-    atk: s.baseStats.atk,
-    def: s.baseStats.def,
-    spa: s.baseStats.spa,
-    spd: s.baseStats.spd,
-    spe: s.baseStats.spe,
-    ability0: s.abilities['0'],
-    ability1: s.abilities['1'] ?? null,
-    abilityH: s.abilities['H'] ?? null,
-    abilityS: s.abilities['S'] ?? null,
-    weightkg: s.weightkg,
-    heightm: s.heightm,
-  }));
-  await db.insert(species).values(speciesRows);
-  console.log(`Species: ${speciesRows.length}件`);
+  // INSERT games
+  await db.insert(games).values({
+    id: 'sv',
+    name: 'スカーレット・バイオレット',
+    battleSystems: ['terastal'],
+  });
+  console.log('  Games: 1件');
 
-  // Moves
-  const moveRows = Object.values(movesData).map((m: any) => ({
-    id: m.id,
-    num: m.num,
-    name: m.name,
-    nameJa: m.nameJa,
-    type: m.type,
-    category: m.category,
-    basePower: m.basePower,
-    accuracy: typeof m.accuracy === 'number' ? m.accuracy : null,
-    pp: m.pp,
-    priority: m.priority,
-    target: m.target,
-    shortDesc: m.shortDesc ?? null,
-  }));
-  await db.insert(moves).values(moveRows);
+  // INSERT regulations
+  await db.insert(regulations).values({
+    id: 'sv-reg-i',
+    gameId: 'sv',
+    name: 'レギュレーションI',
+    restrictedCount: 2,
+    mythicalAllowed: false,
+  });
+  console.log('  Regulations: 1件');
+
+  // INSERT pokemon（バッチ分割）
+  await insertBatch(db, pokemon, allPokemonRows, 100);
+  console.log(`  Pokemon: ${allPokemonRows.length}件`);
+
+  // INSERT moves（バッチ分割）
+  await insertBatch(db, moves, moveRows, 100);
+  console.log(`  Moves: ${moveRows.length}件`);
+
+  // INSERT abilities（バッチ分割）
+  await insertBatch(db, abilities, abilityRows, 100);
+  console.log(`  Abilities: ${abilityRows.length}件`);
+
+  // INSERT items
+  await insertBatch(db, items, allItemRows, 100);
+  console.log(`  Items: ${allItemRows.length}件`);
+
+  // INSERT learnsets（バッチ分割）
+  await insertBatch(db, learnsets, filteredLearnsets, 500);
+  console.log(`  Learnsets: ${filteredLearnsets.length}件`);
+
+  // INSERT regulation_pokemon（バッチ分割）
+  await insertBatch(db, regulationPokemon, regIPokemonRows, 500);
+  console.log(`  Regulation Pokemon: ${regIPokemonRows.length}件`);
+
+  // -----------------------------------------------------------------------
+  // 結果表示
+  // -----------------------------------------------------------------------
+  console.log('\n=== シード完了 ===');
+  console.log(`Games: 1件`);
+  console.log(`Regulations: 1件`);
+  console.log(`Pokemon: ${allPokemonRows.length}件`);
   console.log(`Moves: ${moveRows.length}件`);
-
-  // Abilities
-  const abilityRows = Object.values(abilitiesData).map((a: any) => ({
-    id: a.id,
-    num: a.num,
-    name: a.name,
-    nameJa: a.nameJa,
-    shortDesc: a.shortDesc ?? null,
-  }));
-  await db.insert(abilities).values(abilityRows);
   console.log(`Abilities: ${abilityRows.length}件`);
+  console.log(`Items: ${allItemRows.length}件`);
+  console.log(`Learnsets: ${filteredLearnsets.length}件`);
+  console.log(`Regulation Pokemon: ${regIPokemonRows.length}件`);
 
-  // Items
-  const itemRows = Object.values(itemsData).map((i: any) => ({
-    id: i.id,
-    num: i.num,
-    name: i.name,
-    nameJa: i.nameJa,
-    desc: i.desc ?? null,
-    shortDesc: i.shortDesc ?? null,
-  }));
-  await db.insert(items).values(itemRows);
-  console.log(`Items: ${itemRows.length}件`);
-
-  // Learnsets
-  const learnsetRows = Object.entries(learnsetsData).map(([speciesId, data]: [string, any]) => ({
-    speciesId,
-    level: data.level ?? [],
-    machine: data.machine ?? [],
-  }));
-  // speciesテーブルに存在するIDのみ投入（外部キー制約）
-  const speciesIds = new Set(speciesRows.map((s) => s.id));
-  const validLearnsetRows = learnsetRows.filter((l) => speciesIds.has(l.speciesId));
-  await db.insert(learnsets).values(validLearnsetRows);
-  console.log(
-    `Learnsets: ${validLearnsetRows.length}件 (スキップ: ${learnsetRows.length - validLearnsetRows.length}件)`
-  );
-
-  console.log('シード完了');
   await client.end();
+}
+
+/**
+ * バッチ分割 INSERT
+ */
+async function insertBatch(
+  database: any,
+  table: any,
+  rows: any[],
+  batchSize: number
+): Promise<void> {
+  for (let i = 0; i < rows.length; i += batchSize) {
+    const batch = rows.slice(i, i + batchSize);
+    await database.insert(table).values(batch);
+  }
 }
 
 seed().catch((e) => {
