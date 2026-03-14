@@ -4,7 +4,14 @@ import type { Stats } from '../types/pokemon';
 
 describe('calcEvContributionToActualStats', () => {
   // ヘルパー関数：Stats オブジェクトを生成
-  const createStats = (hp: number, attack: number, defense: number, specialAttack: number, specialDefense: number, speed: number): Stats => ({
+  const createStats = (
+    hp: number,
+    attack: number,
+    defense: number,
+    specialAttack: number,
+    specialDefense: number,
+    speed: number
+  ): Stats => ({
     hp,
     attack,
     defense,

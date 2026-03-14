@@ -1,25 +1,31 @@
-"use client";
+'use client';
 
-import { Autocomplete } from "@/components/ui/autocomplete";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Autocomplete } from '@/components/ui/autocomplete';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import type { PokemonType } from "@poke-dex-battle/shared";
-import { POKEMON_TYPE_OPTIONS, getAllMoves, getMoveByName, getLevelMoves, getMachineMoves } from "@poke-dex-battle/shared";
-import { useMemo } from "react";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import type { PokemonType } from '@poke-dex-battle/shared';
+import {
+  POKEMON_TYPE_OPTIONS,
+  getAllMoves,
+  getMoveByName,
+  getLevelMoves,
+  getMachineMoves,
+} from '@poke-dex-battle/shared';
+import { useMemo } from 'react';
 
 export interface MoveSelectData {
   name: string;
   power: number;
   type: PokemonType;
-  category: "Physical" | "Special";
+  category: 'Physical' | 'Special';
   target: string;
 }
 
@@ -28,13 +34,13 @@ interface MoveInputProps {
   moveName: string;
   movePower: number;
   moveType: PokemonType;
-  moveCategory: "Physical" | "Special";
+  moveCategory: 'Physical' | 'Special';
   // 技選択時の一括更新（rerender-move-effect-to-event）
   onMoveSelect: (data: MoveSelectData) => void;
   // 個別フィールドの手動変更（フルモードのみ）
   onMovePowerChange: (power: number) => void;
   onMoveTypeChange: (type: PokemonType) => void;
-  onMoveCategoryChange: (category: "Physical" | "Special") => void;
+  onMoveCategoryChange: (category: 'Physical' | 'Special') => void;
   compact?: boolean;
 }
 
@@ -67,7 +73,7 @@ export function MoveInput({
             label: move.nameJa,
             value: move.nameJa,
             id: `move-${move.id}`,
-            group: "レベル技・思い出し技",
+            group: 'レベル技・思い出し技',
           }));
 
         const levelMoveIdSet = new Set(levelMoveIds);
@@ -80,7 +86,7 @@ export function MoveInput({
             label: move.nameJa,
             value: move.nameJa,
             id: `move-${move.id}`,
-            group: "わざマシン",
+            group: 'わざマシン',
           }));
 
         return [...levelOptions, ...machineOptions];
@@ -103,10 +109,11 @@ export function MoveInput({
         name: selectedName,
         power: moveData.power ?? movePower,
         type: moveData.type as PokemonType,
-        category: (moveData.category === "Physical" || moveData.category === "Special")
-          ? moveData.category
-          : moveCategory,
-        target: moveData.target ?? "",
+        category:
+          moveData.category === 'Physical' || moveData.category === 'Special'
+            ? moveData.category
+            : moveCategory,
+        target: moveData.target ?? '',
       });
     } else {
       onMoveSelect({
@@ -114,7 +121,7 @@ export function MoveInput({
         power: movePower,
         type: moveType,
         category: moveCategory,
-        target: "",
+        target: '',
       });
     }
   };
@@ -181,26 +188,18 @@ export function MoveInput({
         <Label>カテゴリ</Label>
         <RadioGroup
           value={moveCategory}
-          onValueChange={(value: string) =>
-            onMoveCategoryChange(value as "Physical" | "Special")
-          }
+          onValueChange={(value: string) => onMoveCategoryChange(value as 'Physical' | 'Special')}
           className="flex space-x-4"
         >
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="Physical" id="category-physical" />
-            <Label
-              htmlFor="category-physical"
-              className="text-sm font-normal cursor-pointer"
-            >
+            <Label htmlFor="category-physical" className="cursor-pointer text-sm font-normal">
               物理
             </Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="Special" id="category-special" />
-            <Label
-              htmlFor="category-special"
-              className="text-sm font-normal cursor-pointer"
-            >
+            <Label htmlFor="category-special" className="cursor-pointer text-sm font-normal">
               特殊
             </Label>
           </div>

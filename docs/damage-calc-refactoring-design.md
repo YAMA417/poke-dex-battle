@@ -46,6 +46,7 @@ packages/shared/src/
 ## 2. 新型定義（types/damage.ts に追加）
 
 ### CalcPokemon
+
 - `level`: number
 - `types`: PokemonType[]
 - `stats`: `{ hp: number; atk: number; def: number; spa: number; spd: number; spe: number }`
@@ -59,6 +60,7 @@ packages/shared/src/
 - `isTerastallized?`: boolean
 
 ### CalcMove
+
 - `name`: string
 - `power`: number
 - `type`: PokemonType
@@ -67,6 +69,7 @@ packages/shared/src/
 - `flags?`: MoveFlags（既存型を再利用）
 
 ### BattleContext
+
 - `weather?`: Weather
 - `field?`: Field
 - `isDoubleBattle?`: boolean
@@ -85,9 +88,11 @@ packages/shared/src/
 **目的**: 技の基礎威力に威力系補正を適用する
 
 **公開インターフェース**:
+
 - `resolveBasePower(move: CalcMove, attacker: CalcPokemon, defender: CalcPokemon, context: BattleContext): number`
 
 **処理手順**:
+
 - `power` を `move.power` で初期化
 - てだすけ: `context.isHelpingHand` なら `floor(power * 1.5)`
 - テクニシャン: `attacker.ability === "Technician"` かつ `move.power <= 60` なら `floor(power * 1.5)`
@@ -106,10 +111,12 @@ packages/shared/src/
 **目的**: ランク補正・急所・やけど・持ち物を考慮した実効ステータスを算出
 
 **公開インターフェース**:
+
 - `resolveEffectiveAttack(attacker: CalcPokemon, move: CalcMove): number`
 - `resolveEffectiveDefense(defender: CalcPokemon, move: CalcMove): number`
 
 **resolveEffectiveAttack の処理手順**:
+
 - Physical なら `baseStat = attacker.stats.atk`、`stage = attacker.boosts?.atk ?? 0`
 - Special なら `baseStat = attacker.stats.spa`、`stage = attacker.boosts?.spa ?? 0`
 - ランク補正: `stage >= 0` → `(2 + stage) / 2`、`stage < 0` → `2 / (2 - stage)`
@@ -122,6 +129,7 @@ packages/shared/src/
 > **仕様との差異**: 仕様では `resolveEffectiveStat(stat, boostStage, isCritical, status)` のプリミティブ引数を想定しているが、こだわりハチマキ等の持ち物補正はShowdown準拠でステータス段階に適用する必要がある。modifier phaseに移すと`floor`の適用順序が変わり計算結果がずれるため、ステータス解決フェーズに含める。
 
 **resolveEffectiveDefense の処理手順**:
+
 - Physical なら `baseStat = defender.stats.def`、`stage = defender.boosts?.def ?? 0`
 - Special なら `baseStat = defender.stats.spd`、`stage = defender.boosts?.spd ?? 0`
 - ランク補正: 攻撃と同じ計算式
@@ -136,9 +144,11 @@ packages/shared/src/
 **目的**: 純粋な数学計算のみ
 
 **公開インターフェース**:
+
 - `calculateBaseDamage(level: number, power: number, attack: number, defense: number): number`
 
 **処理手順**:
+
 - `levelFactor = floor((level * 2) / 5) + 2`
 - `damage = floor(floor(floor((levelFactor * power * attack) / defense) / 50) + 2)`
 - `damage` を返す
@@ -151,11 +161,13 @@ packages/shared/src/
 **目的**: baseDamage後の全補正を公式順序で適用し、min/maxダメージを返す
 
 **公開インターフェース**:
+
 - `calculateModifier(baseDamage: number, attacker: CalcPokemon, defender: CalcPokemon, move: CalcMove, context: BattleContext): { minDamage: number; maxDamage: number }`
 
 > **仕様との差異**: 仕様では単一のnumberを返すが、乱数ステップでmin/maxに分岐するため `{minDamage, maxDamage}` を返す。
 
 **処理手順（公式順序）**:
+
 1. **Targets**: `isDoubleBattle && isSpreadMove` → `floor(値 * 0.75)`
 2. **Weather**: `calculateWeatherModifier(move.type, context.weather)` を再利用 → `floor(値 * modifier)`
 3. **Critical**: `move.isCritical` → `floor(値 * 1.5)`
@@ -177,9 +189,11 @@ packages/shared/src/
 **目的**: 乱数幅の適用。seed注入でテスト決定論を保証
 
 **公開インターフェース**:
+
 - `applyRandom(baseDamage: number, seed?: number): number`
 
 **処理手順**:
+
 - `seed` 未指定: `randomValue = floor(Math.random() * 16)` (0-15)
 - `seed` 指定: `randomValue = seed` (0-15の範囲を期待)
 - `factor = (85 + randomValue) / 100`
@@ -193,9 +207,11 @@ packages/shared/src/
 **目的**: 新APIのオーケストレーション
 
 **公開インターフェース**:
+
 - `calculateDamageV2(attacker: CalcPokemon, defender: CalcPokemon, move: CalcMove, context: BattleContext): DamageResult`
 
 **処理手順**:
+
 - `power = resolveBasePower(move, attacker, defender, context)`
 - `attack = resolveEffectiveAttack(attacker, move)`
 - `defense = resolveEffectiveDefense(defender, move)`
@@ -212,9 +228,11 @@ packages/shared/src/
 **目的**: `DamageCalculationInput` → `CalcPokemon` + `CalcMove` + `BattleContext` 変換
 
 **公開インターフェース**:
+
 - `convertLegacyInput(input: DamageCalculationInput): { attacker: CalcPokemon; defender: CalcPokemon; move: CalcMove; context: BattleContext }`
 
 **処理手順**:
+
 - attacker: level, types, stats（moveCategoryに応じてatk/spaに攻撃実数値をマッピング）, boosts, ability, item, teraType, isTerastallized を変換
 - defender: types, stats（def/spdに防御実数値をマッピング）, boosts, ability, item, currentHp, maxHp を変換
 - move: power, type, category, isCritical, flags を変換

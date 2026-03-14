@@ -1,7 +1,6 @@
-import type { AbilityData, ShowdownAbility } from "../types";
+import type { AbilityData, ShowdownAbility } from '../types';
 
-const abilitiesById: Record<string, ShowdownAbility> =
-  require("../data/showdown/abilities.json");
+const abilitiesById: Record<string, ShowdownAbility> = require('../data/showdown/abilities.json');
 
 // ルックアップ用 Map を構築
 const abilitiesByName = new Map<string, ShowdownAbility>();
@@ -32,7 +31,7 @@ function findAbility(query: string): ShowdownAbility | null {
   if (!trimmed) return null;
 
   // ID（Showdown形式）で検索
-  const normalized = trimmed.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const normalized = trimmed.toLowerCase().replace(/[^a-z0-9]/g, '');
   const byId = abilitiesById[normalized];
   if (byId) return byId;
 

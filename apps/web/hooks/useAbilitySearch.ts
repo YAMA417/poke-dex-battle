@@ -1,6 +1,6 @@
-import type { AbilityData } from "@poke-dex-battle/shared";
-import { getAbilityByName } from "@poke-dex-battle/shared";
-import { useEffect, useState } from "react";
+import type { AbilityData } from '@poke-dex-battle/shared';
+import { getAbilityByName } from '@poke-dex-battle/shared';
+import { useEffect, useState } from 'react';
 
 export function useAbilitySearch(abilityName: string) {
   const [data, setData] = useState<AbilityData | null>(null);

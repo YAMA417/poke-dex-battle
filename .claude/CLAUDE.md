@@ -28,15 +28,15 @@ npm run typecheck -w @poke-dex-battle/shared # 型チェック
 
 ## Claude の使い方
 
-| やりたいこと | コマンド | 出力先 |
-|------------|---------|--------|
-| 機能の設計 → Copilot 指示書作成 | `/design-review` | `.claude/docs/{branch}/instructions.md` |
-| Copilot 実装のセルフレビュー | `/review-impl` | 指示書内に追記 |
-| 他人のブランチレビュー | `/review` | `.claude/docs/{branch}/review.md` |
-| ブランチの変更を学習解説 | `/explain` | `.claude/docs/{branch}/explain.md` |
-| レビューへの意見回答 | `/review-feedback` | コンソール |
-| 進捗確認 | `/progress` | コンソール |
-| ツイート生成 | `/tweet` | コンソール |
+| やりたいこと                    | コマンド           | 出力先                                  |
+| ------------------------------- | ------------------ | --------------------------------------- |
+| 機能の設計 → Copilot 指示書作成 | `/design-review`   | `.claude/docs/{branch}/instructions.md` |
+| Copilot 実装のセルフレビュー    | `/review-impl`     | 指示書内に追記                          |
+| 他人のブランチレビュー          | `/review`          | `.claude/docs/{branch}/review.md`       |
+| ブランチの変更を学習解説        | `/explain`         | `.claude/docs/{branch}/explain.md`      |
+| レビューへの意見回答            | `/review-feedback` | コンソール                              |
+| 進捗確認                        | `/progress`        | コンソール                              |
+| ツイート生成                    | `/tweet`           | コンソール                              |
 
 テストコードは Copilot が苦戦している場合のみ Claude が直接実装する。
 

@@ -1,6 +1,6 @@
-import type { PokemonSpeciesData } from "@poke-dex-battle/shared";
-import { getPokemonByName } from "@poke-dex-battle/shared";
-import { useEffect, useState } from "react";
+import type { PokemonSpeciesData } from '@poke-dex-battle/shared';
+import { getPokemonByName } from '@poke-dex-battle/shared';
+import { useEffect, useState } from 'react';
 
 export function usePokemonSearch(pokemonName: string) {
   const [data, setData] = useState<PokemonSpeciesData | null>(null);

@@ -1,4 +1,4 @@
-import type { PokemonType } from "./pokemon";
+import type { PokemonType } from './pokemon';
 
 /**
  * Showdown 形式の種族値（省略キー）
@@ -41,7 +41,7 @@ export interface ShowdownMove {
   name: string;
   nameJa: string;
   type: PokemonType;
-  category: "Physical" | "Special" | "Status";
+  category: 'Physical' | 'Special' | 'Status';
   basePower: number;
   accuracy: number | true;
   pp: number;

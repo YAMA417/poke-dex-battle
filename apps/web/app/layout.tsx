@@ -8,16 +8,12 @@ export const metadata: Metadata = {
   description: 'ダメージ計算、パーティ管理、対戦履歴を統合的に支援',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja">
       <body className="min-h-screen bg-gray-50">
         <LanguageProvider>
-          <header className="bg-pokemon-blue text-white p-4 shadow-lg">
+          <header className="bg-pokemon-blue p-4 text-white shadow-lg">
             <div className="container mx-auto flex items-center justify-between">
               <h1 className="text-xl font-bold">ポケモンダブルバトル支援</h1>
               <LanguageToggle />

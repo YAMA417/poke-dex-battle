@@ -12,11 +12,11 @@ export function calculateBaseDamage(
   level: number,
   power: number,
   attack: number,
-  defense: number,
+  defense: number
 ): number {
   const levelFactor = Math.floor((level * 2) / 5) + 2;
   const damage = Math.floor(
-    Math.floor(Math.floor((levelFactor * power * attack) / defense) / 50) + 2,
+    Math.floor(Math.floor((levelFactor * power * attack) / defense) / 50) + 2
   );
   return damage;
 }

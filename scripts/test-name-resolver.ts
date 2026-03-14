@@ -2,7 +2,12 @@
  * ポケモン名前解決のテストスクリプト
  */
 
-import { resolvePokemonName, getPokemonId, getJapaneseName, getEnglishName } from '../packages/shared/src/utils/pokemon-name-resolver';
+import {
+  resolvePokemonName,
+  getPokemonId,
+  getJapaneseName,
+  getEnglishName,
+} from '../packages/shared/src/utils/pokemon-name-resolver';
 
 console.log('🧪 ポケモン名前解決テスト\n');
 console.log('='.repeat(60));
@@ -54,7 +59,9 @@ jaTests.forEach(({ input, expected }) => {
 
 console.log('\n📝 存在しないポケモンのテスト:\n');
 const notFoundTest = resolvePokemonName('存在しないポケモン');
-console.log(`${notFoundTest === null ? '✅' : '❌'} "存在しないポケモン" → ${notFoundTest} (期待値: null)`);
+console.log(
+  `${notFoundTest === null ? '✅' : '❌'} "存在しないポケモン" → ${notFoundTest} (期待値: null)`
+);
 
 console.log('\n' + '='.repeat(60));
 console.log('🎉 テスト完了！');

@@ -4,7 +4,7 @@ import type {
   CalcPokemon,
   DamageCalculationInput,
   StatStage,
-} from "../../types/damage";
+} from '../../types/damage';
 
 /**
  * Convert DamageCalculationInput (legacy format) to new CalcPokemon format
@@ -15,9 +15,9 @@ function convertAttacker(input: DamageCalculationInput): CalcPokemon {
   // 攻撃ステータスをmoveCategoryに応じてマッピング
   const stats = {
     hp: 100, // ダミー値（ダメージ計算には不要）
-    atk: moveCategory === "Physical" ? attackerAttack : 100,
+    atk: moveCategory === 'Physical' ? attackerAttack : 100,
     def: 100,
-    spa: moveCategory === "Special" ? attackerAttack : 100,
+    spa: moveCategory === 'Special' ? attackerAttack : 100,
     spd: 100,
     spe: 100,
   };
@@ -25,12 +25,12 @@ function convertAttacker(input: DamageCalculationInput): CalcPokemon {
   // 攻撃側のランク補正を変換
   const boosts = {
     atk:
-      moveCategory === "Physical"
+      moveCategory === 'Physical'
         ? (input.condition.attackerStatStages.attack as StatStage)
         : (0 as StatStage),
     def: 0 as StatStage,
     spa:
-      moveCategory === "Special"
+      moveCategory === 'Special'
         ? (input.condition.attackerStatStages.specialAttack as StatStage)
         : (0 as StatStage),
     spd: 0 as StatStage,
@@ -44,7 +44,7 @@ function convertAttacker(input: DamageCalculationInput): CalcPokemon {
     boosts,
     ability: input.condition.attackerAbility,
     item: input.condition.attackerItem,
-    status: input.condition.attackerBurned ? "burn" : "none",
+    status: input.condition.attackerBurned ? 'burn' : 'none',
     teraType: input.attackerTeraType,
     isTerastallized: input.condition.attackerTerastallized,
   };
@@ -58,7 +58,7 @@ function convertDefender(input: DamageCalculationInput): CalcPokemon {
 
   // サイコショック等: 特殊技だが物理防御を参照
   const targetsPhysicalDefense = input.moveFlags?.targetsPhysicalDefense ?? false;
-  const usesPhysicalDef = moveCategory === "Physical" || targetsPhysicalDefense;
+  const usesPhysicalDef = moveCategory === 'Physical' || targetsPhysicalDefense;
 
   // 防御ステータスをマッピング（特殊技でも物理防御参照の場合は def に入れる）
   const stats = {
@@ -88,7 +88,7 @@ function convertDefender(input: DamageCalculationInput): CalcPokemon {
     boosts,
     ability: input.condition.defenderAbility,
     item: input.condition.defenderItem,
-    status: "none",
+    status: 'none',
     currentHp: input.defenderCurrentHp,
     maxHp: input.defenderMaxHp || 100,
   };
@@ -99,7 +99,7 @@ function convertDefender(input: DamageCalculationInput): CalcPokemon {
  */
 function convertMove(input: DamageCalculationInput): CalcMove {
   return {
-    name: input.moveName || "",
+    name: input.moveName || '',
     power: input.movePower,
     type: input.moveType,
     category: input.moveCategory,

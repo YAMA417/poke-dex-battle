@@ -10,15 +10,15 @@
 
 ### タイプ一覧
 
-| タイプ | 説明 | 例 |
-|--------|------|-----|
-| `feat/` | 新機能の追加 | `feat/pokeapi-data-fetch` |
-| `fix/` | バグ修正 | `fix/damage-calculation-error` |
-| `refactor/` | リファクタリング | `refactor/stat-calculation` |
-| `docs/` | ドキュメントの追加・修正 | `docs/api-documentation` |
-| `chore/` | 雑務（依存関係更新、設定変更など） | `chore/update-dependencies` |
-| `test/` | テストの追加・修正 | `test/add-damage-calc-tests` |
-| `perf/` | パフォーマンス改善 | `perf/optimize-pokemon-search` |
+| タイプ      | 説明                               | 例                             |
+| ----------- | ---------------------------------- | ------------------------------ |
+| `feat/`     | 新機能の追加                       | `feat/pokeapi-data-fetch`      |
+| `fix/`      | バグ修正                           | `fix/damage-calculation-error` |
+| `refactor/` | リファクタリング                   | `refactor/stat-calculation`    |
+| `docs/`     | ドキュメントの追加・修正           | `docs/api-documentation`       |
+| `chore/`    | 雑務（依存関係更新、設定変更など） | `chore/update-dependencies`    |
+| `test/`     | テストの追加・修正                 | `test/add-damage-calc-tests`   |
+| `perf/`     | パフォーマンス改善                 | `perf/optimize-pokemon-search` |
 
 ### 命名のポイント
 
@@ -107,24 +107,30 @@ feat: PokéAPIからデータ取得・キャッシュ機能
 
 ```markdown
 ## 概要
+
 <!-- この変更の目的と背景を簡潔に説明 -->
 
 ## 変更内容
-<!-- 主な変更点を箇条書きで -->
--
+
+## <!-- 主な変更点を箇条書きで -->
+
 -
 -
 
 ## テスト方法
+
 <!-- レビュアーが動作確認する手順 -->
+
 1.
 2.
 3.
 
 ## スクリーンショット（任意）
+
 <!-- UIに変更がある場合は画像を添付 -->
 
 ## チェックリスト
+
 - [ ] 動作確認済み
 - [ ] コードレビュー準備完了
 - [ ] ドキュメント更新（必要な場合）
@@ -228,15 +234,15 @@ npm run typecheck -w @poke-dex-battle/shared
 
 ```typescript
 // 1. 外部ライブラリ
-import React from 'react'
-import { useState } from 'react'
+import React from 'react';
+import { useState } from 'react';
 
 // 2. 内部パッケージ
-import { Pokemon } from '@poke-dex-battle/shared'
+import { Pokemon } from '@poke-dex-battle/shared';
 
 // 3. 相対インポート
-import { PokemonCard } from './PokemonCard'
-import styles from './styles.module.css'
+import { PokemonCard } from './PokemonCard';
+import styles from './styles.module.css';
 ```
 
 ---

@@ -1,6 +1,6 @@
-import type { MoveData } from "@poke-dex-battle/shared";
-import { getMoveByName } from "@poke-dex-battle/shared";
-import { useEffect, useState } from "react";
+import type { MoveData } from '@poke-dex-battle/shared';
+import { getMoveByName } from '@poke-dex-battle/shared';
+import { useEffect, useState } from 'react';
 
 export function useMoveSearch(moveName: string) {
   const [data, setData] = useState<MoveData | null>(null);

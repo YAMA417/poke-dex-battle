@@ -1,13 +1,13 @@
-import { calcTypeEffectiveness } from "../../constants/types";
-import type { BattleContext, CalcMove, CalcPokemon } from "../../types/damage";
+import { calcTypeEffectiveness } from '../../constants/types';
+import type { BattleContext, CalcMove, CalcPokemon } from '../../types/damage';
 import {
   calculateDefenderAbilityModifier,
   calculateDefenderItemModifier,
   calculateFieldModifier,
   calculateStab,
   calculateWeatherModifier,
-} from "../damage-calc";
-import { applyOtherModifiers } from "./apply-other-modifiers";
+} from '../damage-calc';
+import { applyOtherModifiers } from './apply-other-modifiers';
 
 interface ModifierResult {
   minDamage: number;
@@ -33,7 +33,7 @@ export function calculateModifier(
   attacker: CalcPokemon,
   defender: CalcPokemon,
   move: CalcMove,
-  context: BattleContext,
+  context: BattleContext
 ): ModifierResult {
   let minDamage = baseDamage;
   let maxDamage = baseDamage;
@@ -45,26 +45,18 @@ export function calculateModifier(
   }
 
   // 2. Weather (天候補正) - BEFORE random
-  const weatherModifier = calculateWeatherModifier(
-    move.type,
-    context.weather || "none",
-  );
+  const weatherModifier = calculateWeatherModifier(move.type, context.weather || 'none');
   minDamage = Math.floor(minDamage * weatherModifier);
   maxDamage = Math.floor(maxDamage * weatherModifier);
 
   // 2.5. Field (フィールド補正) - Weather直後、Critical前
-  const fieldModifier = calculateFieldModifier(
-    move.type,
-    context.field || "none",
-  );
+  const fieldModifier = calculateFieldModifier(move.type, context.field || 'none');
   minDamage = Math.floor(minDamage * fieldModifier);
   maxDamage = Math.floor(maxDamage * fieldModifier);
 
   // 3. Critical (急所補正) - BEFORE random
   // スナイパー (Sniper): 急所時 1.5倍 → 2.25倍
-  const criticalModifier = move.isCritical
-    ? (attacker.ability === "Sniper" ? 2.25 : 1.5)
-    : 1.0;
+  const criticalModifier = move.isCritical ? (attacker.ability === 'Sniper' ? 2.25 : 1.5) : 1.0;
   minDamage = Math.floor(minDamage * criticalModifier);
   maxDamage = Math.floor(maxDamage * criticalModifier);
 
@@ -79,7 +71,7 @@ export function calculateModifier(
     attacker.types,
     attacker.teraType,
     attacker.isTerastallized,
-    attacker.ability,
+    attacker.ability
   );
   minDamage = Math.floor(minDamage * stab);
   maxDamage = Math.floor(maxDamage * stab);
@@ -88,9 +80,10 @@ export function calculateModifier(
   const typeEffectiveness = calcTypeEffectiveness(move.type, defender.types);
 
   // 色眼鏡 (Tinted Lens): 効果いまひとつの技が2倍
-  const effectiveTypeMultiplier = (attacker.ability === "Tinted Lens" && typeEffectiveness < 1)
-    ? typeEffectiveness * 2
-    : typeEffectiveness;
+  const effectiveTypeMultiplier =
+    attacker.ability === 'Tinted Lens' && typeEffectiveness < 1
+      ? typeEffectiveness * 2
+      : typeEffectiveness;
 
   minDamage = Math.floor(minDamage * effectiveTypeMultiplier);
   maxDamage = Math.floor(maxDamage * effectiveTypeMultiplier);
@@ -101,16 +94,16 @@ export function calculateModifier(
   // リフレクター/ひかりのかべ: ダブル 2732/4096 ≒ 0.667倍、シングル 0.5倍（急所時は無視）
   const screenModifier = context.isDoubleBattle ? 2732 / 4096 : 0.5;
 
-  if (context.reflect && move.category === "Physical" && !move.isCritical) {
+  if (context.reflect && move.category === 'Physical' && !move.isCritical) {
     otherModifiers.push(screenModifier);
   }
 
-  if (context.lightScreen && move.category === "Special" && !move.isCritical) {
+  if (context.lightScreen && move.category === 'Special' && !move.isCritical) {
     otherModifiers.push(screenModifier);
   }
 
   // いのちのたま: ダメージ1.3倍
-  if (attacker.item === "Life Orb") {
+  if (attacker.item === 'Life Orb') {
     otherModifiers.push(1.3);
   }
 
@@ -122,17 +115,14 @@ export function calculateModifier(
     move.flags,
     defender.currentHp,
     defender.maxHp,
-    move.category,
+    move.category
   );
   if (defenderAbilityModifier !== 1.0) {
     otherModifiers.push(defenderAbilityModifier);
   }
 
   // 防御側持ち物によるダメージ補正
-  const defenderItemModifier = calculateDefenderItemModifier(
-    defender.item,
-    move.category,
-  );
+  const defenderItemModifier = calculateDefenderItemModifier(defender.item, move.category);
   if (defenderItemModifier !== 1.0) {
     otherModifiers.push(defenderItemModifier);
   }

@@ -1,8 +1,8 @@
-import { DamageCalculator } from "@/components/damage-calc/DamageCalculator";
+import { DamageCalculator } from '@/components/damage-calc/DamageCalculator';
 
 export default function CalcPage() {
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto px-4 py-8">
       <div className="space-y-6">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">ダメージ計算</h1>

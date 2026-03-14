@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { calcOtherStat } from "@poke-dex-battle/shared";
-import { useState, useEffect, useRef } from "react";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { calcOtherStat } from '@poke-dex-battle/shared';
+import { useState, useEffect, useRef } from 'react';
 
-type StatType = "attack" | "defense" | "specialAttack" | "specialDefense";
+type StatType = 'attack' | 'defense' | 'specialAttack' | 'specialDefense';
 
 interface PokemonStatInputProps {
   label: string;
@@ -27,7 +27,7 @@ export function PokemonStatInput({
   value,
   onChange,
 }: PokemonStatInputProps) {
-  const [mode, setMode] = useState<"manual" | "auto">("auto");
+  const [mode, setMode] = useState<'manual' | 'auto'>('auto');
   const [iv, setIv] = useState(31);
   const [ev, setEv] = useState(252);
   const onChangeRef = useRef(onChange);
@@ -35,65 +35,48 @@ export function PokemonStatInput({
 
   // natureModifier or baseStat が変更されたら自動で再計算
   useEffect(() => {
-    if (mode === "auto") {
+    if (mode === 'auto') {
       const calculated = calcOtherStat(baseStat, iv, ev, level, natureModifier);
       onChangeRef.current(calculated);
     }
   }, [natureModifier, baseStat, mode, iv, ev, level]);
 
   const handleModeToggle = () => {
-    if (mode === "manual") {
+    if (mode === 'manual') {
       const calculated = calcOtherStat(baseStat, iv, ev, level, natureModifier);
       onChange(calculated);
-      setMode("auto");
+      setMode('auto');
     } else {
-      setMode("manual");
+      setMode('manual');
     }
   };
 
   const handleIvChange = (newIv: number) => {
     setIv(newIv);
-    if (mode === "auto") {
-      const calculated = calcOtherStat(
-        baseStat,
-        newIv,
-        ev,
-        level,
-        natureModifier
-      );
+    if (mode === 'auto') {
+      const calculated = calcOtherStat(baseStat, newIv, ev, level, natureModifier);
       onChange(calculated);
     }
   };
 
   const handleEvChange = (newEv: number) => {
     setEv(newEv);
-    if (mode === "auto") {
-      const calculated = calcOtherStat(
-        baseStat,
-        iv,
-        newEv,
-        level,
-        natureModifier
-      );
+    if (mode === 'auto') {
+      const calculated = calcOtherStat(baseStat, iv, newEv, level, natureModifier);
       onChange(calculated);
     }
   };
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <Label>{label}</Label>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleModeToggle}
-        >
-          {mode === "manual" ? "自動計算に切替" : "手動入力に切替"}
+        <Button type="button" variant="outline" size="sm" onClick={handleModeToggle}>
+          {mode === 'manual' ? '自動計算に切替' : '手動入力に切替'}
         </Button>
       </div>
 
-      {mode === "manual" ? (
+      {mode === 'manual' ? (
         <div className="space-y-2">
           <Input
             type="number"
@@ -119,9 +102,7 @@ export function PokemonStatInput({
                 max={31}
                 value={iv}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleIvChange(
-                    Math.max(0, Math.min(31, parseInt(e.target.value) || 0))
-                  )
+                  handleIvChange(Math.max(0, Math.min(31, parseInt(e.target.value) || 0)))
                 }
               />
             </div>
@@ -137,9 +118,7 @@ export function PokemonStatInput({
                 step={4}
                 value={ev}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleEvChange(
-                    Math.max(0, Math.min(252, parseInt(e.target.value) || 0))
-                  )
+                  handleEvChange(Math.max(0, Math.min(252, parseInt(e.target.value) || 0)))
                 }
               />
             </div>
