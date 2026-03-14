@@ -47,9 +47,11 @@ interface DefenderInputProps {
 export function DefenderInput({ data, onDataChange, idKey, displayMode }: DefenderInputProps) {
   const idPrefix = useMemo(() => generateIdPrefix(data.pokemonName || "defender", idKey), [data.pokemonName, idKey]);
 
-  // useRef で最新の data を保持（useEffect 内のステールクロージャ防止）
+  // useRef で最新の data と onDataChange を保持（useEffect 内のステールクロージャ防止）
   const dataRef = useRef(data);
   dataRef.current = data;
+  const onDataChangeRef = useRef(onDataChange);
+  onDataChangeRef.current = onDataChange;
 
   // EV/IV の内部 state
   const [hpEv, setHpEv] = useState(0);
@@ -99,7 +101,7 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
       const spDefBase = pokemonData.baseStats.specialDefense;
       const firstAbility = pokemonData.abilities[0];
 
-      onDataChange({
+      onDataChangeRef.current({
         ...d,
         hpBaseStat: hpBase,
         defenseBaseStat: defBase,
@@ -111,8 +113,7 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
         specialDefenseStat: calcOtherStat(spDefBase, spDefIv, spDefEv, 50, d.specialDefenseModifier),
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pokemonData]);
+  }, [pokemonData, hpIv, hpEv, defIv, defEv, spDefIv, spDefEv]);
 
   // rerender-derived-state-no-effect: ステータスはイベントハンドラで直接計算
 

@@ -61,9 +61,11 @@ interface AttackerInputProps {
 export function AttackerInput({ data, onDataChange, idKey, displayMode }: AttackerInputProps) {
   const idPrefix = useMemo(() => generateIdPrefix(data.pokemonName || "attacker", idKey), [data.pokemonName, idKey]);
 
-  // useRef で最新の data を保持（useEffect 内のステールクロージャ防止）
+  // useRef で最新の data と onDataChange を保持（useEffect 内のステールクロージャ防止）
   const dataRef = useRef(data);
   dataRef.current = data;
+  const onDataChangeRef = useRef(onDataChange);
+  onDataChangeRef.current = onDataChange;
 
   // EV/IV の内部 state
   const [attackEv, setAttackEv] = useState(252);
@@ -113,7 +115,7 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
       const defBase = pokemonData.baseStats.defense;
       const firstAbility = pokemonData.abilities[0];
 
-      onDataChange({
+      onDataChangeRef.current({
         ...d,
         attackBaseStat: atkBase,
         specialAttackBaseStat: spAtkBase,
@@ -125,8 +127,7 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
         defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pokemonData]);
+  }, [pokemonData, attackIv, attackEv, spAtkIv, spAtkEv, defIv, defEv]);
 
   // rerender-derived-state-no-effect: ステータスはイベントハンドラで直接計算
   const isPhysical = data.moveCategory === "Physical";
