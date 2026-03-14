@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
-export type Locale = "ja" | "en";
+export type Locale = 'ja' | 'en';
 
 interface LanguageContextValue {
   locale: Locale;
@@ -10,27 +10,25 @@ interface LanguageContextValue {
 }
 
 const LanguageContext = createContext<LanguageContextValue>({
-  locale: "ja",
+  locale: 'ja',
   setLocale: () => {},
 });
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("ja");
+  const [locale, setLocaleState] = useState<Locale>('ja');
 
   useEffect(() => {
-    const saved = localStorage.getItem("locale") as Locale | null;
-    if (saved === "ja" || saved === "en") setLocaleState(saved);
+    const saved = localStorage.getItem('locale') as Locale | null;
+    if (saved === 'ja' || saved === 'en') setLocaleState(saved);
   }, []);
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale);
-    localStorage.setItem("locale", newLocale);
+    localStorage.setItem('locale', newLocale);
   };
 
   return (
-    <LanguageContext.Provider value={{ locale, setLocale }}>
-      {children}
-    </LanguageContext.Provider>
+    <LanguageContext.Provider value={{ locale, setLocale }}>{children}</LanguageContext.Provider>
   );
 }
 

@@ -1,6 +1,6 @@
-import type { ItemData } from "@poke-dex-battle/shared";
-import { getItemByName } from "@poke-dex-battle/shared";
-import { useEffect, useState } from "react";
+import type { ItemData } from '@poke-dex-battle/shared';
+import { getItemByName } from '@poke-dex-battle/shared';
+import { useEffect, useState } from 'react';
 
 export function useItemSearch(itemName: string) {
   const [data, setData] = useState<ItemData | null>(null);

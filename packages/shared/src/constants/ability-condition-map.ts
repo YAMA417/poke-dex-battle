@@ -1,16 +1,16 @@
-import type { Field, Weather } from "../types/damage";
-import { getAbilityByName } from "../services/ability-service";
+import type { Field, Weather } from '../types/damage';
+import { getAbilityByName } from '../services/ability-service';
 
 /**
  * Ability ID to weather mapping.
  * Keys are Showdown-style ability IDs (lowercase, no spaces).
  */
 export const ABILITY_WEATHER_MAP: Record<string, Weather> = {
-  drizzle: "rain",
-  drought: "sun",
-  sandstream: "sandstorm",
-  snowwarning: "snow",
-  orichalcumpulse: "sun",
+  drizzle: 'rain',
+  drought: 'sun',
+  sandstream: 'sandstorm',
+  snowwarning: 'snow',
+  orichalcumpulse: 'sun',
 };
 
 /**
@@ -18,11 +18,11 @@ export const ABILITY_WEATHER_MAP: Record<string, Weather> = {
  * Keys are Showdown-style ability IDs (lowercase, no spaces).
  */
 export const ABILITY_FIELD_MAP: Record<string, Field> = {
-  electricsurge: "electric",
-  grassysurge: "grassy",
-  mistysurge: "misty",
-  psychicsurge: "psychic",
-  hadronengine: "electric",
+  electricsurge: 'electric',
+  grassysurge: 'grassy',
+  mistysurge: 'misty',
+  psychicsurge: 'psychic',
+  hadronengine: 'electric',
 };
 
 /**
@@ -38,7 +38,7 @@ export function getAbilityConditionEffect(
   if (!ability) return null;
 
   // ability.name は英語名。IDに変換（小文字化+記号除去）
-  const id = ability.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const id = ability.name.toLowerCase().replace(/[^a-z0-9]/g, '');
 
   const weather = ABILITY_WEATHER_MAP[id];
   const field = ABILITY_FIELD_MAP[id];

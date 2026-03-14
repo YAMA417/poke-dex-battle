@@ -10,26 +10,33 @@ export default function PartiesPage() {
   const { parties, deleteParty, duplicateParty } = usePartyStore();
   const [query, setQuery] = useState('');
 
-  const handleDelete = useCallback((id: string) => {
-    deleteParty(id);
-  }, [deleteParty]);
+  const handleDelete = useCallback(
+    (id: string) => {
+      deleteParty(id);
+    },
+    [deleteParty]
+  );
 
-  const handleDuplicate = useCallback((id: string) => {
-    duplicateParty(id);
-  }, [duplicateParty]);
+  const handleDuplicate = useCallback(
+    (id: string) => {
+      duplicateParty(id);
+    },
+    [duplicateParty]
+  );
 
-  const filtered = parties.filter((p) =>
-    p.name.toLowerCase().includes(query.toLowerCase()) ||
-    p.regulation.toLowerCase().includes(query.toLowerCase())
+  const filtered = parties.filter(
+    (p) =>
+      p.name.toLowerCase().includes(query.toLowerCase()) ||
+      p.regulation.toLowerCase().includes(query.toLowerCase())
   );
 
   return (
     <div className="space-y-6 pb-24">
       {/* ヘッダー */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">パーティ管理</h2>
-          <p className="text-sm text-gray-400 mt-0.5">{parties.length} パーティ登録中</p>
+          <p className="mt-0.5 text-sm text-gray-400">{parties.length} パーティ登録中</p>
         </div>
       </div>
 
@@ -41,31 +48,33 @@ export default function PartiesPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="パーティ名・レギュレーションで絞り込み"
-          className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pokemon-blue bg-white"
+          className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-pokemon-blue"
         />
       </div>
 
       {/* パーティ一覧 */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="text-6xl mb-4">🎮</div>
-          <h3 className="text-lg font-bold text-gray-600 mb-2">
+          <div className="mb-4 text-6xl">🎮</div>
+          <h3 className="mb-2 text-lg font-bold text-gray-600">
             {query ? '一致するパーティが見つかりません' : 'パーティがまだありません'}
           </h3>
-          <p className="text-sm text-gray-400 mb-6">
-            {query ? '別のキーワードで試してください' : '右下の「＋」ボタンから新しいパーティを作成しましょう'}
+          <p className="mb-6 text-sm text-gray-400">
+            {query
+              ? '別のキーワードで試してください'
+              : '右下の「＋」ボタンから新しいパーティを作成しましょう'}
           </p>
           {!query && (
             <Link
               href="/parties/new"
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-pokemon-blue text-white font-semibold hover:bg-blue-700 transition-all shadow hover:shadow-lg"
+              className="flex items-center gap-2 rounded-xl bg-pokemon-blue px-6 py-3 font-semibold text-white shadow transition-all hover:bg-blue-700 hover:shadow-lg"
             >
               <Plus size={18} /> 最初のパーティを作成
             </Link>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((party) => (
             <PartyCard
               key={party.id}
@@ -80,7 +89,7 @@ export default function PartiesPage() {
       {/* FAB: 新規作成 */}
       <Link
         href="/parties/new"
-        className="fixed bottom-6 right-6 w-14 h-14 bg-pokemon-blue text-white rounded-full shadow-lg hover:shadow-xl hover:scale-110 flex items-center justify-center transition-all z-40"
+        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-pokemon-blue text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl"
         aria-label="新規パーティ作成"
       >
         <Plus size={26} />
@@ -88,5 +97,3 @@ export default function PartiesPage() {
     </div>
   );
 }
-
-

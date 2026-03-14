@@ -3,19 +3,23 @@
 ## 📋 プロジェクト概要
 
 ### プロジェクト名
+
 ポケモンダブルバトル支援アプリ（仮称）
 
 ### 目的
+
 - ポケモンダブルバトルにおけるパーティ管理、ダメージ計算、対戦履歴管理を統合的に支援
 - チャンピオンズリーグなどから始める初心者〜中級者向けの便利ツール
 - モダンな技術スタックでの開発経験・学習
 
 ### 対象ユーザー
+
 - チャンピオンズリーグなどから始めるダブルバトル初心者
 - ダブルバトルに少し触れたことがある中級者
 - パーティ構築や対戦分析を効率化したいプレイヤー
 
 ### 対象ゲーム
+
 - **現在**: ポケモン スカーレット・バイオレット
 - **将来**: ポケモンチャンピオンズ（発売後アップデート対応）
 
@@ -26,9 +30,11 @@
 ### 必須機能（優先度: 高）
 
 #### 1. パーティ登録機能
+
 ポケモンの詳細情報を管理し、複数のパーティを保存・編集できる機能
 
 **管理項目**:
+
 - パーティ情報
   - パーティ名
   - 作成日時・更新日時
@@ -50,6 +56,7 @@
   - 実数値の自動計算表示
 
 **CRUD操作**:
+
 - パーティの新規作成
 - パーティの編集
 - パーティの削除
@@ -57,26 +64,31 @@
 - パーティ一覧表示
 
 **バリデーション**:
+
 - 努力値の合計が510以下であることを確認
 - 各ステータスの努力値が252以下であることを確認
 - 技の重複チェック（警告表示）
 
 **データ出力**:
+
 - JSON形式でのエクスポート
 - JSON形式でのインポート（バックアップ・復元用）
 
 ---
 
 #### 2. ダメージ計算機能
+
 ダブルバトル特有の要素を考慮した詳細なダメージ計算
 
 **基本計算**:
+
 - ポケモンの攻撃技による与ダメージ計算
 - 被ダメージ計算
 - 乱数を考慮した最小〜最大ダメージ表示
 - 確定数表示（○○%で○発）
 
 **ダブルバトル特有要素**:
+
 - 全体技の威力減衰（×0.75）
 - てだすけ効果（×1.5）
 - フレンドガード効果（×0.75）
@@ -84,6 +96,7 @@
 - ひらいしん、よびみずなどの特性による無効化・吸引
 
 **環境要素**:
+
 - 天候効果
   - 晴れ（炎技1.5倍、水技0.5倍）
   - 雨（水技1.5倍、炎技0.5倍）
@@ -97,6 +110,7 @@
 - 壁・リフレクター、ひかりのかべ
 
 **その他要素**:
+
 - タイプ一致補正（×1.5 or ×2.0 適応力）
 - タイプ相性（×0、×0.25、×0.5、×1、×2、×4）
 - テラスタル時の補正
@@ -104,6 +118,7 @@
 - アイテム補正（命の珠、こだわりハチマキなど）
 
 **UI要素**:
+
 - 攻撃側ポケモン選択
 - 防御側ポケモン選択
 - 技選択
@@ -113,9 +128,11 @@
 ---
 
 #### 3. 対戦履歴管理機能
+
 過去の対戦データを記録・管理し、統計情報を表示する機能
 
 **記録項目**:
+
 - 対戦基本情報
   - 対戦日時
   - 対戦形式（ランクマッチ、カジュアル、大会、フレンド戦など）
@@ -135,6 +152,7 @@
   - 動画のサムネイル表示（自動生成）
 
 **機能**:
+
 - 対戦記録の新規作成
 - 対戦記録の編集
 - 対戦記録の削除
@@ -142,6 +160,7 @@
 - 動画のプレビュー・再生（Expo AV使用）
 
 **フィルタ・検索**:
+
 - 日付範囲での絞り込み
 - 勝敗での絞り込み
 - 使用パーティでの絞り込み
@@ -149,6 +168,7 @@
 - キーワード検索（メモ欄）
 
 **統計表示**:
+
 - 全体勝率
 - パーティごとの勝率
 - ポケモンごとの選出率・勝率
@@ -160,9 +180,11 @@
 ### 追加機能（優先度: 中）
 
 #### 4. パーティ構築支援機能
+
 パーティのバランスをチェックし、改善点を提案
 
 **機能**:
+
 - タイプ相性チェック（弱点の可視化）
 - 役割分担の確認（物理アタッカー、特殊アタッカー、サポートなど）
 - 素早さ順の表示
@@ -170,9 +192,11 @@
 - おすすめポケモン提案（弱点を補えるポケモン）
 
 #### 5. データベース・図鑑機能
+
 ポケモン、技、特性、持ち物の情報検索
 
 **機能**:
+
 - ポケモン図鑑（種族値、タイプ、特性一覧）
 - 技検索（タイプ、威力、効果で検索）
 - 特性検索（効果説明）
@@ -217,11 +241,13 @@ External API: PokéAPI (ポケモンマスターデータ)
 ### フロントエンド（モバイルアプリ）
 
 **フレームワーク**:
+
 - **Expo** (SDK 52以上)
 - **React Native**
 - **Expo Router** (ファイルベースルーティング)
 
 **主要ライブラリ**:
+
 - **UI**: React Native Paper or NativeWind (Tailwind CSS for React Native)
 - **状態管理**: Zustand or Jotai
 - **フォーム**: React Hook Form
@@ -233,6 +259,7 @@ External API: PokéAPI (ポケモンマスターデータ)
 - **HTTP Client**: Axios or Fetch API
 
 **開発環境**:
+
 - **実機テスト**: Expo Go アプリ
 - **Android**: エミュレータ（Windows）
 - **iOS**: 実機（iPhone）
@@ -240,18 +267,23 @@ External API: PokéAPI (ポケモンマスターデータ)
 ### バックエンド（API）
 
 **フレームワーク**:
+
 - **Hono** (高速軽量Webフレームワーク)
 
 **デプロイ先**:
+
 - **Cloudflare Workers** (エッジコンピューティング)
 
 **認証**:
+
 - Phase 1: なし
 - Phase 2: Supabase Auth連携
 
 **API設計**:
+
 - RESTful API
 - エンドポイント例:
+
   ```
   GET    /api/parties          # パーティ一覧取得
   POST   /api/parties          # パーティ作成
@@ -269,10 +301,12 @@ External API: PokéAPI (ポケモンマスターデータ)
 ### データベース
 
 **Phase 1**:
+
 - Expo SQLite（ローカルDB）
 - AsyncStorage（設定値など軽量データ）
 
 **Phase 2以降**:
+
 - **Supabase PostgreSQL**
   - パーティデータ
   - 対戦履歴データ
@@ -283,12 +317,14 @@ External API: PokéAPI (ポケモンマスターデータ)
 ### 外部API
 
 **PokéAPI** (https://pokeapi.co/)
+
 - ポケモンの種族値データ
 - 技データ
 - 特性データ
 - タイプ相性データ
 
 **データキャッシュ戦略**:
+
 - 初回起動時にマスターデータをダウンロード
 - ローカルに保存（SQLite）
 - 定期的に更新チェック
@@ -380,11 +416,11 @@ poke-dex-battle/
 
 ```typescript
 interface Party {
-  id: string;                       // UUID
-  name: string;                     // パーティ名
-  regulation: 'SV' | 'Champions';   // レギュレーション
-  memo?: string;                    // メモ
-  pokemons: Pokemon[];              // ポケモン配列（最大6）
+  id: string; // UUID
+  name: string; // パーティ名
+  regulation: 'SV' | 'Champions'; // レギュレーション
+  memo?: string; // メモ
+  pokemons: Pokemon[]; // ポケモン配列（最大6）
   createdAt: Date;
   updatedAt: Date;
 }
@@ -394,20 +430,20 @@ interface Party {
 
 ```typescript
 interface Pokemon {
-  id: string;                       // UUID
-  speciesId: number;                // 種族ID（PokéAPI参照）
-  speciesName: string;              // 種族名（例: ピカチュウ）
-  nickname?: string;                // ニックネーム
-  level: number;                    // レベル（通常50）
+  id: string; // UUID
+  speciesId: number; // 種族ID（PokéAPI参照）
+  speciesName: string; // 種族名（例: ピカチュウ）
+  nickname?: string; // ニックネーム
+  level: number; // レベル（通常50）
   gender?: 'male' | 'female' | 'unknown';
-  nature: Nature;                   // 性格
-  ability: string;                  // 特性
-  teraType: Type;                   // テラスタイプ
-  item?: string;                    // 持ち物
-  ivs: Stats;                       // 個体値
-  evs: Stats;                       // 努力値
-  moves: Move[];                    // 技（最大4）
-  actualStats?: Stats;              // 実数値（計算値）
+  nature: Nature; // 性格
+  ability: string; // 特性
+  teraType: Type; // テラスタイプ
+  item?: string; // 持ち物
+  ivs: Stats; // 個体値
+  evs: Stats; // 努力値
+  moves: Move[]; // 技（最大4）
+  actualStats?: Stats; // 実数値（計算値）
 }
 
 interface Stats {
@@ -420,25 +456,60 @@ interface Stats {
 }
 
 type Nature =
-  | 'Hardy' | 'Lonely' | 'Brave' | 'Adamant' | 'Naughty'
-  | 'Bold' | 'Docile' | 'Relaxed' | 'Impish' | 'Lax'
-  | 'Timid' | 'Hasty' | 'Serious' | 'Jolly' | 'Naive'
-  | 'Modest' | 'Mild' | 'Quiet' | 'Bashful' | 'Rash'
-  | 'Calm' | 'Gentle' | 'Sassy' | 'Careful' | 'Quirky';
+  | 'Hardy'
+  | 'Lonely'
+  | 'Brave'
+  | 'Adamant'
+  | 'Naughty'
+  | 'Bold'
+  | 'Docile'
+  | 'Relaxed'
+  | 'Impish'
+  | 'Lax'
+  | 'Timid'
+  | 'Hasty'
+  | 'Serious'
+  | 'Jolly'
+  | 'Naive'
+  | 'Modest'
+  | 'Mild'
+  | 'Quiet'
+  | 'Bashful'
+  | 'Rash'
+  | 'Calm'
+  | 'Gentle'
+  | 'Sassy'
+  | 'Careful'
+  | 'Quirky';
 
 type Type =
-  | 'Normal' | 'Fire' | 'Water' | 'Electric' | 'Grass' | 'Ice'
-  | 'Fighting' | 'Poison' | 'Ground' | 'Flying' | 'Psychic' | 'Bug'
-  | 'Rock' | 'Ghost' | 'Dragon' | 'Dark' | 'Steel' | 'Fairy';
+  | 'Normal'
+  | 'Fire'
+  | 'Water'
+  | 'Electric'
+  | 'Grass'
+  | 'Ice'
+  | 'Fighting'
+  | 'Poison'
+  | 'Ground'
+  | 'Flying'
+  | 'Psychic'
+  | 'Bug'
+  | 'Rock'
+  | 'Ghost'
+  | 'Dragon'
+  | 'Dark'
+  | 'Steel'
+  | 'Fairy';
 
 interface Move {
-  id: number;                       // 技ID
-  name: string;                     // 技名
-  type: Type;                       // タイプ
+  id: number; // 技ID
+  name: string; // 技名
+  type: Type; // タイプ
   category: 'Physical' | 'Special' | 'Status';
-  power?: number;                   // 威力
-  accuracy?: number;                // 命中率
-  pp: number;                       // PP
+  power?: number; // 威力
+  accuracy?: number; // 命中率
+  pp: number; // PP
 }
 ```
 
@@ -446,31 +517,31 @@ interface Move {
 
 ```typescript
 interface Battle {
-  id: string;                       // UUID
-  date: Date;                       // 対戦日時
-  format: BattleFormat;             // 対戦形式
-  result: 'win' | 'lose' | 'draw';  // 勝敗
-  partyId: string;                  // 使用パーティID
-  selectedPokemonIds: string[];     // 選出ポケモンID（3〜4匹）
-  opponentParty?: OpponentPokemon[];// 相手パーティ（任意）
-  memo?: string;                    // メモ・振り返り
-  videoUri?: string;                // 動画ファイルURI or URL
-  videoThumbnail?: string;          // サムネイルURI
+  id: string; // UUID
+  date: Date; // 対戦日時
+  format: BattleFormat; // 対戦形式
+  result: 'win' | 'lose' | 'draw'; // 勝敗
+  partyId: string; // 使用パーティID
+  selectedPokemonIds: string[]; // 選出ポケモンID（3〜4匹）
+  opponentParty?: OpponentPokemon[]; // 相手パーティ（任意）
+  memo?: string; // メモ・振り返り
+  videoUri?: string; // 動画ファイルURI or URL
+  videoThumbnail?: string; // サムネイルURI
   createdAt: Date;
   updatedAt: Date;
 }
 
 type BattleFormat =
-  | 'Ranked'                        // ランクマッチ
-  | 'Casual'                        // カジュアルマッチ
-  | 'Tournament'                    // 大会
-  | 'Friendly';                     // フレンド戦
+  | 'Ranked' // ランクマッチ
+  | 'Casual' // カジュアルマッチ
+  | 'Tournament' // 大会
+  | 'Friendly'; // フレンド戦
 
 interface OpponentPokemon {
-  speciesName: string;              // 種族名のみでOK
+  speciesName: string; // 種族名のみでOK
   item?: string;
   teraType?: Type;
-  moves?: string[];                 // 確認できた技
+  moves?: string[]; // 確認できた技
 }
 ```
 
@@ -481,27 +552,27 @@ interface DamageCalcInput {
   attacker: {
     pokemon: Pokemon;
     move: Move;
-    statBoosts: StatBoosts;         // 能力ランク補正
-    isCritical: boolean;            // 急所
-    isHelpingHand: boolean;         // てだすけ
+    statBoosts: StatBoosts; // 能力ランク補正
+    isCritical: boolean; // 急所
+    isHelpingHand: boolean; // てだすけ
   };
   defender: {
     pokemon: Pokemon;
     statBoosts: StatBoosts;
-    isFriendGuard: boolean;         // フレンドガード
-    isProtected: boolean;           // まもる状態
+    isFriendGuard: boolean; // フレンドガード
+    isProtected: boolean; // まもる状態
   };
   field: {
-    weather?: Weather;              // 天候
-    terrain?: Terrain;              // フィールド
-    isReflect: boolean;             // リフレクター
-    isLightScreen: boolean;         // ひかりのかべ
-    isMultiTarget: boolean;         // 全体技かどうか
+    weather?: Weather; // 天候
+    terrain?: Terrain; // フィールド
+    isReflect: boolean; // リフレクター
+    isLightScreen: boolean; // ひかりのかべ
+    isMultiTarget: boolean; // 全体技かどうか
   };
 }
 
 interface StatBoosts {
-  attack: number;                   // -6 〜 +6
+  attack: number; // -6 〜 +6
   defense: number;
   specialAttack: number;
   specialDefense: number;
@@ -514,13 +585,14 @@ type Terrain = 'Electric' | 'Grassy' | 'Psychic' | 'Misty';
 interface DamageCalcResult {
   minDamage: number;
   maxDamage: number;
-  minPercent: number;               // 割合(%)
+  minPercent: number; // 割合(%)
   maxPercent: number;
-  koChance: {                       // 確定数
-    ohko: number;                   // 1発で倒せる確率(%)
-    thko: number;                   // 2発で倒せる確率(%)
+  koChance: {
+    // 確定数
+    ohko: number; // 1発で倒せる確率(%)
+    thko: number; // 2発で倒せる確率(%)
   };
-  description: string[];            // 計算説明テキスト
+  description: string[]; // 計算説明テキスト
 }
 ```
 
@@ -533,6 +605,7 @@ interface DamageCalcResult {
 **目標**: ローカルストレージのみで動作する基本機能を実装
 
 #### Week 1-2: 環境構築・基礎実装
+
 - [ ] モノレポセットアップ（pnpm workspaces）
 - [ ] Expoプロジェクト作成
 - [ ] Expo Routerセットアップ
@@ -541,6 +614,7 @@ interface DamageCalcResult {
 - [ ] ローカルDB（Expo SQLite）セットアップ
 
 #### Week 3-4: パーティ登録機能
+
 - [ ] パーティ一覧画面
 - [ ] パーティ作成・編集画面
 - [ ] ポケモン選択UI（検索・フィルタ）
@@ -551,6 +625,7 @@ interface DamageCalcResult {
 - [ ] Export/Import機能（JSON）
 
 #### Week 5-6: ダメージ計算 & 対戦履歴
+
 - [ ] ダメージ計算ロジック実装（packages/shared）
 - [ ] ダメージ計算UI
 - [ ] 計算結果表示（確定数など）
@@ -561,6 +636,7 @@ interface DamageCalcResult {
 - [ ] 統計表示（勝率など）
 
 **成果物**:
+
 - オフラインで動作するモバイルアプリ
 - 3大機能（パーティ登録、ダメージ計算、対戦履歴）完成
 - Export/Importでバックアップ可能
@@ -572,6 +648,7 @@ interface DamageCalcResult {
 **目標**: バックエンドAPI構築、認証機能追加、データ同期
 
 #### Week 7-8: バックエンド構築
+
 - [ ] Honoプロジェクト作成（backend/hono-api）
 - [ ] Cloudflare Workersセットアップ
 - [ ] Supabaseプロジェクト作成
@@ -581,6 +658,7 @@ interface DamageCalcResult {
 - [ ] 認証ミドルウェア
 
 #### Week 9-10: フロントエンド連携
+
 - [ ] API Clientパッケージ作成（packages/api-client）
 - [ ] 認証フロー実装（サインアップ/ログイン）
 - [ ] データ同期機能（ローカル⇔クラウド）
@@ -589,12 +667,14 @@ interface DamageCalcResult {
 - [ ] エラーハンドリング・ローディング状態
 
 #### Week 11-12: テスト・改善
+
 - [ ] E2Eテスト
 - [ ] パフォーマンス最適化
 - [ ] UI/UX改善
 - [ ] バグ修正
 
 **成果物**:
+
 - クラウド同期対応
 - 複数デバイスでデータ共有可能
 - 動画のクラウド保存
@@ -606,23 +686,27 @@ interface DamageCalcResult {
 **目標**: パーティ構築支援、統計分析、チャンピオンズ対応
 
 #### Week 13-14: パーティ構築支援
+
 - [ ] タイプ相性チェック
 - [ ] 弱点カバー分析
 - [ ] おすすめポケモン提案
 - [ ] 役割分担可視化
 
 #### Week 15-16: 統計・分析強化
+
 - [ ] 詳細な統計ダッシュボード
 - [ ] グラフ表示（勝率推移など）
 - [ ] 対面データ分析
 - [ ] メタゲーム情報（流行ポケモン）
 
 #### Week 17+: チャンピオンズ対応
+
 - [ ] 新ポケモンデータ追加
 - [ ] 新技・特性対応
 - [ ] レギュレーション切り替え機能
 
 **成果物**:
+
 - 高度な分析機能
 - チャンピオンズ完全対応
 
@@ -631,11 +715,13 @@ interface DamageCalcResult {
 ## 🎨 UI/UX要件
 
 ### デザイン方針
+
 - **シンプル・直感的**: 初心者でも迷わず使える
 - **ポケモンらしさ**: ゲームの世界観を尊重
 - **モバイルファースト**: スマホでの操作性を最優先
 
 ### カラースキーム
+
 - メインカラー: ポケモンブルー系
 - アクセントカラー: イエロー（ピカチュウカラー）
 - ダークモード対応
@@ -643,35 +729,41 @@ interface DamageCalcResult {
 ### 主要画面
 
 #### 1. ホーム画面
+
 - パーティ一覧（最近使用したもの）
 - 最近の対戦記録
 - クイックアクセス（ダメージ計算、新規パーティ作成）
 
 #### 2. パーティ一覧
+
 - カード形式で表示
 - パーティ名、ポケモンアイコン6つ、作成日
 - 検索・フィルタ機能
 - スワイプで編集/削除
 
 #### 3. パーティ詳細/編集
+
 - ポケモン6匹のグリッド表示
 - タップで詳細編集
 - ステータス実数値表示
 - タイプ相性簡易表示
 
 #### 4. ダメージ計算
+
 - 2カラムレイアウト（攻撃側/防御側）
 - ドロップダウンで状況選択
 - リアルタイム計算結果表示
 - 履歴機能（よく使う計算を保存）
 
 #### 5. 対戦履歴一覧
+
 - リスト形式
 - 日付、勝敗、使用パーティ、サムネイル
 - フィルタ（期間、勝敗、パーティ）
 - 統計サマリー（全体勝率など）
 
 #### 6. 対戦詳細
+
 - 対戦情報表示
 - 動画プレイヤー
 - メモ表示
@@ -682,10 +774,12 @@ interface DamageCalcResult {
 ## 🧪 テスト要件
 
 ### Phase 1
+
 - **ユニットテスト**: ダメージ計算ロジック、実数値計算
 - **手動テスト**: UI操作、データ保存・復元
 
 ### Phase 2以降
+
 - **E2Eテスト**: 認証フロー、データ同期
 - **APIテスト**: Hono APIエンドポイント
 - **パフォーマンステスト**: 大量データ処理
@@ -695,12 +789,14 @@ interface DamageCalcResult {
 ## 📱 動作環境
 
 ### 開発環境
+
 - **OS**: Windows
 - **Android**: エミュレータ
 - **iOS**: 実機（iPhone）
 - **テスト**: Expo Go アプリ
 
 ### 本番環境（Phase 2以降）
+
 - **Android**: Android 8.0以上
 - **iOS**: iOS 13.0以上
 - **ネットワーク**: オフライン動作可能（Phase 1）、同期時のみ必要（Phase 2）
@@ -710,16 +806,19 @@ interface DamageCalcResult {
 ## 🔒 非機能要件
 
 ### セキュリティ
+
 - Phase 2: Supabase Auth使用（メール認証）
 - 動画ファイルのアクセス制限（本人のみ）
 - APIキーの環境変数管理
 
 ### パフォーマンス
+
 - アプリ起動時間: 3秒以内
 - ダメージ計算: リアルタイム（100ms以内）
 - 動画読み込み: プログレッシブロード
 
 ### データ容量
+
 - Phase 1: 端末ストレージに依存
 - Phase 2: Supabase無料枠（500MB DB、1GB Storage）
 
@@ -728,6 +827,7 @@ interface DamageCalcResult {
 ## 📝 その他
 
 ### データソース
+
 - **PokéAPI**: https://pokeapi.co/
   - 種族値、技、特性データ
   - 日本語名対応
@@ -736,6 +836,7 @@ interface DamageCalcResult {
 ### 参考資料
 
 #### ポケモン対戦ツール（日本語）
+
 - **ポケモンデータバトルベース（SV）**: https://sv.pokedb.tokyo/
   - ポケモンの基本データ、種族値、技、特性などの詳細情報
   - ダブルバトルのデータも充実
@@ -747,11 +848,13 @@ interface DamageCalcResult {
   - 図鑑データ、技データベース
 
 #### 海外リソース
+
 - ポケモン対戦データベース: https://pokemondb.net/
 - ダメージ計算機: https://calc.pokemonshowdown.com/
 - Smogon戦術解説: https://www.smogon.com/
 
 ### 今後の検討事項
+
 - パーティ共有機能（QRコード、URL）
 - コミュニティ機能（パーティ投稿・評価）
 - プッシュ通知（大会情報など）
@@ -762,16 +865,19 @@ interface DamageCalcResult {
 ## 🎯 成功指標（KPI）
 
 ### Phase 1
+
 - [ ] 3大機能の実装完了
 - [ ] Expo Goでの動作確認（Android/iOS）
 - [ ] データのExport/Import動作確認
 
 ### Phase 2
+
 - [ ] クラウド同期の実装完了
 - [ ] 認証フローの動作確認
 - [ ] 動画アップロードの動作確認
 
 ### Phase 3
+
 - [ ] チャンピオンズ対応完了
 - [ ] 全機能の統合テスト完了
 

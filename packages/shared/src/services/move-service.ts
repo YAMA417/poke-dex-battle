@@ -1,13 +1,13 @@
-import type { MoveData, ShowdownLearnsetEntry, ShowdownMove, ShowdownSpecies } from "../types";
+import type { MoveData, ShowdownLearnsetEntry, ShowdownMove, ShowdownSpecies } from '../types';
 
-const movesById: Record<string, ShowdownMove> =
-  require("../data/showdown/moves.json");
+const movesById: Record<string, ShowdownMove> = require('../data/showdown/moves.json');
 
-const learnsetsData: Record<string, ShowdownLearnsetEntry> =
-  require("../data/showdown/learnsets.json");
+const learnsetsData: Record<
+  string,
+  ShowdownLearnsetEntry
+> = require('../data/showdown/learnsets.json');
 
-const speciesById: Record<string, ShowdownSpecies> =
-  require("../data/showdown/species.json");
+const speciesById: Record<string, ShowdownSpecies> = require('../data/showdown/species.json');
 
 // ルックアップ用 Map を構築
 const movesByName = new Map<string, ShowdownMove>();
@@ -45,7 +45,7 @@ function findMove(query: string): ShowdownMove | null {
   if (!trimmed) return null;
 
   // ID（Showdown形式）で検索
-  const normalized = trimmed.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const normalized = trimmed.toLowerCase().replace(/[^a-z0-9]/g, '');
   const byId = movesById[normalized];
   if (byId) return byId;
 
@@ -77,7 +77,7 @@ function resolveSpeciesId(pokemonName: string): string | null {
   if (!trimmed) return null;
 
   // Showdown ID で直接ヒット
-  const normalized = trimmed.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const normalized = trimmed.toLowerCase().replace(/[^a-z0-9]/g, '');
   if (speciesById[normalized]) return normalized;
 
   // 日本語名 or 英語名から検索

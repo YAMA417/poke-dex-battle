@@ -1,5 +1,5 @@
-import type { BattleContext, CalcMove, CalcPokemon } from "../../types/damage";
-import { getStatStageMultiplier } from "../damage-calc";
+import type { BattleContext, CalcMove, CalcPokemon } from '../../types/damage';
+import { getStatStageMultiplier } from '../damage-calc';
 
 /**
  * 攻撃側の実効ステータスを計算
@@ -15,14 +15,12 @@ export function resolveEffectiveAttack(
   attacker: CalcPokemon,
   move: CalcMove,
   context?: BattleContext,
-  opponentAbility?: string,
+  opponentAbility?: string
 ): number {
   // 物理か特殊かで使用するステータスを選択
-  const isPhysical = move.category === "Physical";
+  const isPhysical = move.category === 'Physical';
   const baseStat = isPhysical ? attacker.stats.atk : attacker.stats.spa;
-  const stage = isPhysical
-    ? (attacker.boosts?.atk ?? 0)
-    : (attacker.boosts?.spa ?? 0);
+  const stage = isPhysical ? (attacker.boosts?.atk ?? 0) : (attacker.boosts?.spa ?? 0);
 
   // ランク補正を計算
   const multiplier = getStatStageMultiplier(stage);
@@ -36,17 +34,17 @@ export function resolveEffectiveAttack(
   // === 特性によるステータス補正 ===
 
   // ひひいろのこどう (Orichalcum Pulse): 晴れ時に物理攻撃 5461/4096倍
-  if (attacker.ability === "Orichalcum Pulse" && isPhysical && context?.weather === "sun") {
-    finalAttack = Math.floor(finalAttack * 5461 / 4096);
+  if (attacker.ability === 'Orichalcum Pulse' && isPhysical && context?.weather === 'sun') {
+    finalAttack = Math.floor((finalAttack * 5461) / 4096);
   }
 
   // ハドロンエンジン (Hadron Engine): エレキフィールド時に特攻 5461/4096倍
-  if (attacker.ability === "Hadron Engine" && !isPhysical && context?.field === "electric") {
-    finalAttack = Math.floor(finalAttack * 5461 / 4096);
+  if (attacker.ability === 'Hadron Engine' && !isPhysical && context?.field === 'electric') {
+    finalAttack = Math.floor((finalAttack * 5461) / 4096);
   }
 
   // サンパワー (Solar Power): 晴れ時に特攻1.5倍
-  if (attacker.ability === "Solar Power" && !isPhysical && context?.weather === "sun") {
+  if (attacker.ability === 'Solar Power' && !isPhysical && context?.weather === 'sun') {
     finalAttack = Math.floor(finalAttack * 1.5);
   }
 
@@ -57,12 +55,12 @@ export function resolveEffectiveAttack(
     defenderSideAbilities.includes(name) || opponentAbility === name;
 
   // わざわいのうつわ (Tablets of Ruin): 相手の物理攻撃 0.75倍
-  if (hasDefenderSideAbility("Tablets of Ruin") && isPhysical) {
+  if (hasDefenderSideAbility('Tablets of Ruin') && isPhysical) {
     finalAttack = Math.floor(finalAttack * 0.75);
   }
 
   // わざわいのおふだ (Vessel of Ruin): 相手の特攻 0.75倍
-  if (hasDefenderSideAbility("Vessel of Ruin") && !isPhysical) {
+  if (hasDefenderSideAbility('Vessel of Ruin') && !isPhysical) {
     finalAttack = Math.floor(finalAttack * 0.75);
   }
 
@@ -70,22 +68,22 @@ export function resolveEffectiveAttack(
 
   // こだわりハチマキ/メガネ: 攻撃を1.5倍
   if (
-    (attacker.item === "Choice Band" && isPhysical) ||
-    (attacker.item === "Choice Specs" && !isPhysical)
+    (attacker.item === 'Choice Band' && isPhysical) ||
+    (attacker.item === 'Choice Specs' && !isPhysical)
   ) {
     finalAttack = Math.floor(finalAttack * 1.5);
   }
 
   // ちからのハチマキ/ものしりメガネ: 攻撃を1.1倍
   if (
-    (attacker.item === "Muscle Band" && isPhysical) ||
-    (attacker.item === "Wise Glasses" && !isPhysical)
+    (attacker.item === 'Muscle Band' && isPhysical) ||
+    (attacker.item === 'Wise Glasses' && !isPhysical)
   ) {
     finalAttack = Math.floor(finalAttack * 1.1);
   }
 
   // やけど: 物理攻撃を0.5倍
-  if (attacker.status === "burn" && isPhysical) {
+  if (attacker.status === 'burn' && isPhysical) {
     finalAttack = Math.floor(finalAttack * 0.5);
   }
 
@@ -106,16 +104,14 @@ export function resolveEffectiveDefense(
   defender: CalcPokemon,
   move: CalcMove,
   opponentAbility?: string,
-  context?: BattleContext,
+  context?: BattleContext
 ): number {
   // 物理か特殊かで使用するステータスを選択
   // サイコショック等: 特殊技だが物理防御を参照
-  const isPhysical = move.category === "Physical";
+  const isPhysical = move.category === 'Physical';
   const usesPhysicalDef = isPhysical || (move.flags?.targetsPhysicalDefense ?? false);
   const baseStat = usesPhysicalDef ? defender.stats.def : defender.stats.spd;
-  const stage = usesPhysicalDef
-    ? (defender.boosts?.def ?? 0)
-    : (defender.boosts?.spd ?? 0);
+  const stage = usesPhysicalDef ? (defender.boosts?.def ?? 0) : (defender.boosts?.spd ?? 0);
 
   // ランク補正を計算
   const multiplier = getStatStageMultiplier(stage);
@@ -129,12 +125,12 @@ export function resolveEffectiveDefense(
   // === 天候による防御補正 ===
 
   // 砂嵐: 岩タイプの特防1.5倍
-  if (!usesPhysicalDef && context?.weather === "sandstorm" && defender.types.includes("Rock")) {
+  if (!usesPhysicalDef && context?.weather === 'sandstorm' && defender.types.includes('Rock')) {
     finalDefense = Math.floor(finalDefense * 1.5);
   }
 
   // 雪: 氷タイプの防御1.5倍
-  if (usesPhysicalDef && context?.weather === "snow" && defender.types.includes("Ice")) {
+  if (usesPhysicalDef && context?.weather === 'snow' && defender.types.includes('Ice')) {
     finalDefense = Math.floor(finalDefense * 1.5);
   }
 
@@ -145,24 +141,24 @@ export function resolveEffectiveDefense(
     attackerSideAbilities.includes(name) || opponentAbility === name;
 
   // わざわいのつるぎ (Sword of Ruin): 相手の物理防御 0.75倍
-  if (hasAttackerSideAbility("Sword of Ruin") && usesPhysicalDef) {
+  if (hasAttackerSideAbility('Sword of Ruin') && usesPhysicalDef) {
     finalDefense = Math.floor(finalDefense * 0.75);
   }
 
   // わざわいのたま (Beads of Ruin): 相手の特防 0.75倍
-  if (hasAttackerSideAbility("Beads of Ruin") && !usesPhysicalDef) {
+  if (hasAttackerSideAbility('Beads of Ruin') && !usesPhysicalDef) {
     finalDefense = Math.floor(finalDefense * 0.75);
   }
 
   // === 持ち物による防御補正 ===
 
   // しんかのきせき (Eviolite): 防御・特防1.5倍
-  if (defender.item === "Eviolite") {
+  if (defender.item === 'Eviolite') {
     finalDefense = Math.floor(finalDefense * 1.5);
   }
 
   // とつげきチョッキ (Assault Vest): 特防1.5倍
-  if (defender.item === "Assault Vest" && !usesPhysicalDef) {
+  if (defender.item === 'Assault Vest' && !usesPhysicalDef) {
     finalDefense = Math.floor(finalDefense * 1.5);
   }
 

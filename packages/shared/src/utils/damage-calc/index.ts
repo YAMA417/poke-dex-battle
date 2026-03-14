@@ -1,16 +1,8 @@
-import type {
-  BattleContext,
-  CalcMove,
-  CalcPokemon,
-  DamageResult,
-} from "../../types/damage";
-import { calculateBaseDamage } from "./calculate-base-damage";
-import { calculateModifier } from "./calculate-modifier";
-import { resolveBasePower } from "./resolve-base-power";
-import {
-  resolveEffectiveAttack,
-  resolveEffectiveDefense,
-} from "./resolve-effective-stat";
+import type { BattleContext, CalcMove, CalcPokemon, DamageResult } from '../../types/damage';
+import { calculateBaseDamage } from './calculate-base-damage';
+import { calculateModifier } from './calculate-modifier';
+import { resolveBasePower } from './resolve-base-power';
+import { resolveEffectiveAttack, resolveEffectiveDefense } from './resolve-effective-stat';
 
 /**
  * ダメージ計算エンジン（Phase 2）
@@ -18,21 +10,18 @@ import {
  */
 
 // Phase 1 モジュール
-export { applyOtherModifiers } from "./apply-other-modifiers";
-export { applyRandom } from "./apply-random";
-export { calculateBaseDamage } from "./calculate-base-damage";
-export { pokeRound } from "./poke-round";
+export { applyOtherModifiers } from './apply-other-modifiers';
+export { applyRandom } from './apply-random';
+export { calculateBaseDamage } from './calculate-base-damage';
+export { pokeRound } from './poke-round';
 
 // Phase 2 モジュール
-export { calculateModifier } from "./calculate-modifier";
-export { resolveBasePower } from "./resolve-base-power";
-export {
-  resolveEffectiveAttack,
-  resolveEffectiveDefense,
-} from "./resolve-effective-stat";
+export { calculateModifier } from './calculate-modifier';
+export { resolveBasePower } from './resolve-base-power';
+export { resolveEffectiveAttack, resolveEffectiveDefense } from './resolve-effective-stat';
 
 // Adapter
-export { convertLegacyInput } from "./legacy-adapter";
+export { convertLegacyInput } from './legacy-adapter';
 
 // 既存のdamage-calc.tsから再エクスポート
 export {
@@ -44,10 +33,10 @@ export {
   calculateStab,
   calculateWeatherModifier,
   getStatStageMultiplier,
-} from "../damage-calc";
+} from '../damage-calc';
 
 // 型定義
-export type { BattleContext, CalcMove, CalcPokemon } from "../../types/damage";
+export type { BattleContext, CalcMove, CalcPokemon } from '../../types/damage';
 
 /**
  * 新ダメージ計算エンジン（V2）のメインエントリポイント
@@ -63,7 +52,7 @@ export function calculateDamageV2(
   attacker: CalcPokemon,
   defender: CalcPokemon,
   move: CalcMove,
-  context: BattleContext,
+  context: BattleContext
 ): DamageResult {
   // 1. 技の最終威力を計算
   const finalPower = resolveBasePower(move, attacker, defender, context);
@@ -75,12 +64,7 @@ export function calculateDamageV2(
   const finalDefense = resolveEffectiveDefense(defender, move, attacker.ability, context);
 
   // 4. ベースダメージを計算
-  const baseDamage = calculateBaseDamage(
-    attacker.level,
-    finalPower,
-    finalAttack,
-    finalDefense,
-  );
+  const baseDamage = calculateBaseDamage(attacker.level, finalPower, finalAttack, finalDefense);
 
   // 5. 補正を適用（min/maxダメージに分岐）
   const { minDamage, maxDamage, stab, typeEffectiveness, weatherModifier, fieldModifier } =

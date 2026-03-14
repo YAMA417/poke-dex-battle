@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useLanguage, type Locale } from "@/contexts/LanguageContext";
+import { useLanguage, type Locale } from '@/contexts/LanguageContext';
 
 const OPTIONS: { value: Locale; label: string }[] = [
-  { value: "ja", label: "JA" },
-  { value: "en", label: "EN" },
+  { value: 'ja', label: 'JA' },
+  { value: 'en', label: 'EN' },
 ];
 
 export function LanguageToggle() {
@@ -17,10 +17,10 @@ export function LanguageToggle() {
           key={opt.value}
           type="button"
           onClick={() => setLocale(opt.value)}
-          className={`px-2 py-0.5 text-xs rounded transition-colors ${
+          className={`rounded px-2 py-0.5 text-xs transition-colors ${
             locale === opt.value
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:bg-accent"
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:bg-accent'
           }`}
         >
           {opt.label}

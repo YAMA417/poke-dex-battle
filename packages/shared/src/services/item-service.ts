@@ -1,8 +1,7 @@
-import type { ItemData, ShowdownItem } from "../types";
-import { COMPETITIVE_ITEM_IDS } from "../constants/competitive-items";
+import type { ItemData, ShowdownItem } from '../types';
+import { COMPETITIVE_ITEM_IDS } from '../constants/competitive-items';
 
-const itemsById: Record<string, ShowdownItem> =
-  require("../data/showdown/items.json");
+const itemsById: Record<string, ShowdownItem> = require('../data/showdown/items.json');
 
 // ルックアップ用 Map を構築
 const itemsByName = new Map<string, ShowdownItem>();
@@ -34,7 +33,7 @@ function findItem(query: string): ShowdownItem | null {
   if (!trimmed) return null;
 
   // ID（Showdown形式）で検索
-  const normalized = trimmed.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const normalized = trimmed.toLowerCase().replace(/[^a-z0-9]/g, '');
   const byId = itemsById[normalized];
   if (byId) return byId;
 

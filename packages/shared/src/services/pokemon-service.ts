@@ -1,8 +1,7 @@
-import type { PokemonSpeciesData, ShowdownSpecies } from "../types";
-import { getAbilityJapaneseName } from "../utils/ability-name-resolver";
+import type { PokemonSpeciesData, ShowdownSpecies } from '../types';
+import { getAbilityJapaneseName } from '../utils/ability-name-resolver';
 
-const speciesById: Record<string, ShowdownSpecies> =
-  require("../data/showdown/species.json");
+const speciesById: Record<string, ShowdownSpecies> = require('../data/showdown/species.json');
 
 // ルックアップ用 Map を構築
 const speciesByName = new Map<string, ShowdownSpecies>();
@@ -16,15 +15,13 @@ for (const species of Object.values(speciesById)) {
 /**
  * ShowdownSpecies → PokemonSpeciesData に変換
  */
-function transformToPokemonSpeciesData(
-  species: ShowdownSpecies
-): PokemonSpeciesData {
+function transformToPokemonSpeciesData(species: ShowdownSpecies): PokemonSpeciesData {
   const abilities = Object.entries(species.abilities).map(([key, name]) => {
     const jaName = getAbilityJapaneseName(name as string);
     return {
       name: name as string,
       nameJa: jaName ?? (name as string),
-      isHidden: key === "H",
+      isHidden: key === 'H',
     };
   });
 
@@ -56,7 +53,7 @@ function findSpecies(query: string): ShowdownSpecies | null {
   if (!trimmed) return null;
 
   // ID（Showdown形式）で検索
-  const normalized = trimmed.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const normalized = trimmed.toLowerCase().replace(/[^a-z0-9]/g, '');
   const byId = speciesById[normalized];
   if (byId) return byId;
 

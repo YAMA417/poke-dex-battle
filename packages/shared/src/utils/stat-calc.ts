@@ -1,7 +1,10 @@
 import type { BaseStats, Nature, Stats } from '../types/pokemon';
 
 /** 性格補正値 */
-const NATURE_MODIFIERS: Record<Nature, { up?: keyof Omit<Stats, 'hp'>; down?: keyof Omit<Stats, 'hp'> }> = {
+const NATURE_MODIFIERS: Record<
+  Nature,
+  { up?: keyof Omit<Stats, 'hp'>; down?: keyof Omit<Stats, 'hp'> }
+> = {
   // 補正なし
   Hardy: {},
   Docile: {},
@@ -50,7 +53,7 @@ export function getNatureModifier(nature: Nature, stat: keyof Omit<Stats, 'hp'>)
  * HP = (種族値×2 + 個体値 + 努力値÷4) × レベル÷100 + レベル + 10
  */
 export function calcHpStat(base: number, iv: number, ev: number, level: number): number {
-  return Math.floor((base * 2 + iv + Math.floor(ev / 4)) * level / 100) + level + 10;
+  return Math.floor(((base * 2 + iv + Math.floor(ev / 4)) * level) / 100) + level + 10;
 }
 
 /**
@@ -65,7 +68,7 @@ export function calcOtherStat(
   natureModifier: number
 ): number {
   return Math.floor(
-    (Math.floor((base * 2 + iv + Math.floor(ev / 4)) * level / 100) + 5) * natureModifier
+    (Math.floor(((base * 2 + iv + Math.floor(ev / 4)) * level) / 100) + 5) * natureModifier
   );
 }
 
@@ -73,7 +76,12 @@ export function calcOtherStat(
  * HP実数値から努力値を逆算（最小EVを返す）
  * 到達不可能な場合は最も近いEV（252）を返す
  */
-export function reverseCalcHpEv(targetStat: number, base: number, iv: number, level: number): number {
+export function reverseCalcHpEv(
+  targetStat: number,
+  base: number,
+  iv: number,
+  level: number
+): number {
   for (let ev = 0; ev <= 252; ev += 4) {
     if (calcHpStat(base, iv, ev, level) >= targetStat) {
       return ev;
@@ -157,7 +165,7 @@ export function calcActualStats(
 export function isValidEvAllocation(evs: Stats): boolean {
   const total = Object.values(evs).reduce((sum, val) => sum + val, 0);
   return (
-    total <= 510 && 
+    total <= 510 &&
     evs.hp <= 252 &&
     evs.attack <= 252 &&
     evs.defense <= 252 &&
@@ -181,20 +189,20 @@ export function findClosestRealizableEv(
 ): { ev: number; actualStat: number } {
   const maxEv = 252;
   let bestEv = 0;
-  let bestStat = isHp 
-    ? calcHpStat(base, iv, 0, level) 
+  let bestStat = isHp
+    ? calcHpStat(base, iv, 0, level)
     : calcOtherStat(base, iv, 0, level, natureModifier);
-  
+
   for (let ev = 0; ev <= maxEv; ev += 4) {
     const actual = isHp
       ? calcHpStat(base, iv, ev, level)
       : calcOtherStat(base, iv, ev, level, natureModifier);
-    
+
     if (actual === targetStat) {
       // 完全一致
       return { ev, actualStat: actual };
     }
-    
+
     if (actual < targetStat) {
       // より近い値を記録
       bestEv = ev;
@@ -204,7 +212,7 @@ export function findClosestRealizableEv(
       break;
     }
   }
-  
+
   return { ev: bestEv, actualStat: bestStat };
 }
 
@@ -258,11 +266,17 @@ export function splitActualStatsByEvContribution(
   nature: Nature
 ): Record<keyof Stats, { baseValue: number; evContribution: number }> {
   // EV=0の状態での基本値を計算
-  const baseValues = calcActualStats(baseStats, ivs, { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0 }, level, nature);
-  
+  const baseValues = calcActualStats(
+    baseStats,
+    ivs,
+    { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0 },
+    level,
+    nature
+  );
+
   // 現在の実数値を計算
   const currentValues = calcActualStats(baseStats, ivs, evs, level, nature);
-  
+
   // 差分を計算（EV増加分）
   return {
     hp: {
@@ -291,4 +305,3 @@ export function splitActualStatsByEvContribution(
     },
   };
 }
-

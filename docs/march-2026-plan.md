@@ -15,11 +15,13 @@ poke-dex-battleは、ポケモンダブルバトルの支援アプリ（Next.js 
 ## スコープ判断
 
 ### 3月スコープ内
+
 - ① UIの統一・トップページ修正
 - ② パーティ構築機能（localStorage永続化 + マスターデータDB化）
 - ③ CI/CD セットアップ + 初回デプロイ
 
 ### 3月スコープ外（明示的に除外）
+
 - Phase 1-3 対戦履歴管理（全タスク未着手のため後回し）
 - 計算履歴保存（IndexedDB）
 - テラスタルタイプ対応
@@ -29,10 +31,12 @@ poke-dex-battleは、ポケモンダブルバトルの支援アプリ（Next.js 
 ## 方針決定事項
 
 ### データ永続化
+
 - **ポケモンマスターデータ**（種族値・技・特性等）: Supabase/Neon（クラウドDB）に格納。@YAMA417が対応。
 - **パーティデータ**: localStorage（Phase 2でサーバーDB移行時はフック内部の差し替えのみ）
 
 ### ブランチ運用
+
 - ①②は `feat/party-register-ui` マージ後に main から各ブランチを切る
 - ③完了後は `main → develop → feature/*` のフローに移行
 
@@ -101,6 +105,7 @@ interface UsePartyReturn {
 
 **修正:** `apps/web/app/parties/page.tsx`（プレースホルダー → 本実装）
 **新規:**
+
 - `apps/web/components/party/PartyList.tsx`
 - `apps/web/components/party/PartyCard.tsx`
 - `apps/web/components/party/CreatePartyDialog.tsx`（shadcn `Dialog`）
@@ -108,12 +113,14 @@ interface UsePartyReturn {
 ### 2-4. パーティ編集ページ
 
 **新規:**
+
 - `apps/web/app/parties/[id]/page.tsx`
 - `apps/web/components/party/PartyEditor.tsx` — パーティ基本情報 + 6枠スロット
 - `apps/web/components/party/PokemonSlot.tsx` — 空=追加ボタン / 埋=カード表示
 - `apps/web/components/party/PokemonEditor.tsx` — ポケモン詳細入力
 
 PokemonEditor の入力項目（既存 `Pokemon` 型に準拠）:
+
 - ポケモン選択（既存 `Autocomplete` 流用）
 - 性格・特性・持ち物
 - IV/EV（`EvPreset` 流用 + 数値入力、合計510バリデーション）
@@ -165,6 +172,7 @@ PokemonEditor の入力項目（既存 `Pokemon` 型に準拠）:
    - ローディング状態の追加
 
 **注意点:**
+
 - 既存のダメージ計算画面のポケモン検索UIにも影響する（同期→非同期化）
 - スプライトURLは引き続き GitHub の外部URLを参照（DBには入れない）
 
@@ -206,19 +214,19 @@ main (本番) ← develop からのPRのみ
 
 **方針**: @ronarin = UI系、@YAMA417 = データ・ロジック層 + CI/CD
 
-| タスク | 担当 | 備考 |
-|--------|------|------|
-| ①-1 ヘッダーナビゲーション | @ronarin | Header.tsx 作成、レスポンシブ対応 |
-| ①-2 トップページ改善 | @ronarin | Card ベースに変更、レイアウト修正 |
-| ①-3 共通コンポーネント整理 | @ronarin | SharedFormComponents 移動 |
-| ②-1 useParty フック | @YAMA417 | localStorage CRUD ロジック |
-| ②-2 PartyContext | @YAMA417 | Context 作成 + layout.tsx 統合 |
-| ②-3 パーティ一覧ページ UI | @ronarin | PartyList, PartyCard, CreatePartyDialog |
-| ②-4 パーティ編集ページ UI | @ronarin | PartyEditor, PokemonSlot, PokemonEditor |
-| ②-5 ダメージ計算連携 | @YAMA417 | Pokemon→AttackerData/DefenderData 型変換 + PartyPokemonSelector |
-| ②-6 Export/Import | @YAMA417 | JSON エクスポート/インポートロジック |
-| ②-7 マスターデータDB化 | @YAMA417 | Supabase/Neon + Prisma + Hono API + フロントエンド改修 |
-| ③ CI/CD | @YAMA417 | Vercel + GitHub Actions + ブランチ保護 |
+| タスク                     | 担当     | 備考                                                            |
+| -------------------------- | -------- | --------------------------------------------------------------- |
+| ①-1 ヘッダーナビゲーション | @ronarin | Header.tsx 作成、レスポンシブ対応                               |
+| ①-2 トップページ改善       | @ronarin | Card ベースに変更、レイアウト修正                               |
+| ①-3 共通コンポーネント整理 | @ronarin | SharedFormComponents 移動                                       |
+| ②-1 useParty フック        | @YAMA417 | localStorage CRUD ロジック                                      |
+| ②-2 PartyContext           | @YAMA417 | Context 作成 + layout.tsx 統合                                  |
+| ②-3 パーティ一覧ページ UI  | @ronarin | PartyList, PartyCard, CreatePartyDialog                         |
+| ②-4 パーティ編集ページ UI  | @ronarin | PartyEditor, PokemonSlot, PokemonEditor                         |
+| ②-5 ダメージ計算連携       | @YAMA417 | Pokemon→AttackerData/DefenderData 型変換 + PartyPokemonSelector |
+| ②-6 Export/Import          | @YAMA417 | JSON エクスポート/インポートロジック                            |
+| ②-7 マスターデータDB化     | @YAMA417 | Supabase/Neon + Prisma + Hono API + フロントエンド改修          |
+| ③ CI/CD                    | @YAMA417 | Vercel + GitHub Actions + ブランチ保護                          |
 
 ---
 
@@ -227,15 +235,15 @@ main (本番) ← develop からのPRのみ
 実稼働日: 土日 = 8日間（3/1,2,8,9,15,16,22,23） + 平日は軽作業のみ
 パーティ構築機能は約50%完成済み（編集ページ途中）のため、残り作業を前提にスケジュールを組む。
 
-| 期間 | @ronarin（UI系） | @YAMA417（データ・ロジック + CI/CD） |
-|------|-----------------|--------------------------------------|
-| Week 1 (3/1-2) | ①-1,①-2 ヘッダーナビ + トップページ改善 | ②-1 usePartyフック + ②-2 PartyContext |
-| Week 2 (3/8-9) | ①-3 共通コンポーネント整理 + ②-3 一覧ページUI | ②-7 マスターデータDB化（Supabase + Prisma + シード） |
-| Week 3 (3/15-16) | ②-4 パーティ編集ページUI（残り部分） | ②-7 続き（Hono API + フロントエンド改修）+ ②-5 ダメージ計算連携 |
-| Week 4 (3/22-23) | UI仕上げ・レスポンシブ調整 | ②-6 Export/Import + ③ Vercel デプロイ + CI/CD構築 |
-| 平日 (3/24-28) | - | ③ GitHub Actions + Branch Protection |
-| 3/29(土) | 実装凍結・バグ修正 | 実装凍結・バグ修正 |
-| 3/30(日)-3/31(月) | 統合テスト・リリース | 統合テスト・リリース |
+| 期間              | @ronarin（UI系）                              | @YAMA417（データ・ロジック + CI/CD）                            |
+| ----------------- | --------------------------------------------- | --------------------------------------------------------------- |
+| Week 1 (3/1-2)    | ①-1,①-2 ヘッダーナビ + トップページ改善       | ②-1 usePartyフック + ②-2 PartyContext                           |
+| Week 2 (3/8-9)    | ①-3 共通コンポーネント整理 + ②-3 一覧ページUI | ②-7 マスターデータDB化（Supabase + Prisma + シード）            |
+| Week 3 (3/15-16)  | ②-4 パーティ編集ページUI（残り部分）          | ②-7 続き（Hono API + フロントエンド改修）+ ②-5 ダメージ計算連携 |
+| Week 4 (3/22-23)  | UI仕上げ・レスポンシブ調整                    | ②-6 Export/Import + ③ Vercel デプロイ + CI/CD構築               |
+| 平日 (3/24-28)    | -                                             | ③ GitHub Actions + Branch Protection                            |
+| 3/29(土)          | 実装凍結・バグ修正                            | 実装凍結・バグ修正                                              |
+| 3/30(日)-3/31(月) | 統合テスト・リリース                          | 統合テスト・リリース                                            |
 
 ### 並行作業のポイント
 
@@ -246,12 +254,12 @@ main (本番) ← develop からのPRのみ
 
 ### リスクと対策
 
-| リスク | 影響 | 対策 |
-|--------|------|------|
+| リスク                                    | 影響                     | 対策                                                                   |
+| ----------------------------------------- | ------------------------ | ---------------------------------------------------------------------- |
 | ②-7 フロントエンド同期→非同期改修が広範囲 | 既存ダメージ計算にも影響 | @YAMA417がClaude活用で集中対応。既存フックのインターフェースは極力維持 |
-| ②-4 PokemonEditor の残り実装が複雑 | スケジュール遅延 | @YAMA417がClaudeでスケルトンを先行作成 |
-| ②-5 型変換（Pokemon→AttackerData）が難航 | 連携機能が間に合わない | 最悪、連携は後回しにしてパーティ単体で完成させる |
-| ③ Vercelモノレポ設定がはまる | デプロイ遅延 | Week 3 の平日に先行調査 |
+| ②-4 PokemonEditor の残り実装が複雑        | スケジュール遅延         | @YAMA417がClaudeでスケルトンを先行作成                                 |
+| ②-5 型変換（Pokemon→AttackerData）が難航  | 連携機能が間に合わない   | 最悪、連携は後回しにしてパーティ単体で完成させる                       |
+| ③ Vercelモノレポ設定がはまる              | デプロイ遅延             | Week 3 の平日に先行調査                                                |
 
 ### 最低限のリリース基準（間に合わない場合の優先度）
 
@@ -263,21 +271,22 @@ main (本番) ← develop からのPRのみ
 
 ## 主要参照ファイル
 
-| ファイル | 用途 |
-|---------|------|
-| `apps/web/app/layout.tsx` | ナビゲーション追加・PartyProvider追加の起点 |
-| `apps/web/contexts/LanguageContext.tsx` | useParty/PartyContext の実装パターン参照 |
-| `apps/web/components/damage-calc/AttackerInput.tsx` | PokemonEditor で流用する最重要参照 |
-| `apps/web/components/damage-calc/SharedFormComponents.tsx` | 共通化対象コンポーネント |
-| `packages/shared/src/types/party.ts` | Party/CreatePartyInput/UpdatePartyInput 型定義 |
-| `packages/shared/src/types/pokemon.ts` | Pokemon/Stats/Nature/Move 型定義 |
-| `packages/shared/src/utils/stat-calc.ts` | 実数値計算（連携時に使用） |
+| ファイル                                                   | 用途                                           |
+| ---------------------------------------------------------- | ---------------------------------------------- |
+| `apps/web/app/layout.tsx`                                  | ナビゲーション追加・PartyProvider追加の起点    |
+| `apps/web/contexts/LanguageContext.tsx`                    | useParty/PartyContext の実装パターン参照       |
+| `apps/web/components/damage-calc/AttackerInput.tsx`        | PokemonEditor で流用する最重要参照             |
+| `apps/web/components/damage-calc/SharedFormComponents.tsx` | 共通化対象コンポーネント                       |
+| `packages/shared/src/types/party.ts`                       | Party/CreatePartyInput/UpdatePartyInput 型定義 |
+| `packages/shared/src/types/pokemon.ts`                     | Pokemon/Stats/Nature/Move 型定義               |
+| `packages/shared/src/utils/stat-calc.ts`                   | 実数値計算（連携時に使用）                     |
 
 ---
 
 ## テスト計画（3/30-31）
 
 ### 機能テスト
+
 1. **UI統一**: 各ページ巡回、ヘッダーナビの動作・アクティブ表示・レスポンシブ確認
 2. **パーティCRUD**: 作成→ポケモン追加→編集→削除の一連フロー
 3. **データ永続化**: ブラウザリロード後もパーティデータが維持されることを確認
@@ -286,10 +295,12 @@ main (本番) ← develop からのPRのみ
 6. **DB化**: ポケモン・技・特性・アイテムの検索がDB経由で正常に動作することを確認
 
 ### デプロイ確認
+
 7. **Vercel本番**: 本番URLでの動作確認（主要ブラウザ: Chrome, Safari, Firefox）
 8. **CI/CD**: feature → develop PR で CI 実行、テスト・lint・型チェック通過確認
 
 ### リリース手順
+
 1. develop → main へPR作成
 2. CI通過確認
 3. マージ → 本番自動デプロイ
