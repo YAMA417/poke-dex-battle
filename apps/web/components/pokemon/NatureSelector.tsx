@@ -1,6 +1,7 @@
 'use client';
 
 import type { Nature, Stats } from '@poke-dex-battle/shared';
+import { NATURE_EFFECTS_MAP } from '@/lib/constants';
 
 /**
  * Nature selection component with effects visualization.
@@ -23,14 +24,6 @@ const NATURE_JA: Record<string, string> = {
     Timid: 'おくびょう', Hasty: 'せっかち', Serious: 'まじめ', Jolly: 'ようき', Naive: 'むじゃき',
 };
 
-const NATURE_EFFECTS: Record<string, (keyof Omit<Stats, 'hp'>)[]> = {
-    Lonely: ['attack', 'defense'], Brave: ['attack', 'speed'], Adamant: ['attack', 'specialAttack'], Naughty: ['attack', 'specialDefense'],
-    Bold: ['defense', 'attack'], Relaxed: ['defense', 'speed'], Impish: ['defense', 'specialAttack'], Lax: ['defense', 'specialDefense'],
-    Timid: ['speed', 'attack'], Hasty: ['speed', 'defense'], Jolly: ['speed', 'specialAttack'], Naive: ['speed', 'specialDefense'],
-    Modest: ['specialAttack', 'attack'], Mild: ['specialAttack', 'defense'], Quiet: ['specialAttack', 'speed'], Rash: ['specialAttack', 'specialDefense'],
-    Calm: ['specialDefense', 'attack'], Gentle: ['specialDefense', 'defense'], Sassy: ['specialDefense', 'speed'], Careful: ['specialDefense', 'specialAttack'],
-};
-
 // Stat keyからポケモン略称への変換マップ
 // A(攻撃)/B(防御)/C(特攻)/D(特防)/S(素早さ)
 const STAT_ABBREV: Record<keyof Omit<Stats, 'hp'>, string> = {
@@ -50,7 +43,7 @@ export function NatureSelector({ nature, onChange }: NatureSelectorProps) {
     return (
         <div className="grid grid-cols-5 gap-1">
             {NATURES.map((n) => {
-                const fx = NATURE_EFFECTS[n];
+                const fx = NATURE_EFFECTS_MAP[n];
                 return (
                     <button
                         key={n}
@@ -62,7 +55,7 @@ export function NatureSelector({ nature, onChange }: NatureSelectorProps) {
                                 : 'border-gray-200 text-gray-600 hover:border-pokemon-blue'}`}
                     >
                         {NATURE_JA[n]}
-                        {fx && <span className="block text-[9px] opacity-70">↑{STAT_ABBREV[fx[0]]} ↓{STAT_ABBREV[fx[1]]}</span>}
+                        {fx && fx.length > 0 && <span className="block text-[9px] opacity-70">↑{STAT_ABBREV[fx[0]]} ↓{STAT_ABBREV[fx[1]]}</span>}
                     </button>
                 );
             })}

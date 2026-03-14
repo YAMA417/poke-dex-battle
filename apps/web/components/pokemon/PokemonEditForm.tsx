@@ -8,6 +8,7 @@ import {
     calcActualStats,
     POKEMON_TYPE_LABELS_JA,
 } from '@poke-dex-battle/shared';
+import { NATURE_EFFECTS_MAP } from '@/lib/constants';
 import { EVSlider } from './EVSlider';
 import { IVInputGrid } from './IVInputGrid';
 import { NatureSelector } from './NatureSelector';
@@ -35,14 +36,6 @@ export function PokemonEditForm({ pokemon, species, onChange }: PokemonEditFormP
     const [actualStatInputs, setActualStatInputs] = useState<Partial<Record<keyof Stats, string>>>({});
     const [actualStatErrors, setActualStatErrors] = useState<Partial<Record<keyof Stats, string>>>({});
     const [isEVsOpen, setIsEVsOpen] = useState<boolean>(false);
-
-    const NATURE_EFFECTS_MAP: Record<string, (keyof Omit<Stats, 'hp'>)[]> = {
-        Lonely: ['attack', 'defense'], Brave: ['attack', 'speed'], Adamant: ['attack', 'specialAttack'], Naughty: ['attack', 'specialDefense'],
-        Bold: ['defense', 'attack'], Relaxed: ['defense', 'speed'], Impish: ['defense', 'specialAttack'], Lax: ['defense', 'specialDefense'],
-        Timid: ['speed', 'attack'], Hasty: ['speed', 'defense'], Jolly: ['speed', 'specialAttack'], Naive: ['speed', 'specialDefense'],
-        Modest: ['specialAttack', 'attack'], Mild: ['specialAttack', 'defense'], Quiet: ['specialAttack', 'speed'], Rash: ['specialAttack', 'specialDefense'],
-        Calm: ['specialDefense', 'attack'], Gentle: ['specialDefense', 'defense'], Sassy: ['specialDefense', 'speed'], Careful: ['specialDefense', 'specialAttack'],
-    };
 
     const natureEffect = NATURE_EFFECTS_MAP[pokemon.nature] ?? [];
     const natureUp = natureEffect[0] as keyof Stats | undefined;

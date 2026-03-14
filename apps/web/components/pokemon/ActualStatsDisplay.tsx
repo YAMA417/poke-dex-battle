@@ -3,9 +3,8 @@
 import { Pokemon } from '@poke-dex-battle/shared';
 import { calcActualStats, calcEvContributionToActualStats, MAX_EV_CONTRIBUTION_TO_ACTUAL_STATS, splitActualStatsByEvContribution } from '@poke-dex-battle/shared';
 import type { BaseStats, Nature, Stats } from '@poke-dex-battle/shared';
-import { POKEMON_TYPE_COLORS } from '@/lib/constants';
+import { POKEMON_TYPE_COLORS, NATURE_EFFECTS_MAP } from '@/lib/constants';
 import { POKEMON_TYPE_LABELS_JA } from '@poke-dex-battle/shared';
-import { STAT_COLORS } from '@/lib/utils';
 
 interface StatBarProps {
     label: string;
@@ -262,29 +261,14 @@ export function ActualStatsDisplay({
     );
 }
 
-// 性格の上昇・下降ステータスを返す簡易実装
+/**
+ * Convert NATURE_EFFECTS_MAP array format [+stat, -stat] to object format {up, down}
+ */
 function getNatureEffect(nature: Nature): { up?: keyof Stats; down?: keyof Stats } {
-    const table: Partial<Record<Nature, { up?: keyof Stats; down?: keyof Stats }>> = {
-        Lonely: { up: 'attack', down: 'defense' },
-        Brave: { up: 'attack', down: 'speed' },
-        Adamant: { up: 'attack', down: 'specialAttack' },
-        Naughty: { up: 'attack', down: 'specialDefense' },
-        Bold: { up: 'defense', down: 'attack' },
-        Relaxed: { up: 'defense', down: 'speed' },
-        Impish: { up: 'defense', down: 'specialAttack' },
-        Lax: { up: 'defense', down: 'specialDefense' },
-        Timid: { up: 'speed', down: 'attack' },
-        Hasty: { up: 'speed', down: 'defense' },
-        Jolly: { up: 'speed', down: 'specialAttack' },
-        Naive: { up: 'speed', down: 'specialDefense' },
-        Modest: { up: 'specialAttack', down: 'attack' },
-        Mild: { up: 'specialAttack', down: 'defense' },
-        Quiet: { up: 'specialAttack', down: 'speed' },
-        Rash: { up: 'specialAttack', down: 'specialDefense' },
-        Calm: { up: 'specialDefense', down: 'attack' },
-        Gentle: { up: 'specialDefense', down: 'defense' },
-        Sassy: { up: 'specialDefense', down: 'speed' },
-        Careful: { up: 'specialDefense', down: 'specialAttack' },
+    const effects = NATURE_EFFECTS_MAP[nature];
+    if (!effects || effects.length === 0) return {};
+    return {
+        up: effects[0],
+        down: effects[1],
     };
-    return table[nature] ?? {};
 }
