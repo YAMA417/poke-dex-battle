@@ -4,9 +4,10 @@ import { use, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePartyStore } from '@/hooks/use-party-store';
-import { useAllPokemon } from '@/hooks/useApiData';
-import { toSpeciesData } from '@/lib/api-adapters';
+import { useAllPokemon, useAllItems } from '@/hooks/useApiData';
+import { toSpeciesData, toItemData } from '@/lib/api-adapters';
 import type { PokemonSpeciesData } from '@poke-dex-battle/shared';
+import { POKEMON_TYPE_LABELS_JA } from '@poke-dex-battle/shared';
 import { ActualStatsDisplay } from '@/components/pokemon/ActualStatsDisplay';
 import { POKEMON_TYPE_COLORS } from '@/lib/constants';
 import { ChevronLeft, Edit, Trash2, Copy, Download } from 'lucide-react';
@@ -16,6 +17,18 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
   const router = useRouter();
   const { getParty, deleteParty, duplicateParty } = usePartyStore();
   const party = getParty(id);
+
+  // API経由でアイテムデータを取得し、英語名→日本語名のMapを構築
+  const { data: allItemsRaw } = useAllItems();
+  const itemNameJaMap = useMemo(() => {
+    if (!allItemsRaw) return new Map<string, string>();
+    const map = new Map<string, string>();
+    for (const row of allItemsRaw) {
+      const item = toItemData(row);
+      if (item) map.set(item.name, item.nameJa);
+    }
+    return map;
+  }, [allItemsRaw]);
 
   // API経由で全ポケモンデータを取得し、名前→種族データのMapを構築
   const { data: allPokemonRaw } = useAllPokemon();
@@ -135,7 +148,7 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
                         key={t}
                         className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold text-white ${POKEMON_TYPE_COLORS[t] ?? 'bg-gray-400'}`}
                       >
-                        {t}
+                        {POKEMON_TYPE_LABELS_JA[t] ?? t}
                       </span>
                     ))}
                   </div>
@@ -148,12 +161,12 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
                   <div
                     className={`mt-0.5 inline-block rounded-full px-1 py-0.5 text-[10px] text-white ${POKEMON_TYPE_COLORS[pk.teraType] ?? 'bg-gray-400'}`}
                   >
-                    {pk.teraType}
+                    {POKEMON_TYPE_LABELS_JA[pk.teraType] ?? pk.teraType}
                   </div>
                 </div>
                 <div className="rounded-lg bg-gray-50 px-1 py-1">
                   <div className="font-bold text-gray-700">持ち物</div>
-                  <div className="truncate">{pk.item ?? 'なし'}</div>
+                  <div className="truncate">{pk.item ? (itemNameJaMap.get(pk.item) ?? pk.item) : 'なし'}</div>
                 </div>
                 <div className="rounded-lg bg-gray-50 px-1 py-1">
                   <div className="font-bold text-gray-700">性格</div>
@@ -166,8 +179,9 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
                   <div key={i} className="flex items-center gap-1.5 text-xs text-gray-700">
                     <span
                       className={`h-2 w-2 shrink-0 rounded-full ${POKEMON_TYPE_COLORS[m.type] ?? 'bg-gray-300'}`}
+                      title={POKEMON_TYPE_LABELS_JA[m.type] ?? m.type}
                     />
-                    {m.name}
+                    {m.nameJa ?? m.name}
                     {m.power && (
                       <span className="ml-auto tabular-nums text-gray-400">威力{m.power}</span>
                     )}

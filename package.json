@@ -14,26 +14,15 @@
     "dev:shared": "npm run dev -w @poke-dex-battle/shared",
     "dev:web": "npm run dev -w web",
     "dev:api": "npm run dev -w api",
-    "build": "npm run extract:showdown && npm run build -w @poke-dex-battle/shared && npm run build -w web",
-    "build:shared": "npm run extract:showdown && npm run build -w @poke-dex-battle/shared",
+    "build": "npm run build -w @poke-dex-battle/shared && npm run build -w web",
+    "build:shared": "npm run build -w @poke-dex-battle/shared",
     "build:web": "npm run build -w web",
-    "extract:showdown": "tsx scripts/extract-showdown-data.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules backend/*/node_modules"
   },
   "overrides": {
-    "pokemon-showdown": {
-      "esbuild": "^0.25.0",
-      "node-static": "npm:@nubosoftware/node-static@^3.5.0",
-      "nodemailer": "^7.0.11",
-      "sqlite": {
-        "sqlite3": {
-          "node-pre-gyp": "npm:@mapbox/node-pre-gyp@^2.0.0"
-        }
-      }
-    },
     "minimist": "^1.2.8"
   },
   "devDependencies": {
@@ -42,7 +31,6 @@
     "baseline-browser-mapping": "^2.10.0",
     "eslint": "^10.0.3",
     "npm-run-all": "^4.1.5",
-    "pokemon-showdown": "^0.11.10",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tsx": "^4.19.4",

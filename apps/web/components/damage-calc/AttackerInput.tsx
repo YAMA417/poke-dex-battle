@@ -81,7 +81,7 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
 
   const { data: pokemonData } = usePokemonSearch(data.pokemonName);
 
-  const { data: allPokemon } = useAllPokemon();
+  const { data: allPokemon } = useAllPokemon('sv-reg-i');
   const pokemonOptions = useMemo(() => {
     return (allPokemon ?? []).map((pokemon) => ({
       label: pokemon.nameJa,
@@ -101,6 +101,9 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
     }
     return [];
   }, [pokemonData]);
+
+  // スプライトURL
+  const spriteUrl = pokemonData?.spriteUrl;
 
   // 持ち物オプション（競技用のみ）
   const { data: allItems } = useAllItems();
@@ -160,8 +163,16 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
     return (
       <Card className="border-t-2 border-t-primary/60">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">{data.pokemonName || 'ポケモンを選択'}</CardTitle>
-          <TypeBadges types={data.pokemonTypes} />
+          <div className="flex items-center gap-2">
+            {spriteUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={spriteUrl} alt={data.pokemonName} width={40} height={40} className="shrink-0" />
+            )}
+            <div>
+              <CardTitle className="text-base">{data.pokemonName || 'ポケモンを選択'}</CardTitle>
+              <TypeBadges types={data.pokemonTypes} />
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
           {/* ポケモン名 */}

@@ -6,9 +6,10 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
-/** 全ポケモン一覧を取得 */
-export function useAllPokemon() {
-  return useSWR<any[]>('/api/pokemon', fetcher);
+/** 全ポケモン一覧を取得（レギュレーション指定可） */
+export function useAllPokemon(regulation?: string) {
+  const url = regulation ? `/api/pokemon?regulation=${encodeURIComponent(regulation)}` : '/api/pokemon';
+  return useSWR<any[]>(url, fetcher);
 }
 
 /** 全技一覧を取得 */
@@ -48,7 +49,7 @@ export function useItemByName(name: string | null) {
 
 /** 習得技を取得 */
 export function useLearnset(pokemonId: string | null) {
-  return useSWR<{ speciesId: string; level: string[]; machine: string[] }>(
+  return useSWR<{ pokemonId: string; level: string[]; machine: string[]; egg: string[] }>(
     pokemonId ? `/api/learnsets/${pokemonId}` : null,
     fetcher
   );

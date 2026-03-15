@@ -155,7 +155,10 @@ export function DamageCalculator() {
 
     for (const name of allAbilities) {
       if (!name) continue;
-      const effect = getAbilityConditionEffect(name);
+      // 日本語名→英語名に変換してから渡す
+      const abilityData = abilityByNameJa.get(name);
+      const englishName = abilityData?.name ?? name;
+      const effect = getAbilityConditionEffect(englishName);
       if (effect?.weather) abilityWeather = effect.weather;
       if (effect?.field) abilityField = effect.field;
     }

@@ -23,8 +23,8 @@ interface MoveSlotEditorProps {
 }
 
 export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps) {
-  // showdown id を導出（species.name が英語名の場合も対応）
-  const pokemonId = species.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  // DB の pokemon.id をそのまま使用（ハイフン含む: "calyrex-shadow-rider" 等）
+  const pokemonId = species.name;
   const { data: learnsetData } = useLearnset(pokemonId);
   const { data: allMovesRaw } = useAllMoves();
 
@@ -90,6 +90,7 @@ export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps
     const move: Move = {
       id: md.id,
       name: md.name,
+      nameJa: md.nameJa,
       type: md.type,
       category: md.category,
       power: md.power ?? undefined,

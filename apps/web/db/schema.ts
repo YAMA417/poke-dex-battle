@@ -29,6 +29,7 @@ export const pokemonCategoryEnum = pgEnum('pokemon_category', [
   'sub_legendary',
   'restricted',
   'mythical',
+  'mega',
 ]);
 
 // ゲームタイトル

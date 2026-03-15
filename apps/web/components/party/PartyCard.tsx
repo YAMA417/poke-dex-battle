@@ -107,10 +107,10 @@ export function PartyCard({ party, onDuplicate, onDelete }: PartyCardProps) {
                 key={i}
                 className="flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-50"
               >
-                {pk?.speciesId ? (
+                {pk?.spriteUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pk.speciesId}.png`}
+                    src={pk.spriteUrl}
                     alt={pk.speciesName}
                     width={40}
                     height={40}

@@ -1,14 +1,24 @@
 import type { PokemonSpeciesData, MoveData, AbilityData, ItemData } from '@poke-dex-battle/shared';
 
+// 固定アイテムの日本語名マッピング（itemsテーブルに無い特殊アイテム含む）
+const FIXED_ITEM_NAME_JA: Record<string, string> = {
+  'wellspring-mask': 'いどのめん',
+  'hearthflame-mask': 'かまどのめん',
+  'cornerstone-mask': 'いしずえのめん',
+  'rusted-sword': 'くちたけん',
+  'rusted-shield': 'くちたたて',
+  'griseous-orb': 'はっきんだま',
+};
+
 /**
  * API（DB）のポケモン行を PokemonSpeciesData 型に変換
  */
 export function toSpeciesData(row: any): PokemonSpeciesData | null {
   if (!row) return null;
   const abilities: PokemonSpeciesData['abilities'] = [];
-  if (row.ability0) abilities.push({ name: row.ability0, nameJa: row.ability0, isHidden: false });
-  if (row.ability1) abilities.push({ name: row.ability1, nameJa: row.ability1, isHidden: false });
-  if (row.abilityH) abilities.push({ name: row.abilityH, nameJa: row.abilityH, isHidden: true });
+  if (row.ability0) abilities.push({ name: row.ability0, nameJa: row.ability0Ja ?? row.ability0, isHidden: false });
+  if (row.ability1) abilities.push({ name: row.ability1, nameJa: row.ability1Ja ?? row.ability1, isHidden: false });
+  if (row.abilityH) abilities.push({ name: row.abilityH, nameJa: row.abilityHJa ?? row.abilityH, isHidden: true });
 
   return {
     id: row.num,
@@ -24,9 +34,13 @@ export function toSpeciesData(row: any): PokemonSpeciesData | null {
       speed: row.spe,
     },
     abilities,
-    spriteUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${row.num}.png`,
+    spriteUrl: row.spriteUrl ?? null,
     height: row.heightm,
     weight: row.weightkg,
+    category: row.category,
+    fixedItem: row.fixedItem ?? null,
+    fixedItemNameJa: row.fixedItem ? (FIXED_ITEM_NAME_JA[row.fixedItem] ?? row.fixedItem) : null,
+    fixedTeraType: row.fixedTeraType ?? null,
   };
 }
 
@@ -41,7 +55,7 @@ export function toMoveData(row: any): MoveData | null {
     nameJa: row.nameJa,
     type: row.type,
     category: row.category,
-    power: row.basePower || null,
+    power: row.power ?? null,
     accuracy: row.accuracy ?? null,
     pp: row.pp,
     priority: row.priority,
@@ -73,6 +87,5 @@ export function toItemData(row: any): ItemData | null {
     name: row.name,
     nameJa: row.nameJa,
     shortDesc: row.shortDesc,
-    desc: row.desc,
   };
 }

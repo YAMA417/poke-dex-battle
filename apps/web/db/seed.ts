@@ -231,6 +231,134 @@ const MEGA_STONE_MAP: Record<string, string> = {
   'diancie-mega': 'diancite',
 };
 
+// フォルム別の日本語名上書きマッピング
+const FORM_NAME_JA_MAP: Record<string, string> = {
+  // ウーラオス
+  'urshifu-single-strike': 'ウーラオス（いちげきのかた）',
+  'urshifu-rapid-strike': 'ウーラオス（れんげきのかた）',
+  // オーガポン
+  'ogerpon-wellspring-mask': 'オーガポン（いどのめん）',
+  'ogerpon-hearthflame-mask': 'オーガポン（かまどのめん）',
+  'ogerpon-cornerstone-mask': 'オーガポン（いしずえのめん）',
+  // デフォルトオーガポン
+  ogerpon: 'オーガポン（みどりのめん）',
+  // ロトム
+  'rotom-heat': 'ヒートロトム',
+  'rotom-wash': 'ウォッシュロトム',
+  'rotom-frost': 'フロストロトム',
+  'rotom-fan': 'スピンロトム',
+  'rotom-mow': 'カットロトム',
+  // デオキシス
+  'deoxys-attack': 'デオキシス（アタックフォルム）',
+  'deoxys-defense': 'デオキシス（ディフェンスフォルム）',
+  'deoxys-speed': 'デオキシス（スピードフォルム）',
+  // ギラティナ
+  'giratina-origin': 'ギラティナ（オリジンフォルム）',
+  // シェイミ
+  'shaymin-sky': 'シェイミ（スカイフォルム）',
+  // トルネロス・ボルトロス・ランドロス・ラブトロス
+  'tornadus-therian': 'トルネロス（れいじゅうフォルム）',
+  'thundurus-therian': 'ボルトロス（れいじゅうフォルム）',
+  'landorus-therian': 'ランドロス（れいじゅうフォルム）',
+  'enamorus-therian': 'ラブトロス（れいじゅうフォルム）',
+  // キュレム
+  'kyurem-white': 'ホワイトキュレム',
+  'kyurem-black': 'ブラックキュレム',
+  // フーパ
+  'hoopa-unbound': 'フーパ（ときはなたれしフーパ）',
+  // ネクロズマ
+  'necrozma-dusk-mane': 'ネクロズマ（たそがれのたてがみ）',
+  'necrozma-dawn-wings': 'ネクロズマ（あかつきのつばさ）',
+  // ザシアン・ザマゼンタ
+  'zacian-crowned': 'ザシアン（けんのおう）',
+  'zamazenta-crowned': 'ザマゼンタ（たてのおう）',
+  // バドレックス（PokeAPIのIDは calyrex-ice / calyrex-shadow）
+  'calyrex-ice': 'バドレックス（はくばじょうのすがた）',
+  'calyrex-shadow': 'バドレックス（こくばじょうのすがた）',
+  // テラパゴス
+  'terapagos-terastal': 'テラパゴス（テラスタルフォルム）',
+  // キャストフォーム
+  'castform-sunny': 'ポワルン（たいようのすがた）',
+  'castform-rainy': 'ポワルン（あまみずのすがた）',
+  'castform-snowy': 'ポワルン（ゆきぐものすがた）',
+  // ゲンシカイキ
+  'kyogre-primal': 'ゲンシカイオーガ',
+  'groudon-primal': 'ゲンシグラードン',
+  // ミノマダム
+  'wormadam-sandy': 'ミノマダム（すなちのミノ）',
+  'wormadam-trash': 'ミノマダム（ゴミのミノ）',
+  // ディアルガ・パルキア（オリジンフォルム）
+  'dialga-origin': 'ディアルガ（オリジンフォルム）',
+  'palkia-origin': 'パルキア（オリジンフォルム）',
+  // ヒヒダルマ
+  'darmanitan-zen': 'ヒヒダルマ（ダルマモード）',
+  'darmanitan-galar-zen': 'ヒヒダルマ（ガラルダルマモード）',
+  // メロエッタ
+  'meloetta-pirouette': 'メロエッタ（ステップフォルム）',
+  // ギルガルド
+  'aegislash-blade': 'ギルガルド（ブレードフォルム）',
+  // バケッチャ・パンプジン
+  'pumpkaboo-small': 'バケッチャ（ちいさいサイズ）',
+  'pumpkaboo-large': 'バケッチャ（おおきいサイズ）',
+  'pumpkaboo-super': 'バケッチャ（とくだいサイズ）',
+  'gourgeist-small': 'パンプジン（ちいさいサイズ）',
+  'gourgeist-large': 'パンプジン（おおきいサイズ）',
+  'gourgeist-super': 'パンプジン（とくだいサイズ）',
+  // ジガルデ
+  'zygarde-10': 'ジガルデ（10%フォルム）',
+  'zygarde-complete': 'ジガルデ（パーフェクトフォルム）',
+  // オドリドリ
+  'oricorio-pom-pom': 'オドリドリ（ぱちぱちスタイル）',
+  'oricorio-pau': 'オドリドリ（ふらふらスタイル）',
+  'oricorio-sensu': 'オドリドリ（まいまいスタイル）',
+  // ルガルガン
+  'lycanroc-midnight': 'ルガルガン（まよなかのすがた）',
+  'lycanroc-dusk': 'ルガルガン（たそがれのすがた）',
+  // ネクロズマ（ウルトラ）
+  'necrozma-ultra': 'ウルトラネクロズマ',
+  // ガチグマ
+  'ursaluna-bloodmoon': 'ガチグマ（あかつきのすがた）',
+  // イルカマン
+  'palafin-hero': 'イルカマン（マイティフォルム）',
+  // タイカイデン
+  'squawkabilly-blue-plumage': 'タイカイデン（あおのはね）',
+  'squawkabilly-yellow-plumage': 'タイカイデン（きいろのはね）',
+  'squawkabilly-white-plumage': 'タイカイデン（しろのはね）',
+  // ウネルミナモ等のパラドックスはベースフォルムのみなので不要
+  // バサギリ
+  'basculegion-female': 'イダイトウ（めすのすがた）',
+};
+
+// フォルム別の固定アイテム（PokeAPI ID → 日本語名ペア）
+const FIXED_ITEM_MAP: Record<string, { id: string; nameJa: string }> = {
+  'ogerpon-wellspring-mask': { id: 'wellspring-mask', nameJa: 'いどのめん' },
+  'ogerpon-hearthflame-mask': { id: 'hearthflame-mask', nameJa: 'かまどのめん' },
+  'ogerpon-cornerstone-mask': { id: 'cornerstone-mask', nameJa: 'いしずえのめん' },
+  'zacian-crowned': { id: 'rusted-sword', nameJa: 'くちたけん' },
+  'zamazenta-crowned': { id: 'rusted-shield', nameJa: 'くちたたて' },
+  'giratina-origin': { id: 'griseous-orb', nameJa: 'はっきんだま' },
+};
+
+// PokeAPIで欠落しているフォルムポケモンの技を手動補完
+// ゲーム内で実際に覚える技のみ追加
+const FORM_LEARNSET_SUPPLEMENTS: Record<string, string[]> = {
+  'calyrex-shadow': [
+    'expanding-force', 'solar-blade', 'body-press', 'psych-up', 'gravity',
+    'trick', 'imprison', 'protect', 'substitute', 'rest', 'sleep-talk',
+  ],
+  'calyrex-ice': [
+    'high-horsepower', 'body-press', 'swords-dance', 'trick-room',
+    'protect', 'substitute', 'rest', 'sleep-talk',
+  ],
+};
+
+const FIXED_TERA_TYPE_MAP: Record<string, string> = {
+  ogerpon: 'Grass',
+  'ogerpon-wellspring-mask': 'Water',
+  'ogerpon-hearthflame-mask': 'Fire',
+  'ogerpon-cornerstone-mask': 'Rock',
+};
+
 // ---------------------------------------------------------------------------
 // ヘルパー関数
 // ---------------------------------------------------------------------------
@@ -429,9 +557,52 @@ async function seed() {
         const pokemonId = pokemonData.name as string;
         const pokemonNum = num;
 
-        // フォルム名の日本語名: デフォルトフォルムはspecies名、それ以外もspecies名を使う
-        // （PokeAPIにはフォルム別日本語名がpokemon-formにあるが、多くは空なのでspecies名を使用）
-        const formNameJa = nameJa;
+        // フォルム名の日本語名
+        let formNameJa = nameJa;
+        if (FORM_NAME_JA_MAP[pokemonId]) {
+          formNameJa = FORM_NAME_JA_MAP[pokemonId];
+        } else if (pokemonId.includes('-mega')) {
+          if (pokemonId.endsWith('-mega-x')) {
+            formNameJa = `メガ${nameJa}X`;
+          } else if (pokemonId.endsWith('-mega-y')) {
+            formNameJa = `メガ${nameJa}Y`;
+          } else {
+            formNameJa = `メガ${nameJa}`;
+          }
+        } else if (!variety.isDefault) {
+          // リージョンフォルム等の自動命名
+          if (pokemonId.endsWith('-alola')) {
+            formNameJa = `${nameJa}（アローラのすがた）`;
+          } else if (pokemonId.endsWith('-galar')) {
+            formNameJa = `${nameJa}（ガラルのすがた）`;
+          } else if (pokemonId.endsWith('-hisui')) {
+            formNameJa = `${nameJa}（ヒスイのすがた）`;
+          } else if (pokemonId.endsWith('-paldea')) {
+            formNameJa = `${nameJa}（パルデアのすがた）`;
+          } else if (pokemonId.endsWith('-paldea-combat-breed')) {
+            formNameJa = `${nameJa}（パルデアのすがた・かくとう）`;
+          } else if (pokemonId.endsWith('-paldea-blaze-breed')) {
+            formNameJa = `${nameJa}（パルデアのすがた・ほのお）`;
+          } else if (pokemonId.endsWith('-paldea-aqua-breed')) {
+            formNameJa = `${nameJa}（パルデアのすがた・みず）`;
+          } else {
+            // その他のフォルム: PokeAPIのpokemon-formから日本語名を取得試行
+            try {
+              const formData = await fetchWithRetry(`https://pokeapi.co/api/v2/pokemon-form/${pokemonId}`);
+              const formJa = formData.names?.find((n: any) => n.language.name === 'ja')?.name;
+              if (formJa && formJa !== nameJa) {
+                formNameJa = formJa;
+              } else {
+                // フォールバック: IDのサフィックスを括弧付きで追加
+                const suffix = pokemonId.replace(`${defaultVariety!.name}-`, '').replace(/-/g, ' ');
+                formNameJa = `${nameJa}（${suffix}）`;
+              }
+            } catch {
+              const suffix = pokemonId.replace(`${defaultVariety!.name}-`, '').replace(/-/g, ' ');
+              formNameJa = `${nameJa}（${suffix}）`;
+            }
+          }
+        }
 
         const typesList = pokemonData.types
           .sort((a: any, b: any) => a.slot - b.slot)
@@ -475,10 +646,10 @@ async function seed() {
           abilityH,
           weightkg: pokemonData.weight / 10,
           heightm: pokemonData.height / 10,
-          category,
+          category: pokemonId.includes('-mega') ? 'mega' : category,
           spriteUrl,
-          fixedItem: MEGA_STONE_MAP[pokemonId] ?? null,
-          fixedTeraType: null,
+          fixedItem: MEGA_STONE_MAP[pokemonId] ?? FIXED_ITEM_MAP[pokemonId]?.id ?? null,
+          fixedTeraType: FIXED_TERA_TYPE_MAP[pokemonId] ?? null,
         });
 
         // 覚える技（SVのみ）
@@ -669,6 +840,25 @@ async function seed() {
   const filteredLearnsets = uniqueLearnsets.filter(
     (l) => validMoveIdSet.has(l.moveId) && validPokemonIdSet.has(l.pokemonId)
   );
+
+  // learnset補完: FORM_LEARNSET_SUPPLEMENTS で指定された技を追加
+  const existingLearnsetKeys = new Set(filteredLearnsets.map((l) => `${l.pokemonId}|${l.moveId}`));
+  for (const [pokemonId, moveIds] of Object.entries(FORM_LEARNSET_SUPPLEMENTS)) {
+    if (!validPokemonIdSet.has(pokemonId)) continue;
+    for (const moveId of moveIds) {
+      if (!validMoveIdSet.has(moveId)) continue;
+      const key = `${pokemonId}|${moveId}`;
+      if (existingLearnsetKeys.has(key)) continue;
+      filteredLearnsets.push({
+        pokemonId,
+        moveId,
+        method: 'machine',
+        level: 0,
+      });
+      existingLearnsetKeys.add(key);
+    }
+  }
+  console.log('learnset補完完了');
 
   // -----------------------------------------------------------------------
   // 8. DB投入
