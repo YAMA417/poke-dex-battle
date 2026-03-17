@@ -68,9 +68,18 @@ export function PokemonSearchModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+      role="dialog"
+      aria-modal="true"
+      aria-label="ポケモン検索"
+    >
       {/* 背景オーバーレイ */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
       <div className="relative flex max-h-[85vh] w-full flex-col rounded-t-2xl bg-white shadow-2xl sm:max-w-lg sm:rounded-2xl">
         {/* ヘッダー */}
@@ -86,6 +95,7 @@ export function PokemonSearchModal({
           />
           <button
             onClick={onClose}
+            aria-label="閉じる"
             className="rounded-full p-1 transition-colors hover:bg-gray-100"
           >
             <X size={18} className="text-gray-400" />

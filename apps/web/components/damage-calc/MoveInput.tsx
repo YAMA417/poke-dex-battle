@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAllMoves, useLearnset, usePokemonByName } from '@/hooks/useApiData';
+import type { MoveRow } from '@/lib/api-adapters';
 import type { PokemonType } from '@poke-dex-battle/shared';
 import { POKEMON_TYPE_OPTIONS } from '@poke-dex-battle/shared';
 import { useMemo } from 'react';
@@ -60,7 +61,7 @@ export function MoveInput({
   // 全技データ（ポケモン選択時は learnset で絞り込み、レベル技/わざマシンで分類）
   const moveOptions = useMemo(() => {
     if (!allMoves) return [];
-    const moveById = new Map(allMoves.map((m: any) => [m.id, m]));
+    const moveById = new Map(allMoves.map((m) => [m.id, m]));
 
     if (pokemonName && learnsetData) {
       const levelMoveIds: string[] = learnsetData.level ?? [];
@@ -69,8 +70,8 @@ export function MoveInput({
       if (levelMoveIds.length > 0 || machineMoveIds.length > 0) {
         const levelOptions = levelMoveIds
           .map((id) => moveById.get(id))
-          .filter((m: any) => m != null)
-          .map((move: any) => ({
+          .filter((m) => m != null)
+          .map((move) => ({
             label: move.nameJa,
             value: move.nameJa,
             id: `move-${move.id}`,
@@ -82,8 +83,8 @@ export function MoveInput({
         const machineOptions = machineMoveIds
           .filter((id) => !levelMoveIdSet.has(id))
           .map((id) => moveById.get(id))
-          .filter((m: any) => m != null)
-          .map((move: any) => ({
+          .filter((m) => m != null)
+          .map((move) => ({
             label: move.nameJa,
             value: move.nameJa,
             id: `move-${move.id}`,
@@ -95,7 +96,7 @@ export function MoveInput({
     }
 
     // ポケモン未選択 or learnset 取得不可の場合は全技
-    return allMoves.map((move: any) => ({
+    return allMoves.map((move) => ({
       label: move.nameJa,
       value: move.nameJa,
       id: `move-${move.id}`,
@@ -104,8 +105,8 @@ export function MoveInput({
 
   // 全技のMap（技選択時の検索用）
   const moveByNameJa = useMemo(() => {
-    if (!allMoves) return new Map<string, any>();
-    return new Map(allMoves.map((m: any) => [m.nameJa, m]));
+    if (!allMoves) return new Map<string, MoveRow>();
+    return new Map(allMoves.map((m) => [m.nameJa, m]));
   }, [allMoves]);
 
   // rerender-move-effect-to-event: 技選択時にデータを一括反映
@@ -114,7 +115,7 @@ export function MoveInput({
     if (moveData) {
       onMoveSelect({
         name: selectedName,
-        power: moveData.basePower ?? movePower,
+        power: moveData.power ?? movePower,
         type: moveData.type as PokemonType,
         category:
           moveData.category === 'Physical' || moveData.category === 'Special'

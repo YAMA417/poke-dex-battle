@@ -4,7 +4,7 @@ import { toItemData } from '@/lib/api-adapters';
 
 export function useItemSearch(itemName: string) {
   const name = itemName?.trim() || null;
-  const { data: raw, error, isLoading } = useItemByName(name);
+  const { data: raw, isLoading } = useItemByName(name);
   const data = useMemo(() => toItemData(raw), [raw]);
 
   return {

@@ -67,36 +67,20 @@ async function parallelFetch<T>(
 // ---------------------------------------------------------------------------
 
 const ADDITIONAL_REG_I_POKEMON = [
-  144, 145, 146, 150,
-  243, 244, 245, 249, 250,
-  377, 378, 379, 380, 381, 382, 383, 384,
-  480, 481, 482, 483, 484, 485, 486, 487, 488,
-  638, 639, 640, 641, 642, 643, 644, 645, 646,
-  789, 790, 791, 792, 800,
-  888, 889, 890, 891, 892, 894, 895, 896, 897, 898,
-  899, 901, 903, 905,
+  144, 145, 146, 150, 243, 244, 245, 249, 250, 377, 378, 379, 380, 381, 382, 383, 384, 480, 481,
+  482, 483, 484, 485, 486, 487, 488, 638, 639, 640, 641, 642, 643, 644, 645, 646, 789, 790, 791,
+  792, 800, 888, 889, 890, 891, 892, 894, 895, 896, 897, 898, 899, 901, 903, 905,
 ];
 
 const RESTRICTED_POKEMON = new Set([
-  150, 249, 250, 382, 383, 384,
-  483, 484, 487,
-  643, 644, 646,
-  789, 790, 791, 792, 800,
-  888, 889, 890,
-  898,
-  1007, 1008, 1024,
+  150, 249, 250, 382, 383, 384, 483, 484, 487, 643, 644, 646, 789, 790, 791, 792, 800, 888, 889,
+  890, 898, 1007, 1008, 1024,
 ]);
 
-const SV_VERSION_GROUPS = new Set([
-  'scarlet-violet',
-  'the-teal-mask',
-  'the-indigo-disk',
-]);
+const SV_VERSION_GROUPS = new Set(['scarlet-violet', 'the-teal-mask', 'the-indigo-disk']);
 
 // PokeAPIにSVデータがないポケモン用のフォールバック（HOME経由参加可能なポケモン）
-const FALLBACK_VERSION_GROUPS = new Set([
-  'sword-shield',
-]);
+const FALLBACK_VERSION_GROUPS = new Set(['sword-shield']);
 
 const VALID_LEARN_METHODS = new Set(['level-up', 'machine', 'egg']);
 
@@ -377,12 +361,27 @@ const FIXED_ITEM_MAP: Record<string, { id: string; nameJa: string }> = {
 // ゲーム内で実際に覚える技のみ追加
 const FORM_LEARNSET_SUPPLEMENTS: Record<string, string[]> = {
   'calyrex-shadow': [
-    'expanding-force', 'solar-blade', 'body-press', 'psych-up', 'gravity',
-    'trick', 'imprison', 'protect', 'substitute', 'rest', 'sleep-talk',
+    'expanding-force',
+    'solar-blade',
+    'body-press',
+    'psych-up',
+    'gravity',
+    'trick',
+    'imprison',
+    'protect',
+    'substitute',
+    'rest',
+    'sleep-talk',
   ],
   'calyrex-ice': [
-    'high-horsepower', 'body-press', 'swords-dance', 'trick-room',
-    'protect', 'substitute', 'rest', 'sleep-talk',
+    'high-horsepower',
+    'body-press',
+    'swords-dance',
+    'trick-room',
+    'protect',
+    'substitute',
+    'rest',
+    'sleep-talk',
   ],
 };
 
@@ -406,11 +405,7 @@ function getJaName(names: any[]): string {
   return ja?.name ?? '';
 }
 
-function getCategory(
-  num: number,
-  isLegendary: boolean,
-  isMythical: boolean
-): string {
+function getCategory(num: number, isLegendary: boolean, isMythical: boolean): string {
   if (isMythical) return 'mythical';
   if (RESTRICTED_POKEMON.has(num)) return 'restricted';
   if (isLegendary) return 'sub_legendary';
@@ -438,9 +433,7 @@ function getStatsArray(data: any): number[] {
 }
 
 function getTypesArray(data: any): string[] {
-  return data.types
-    .sort((a: any, b: any) => a.slot - b.slot)
-    .map((t: any) => t.type.name);
+  return data.types.sort((a: any, b: any) => a.slot - b.slot).map((t: any) => t.type.name);
 }
 
 function arraysEqual(a: any[], b: any[]): boolean {
@@ -534,9 +527,7 @@ async function seed() {
       const num = parseInt(numStr, 10);
 
       // species データ
-      const speciesData = await fetchWithRetry(
-        `https://pokeapi.co/api/v2/pokemon-species/${num}`
-      );
+      const speciesData = await fetchWithRetry(`https://pokeapi.co/api/v2/pokemon-species/${num}`);
       const nameJa = getJaName(speciesData.names);
       const isLegendary: boolean = speciesData.is_legendary;
       const isMythical: boolean = speciesData.is_mythical;
@@ -580,10 +571,7 @@ async function seed() {
           const varTypes = getTypesArray(pokemonData);
 
           // 種族値もタイプも同じなら見た目違い → スキップ
-          if (
-            arraysEqual(defaultStats, varStats) &&
-            arraysEqual(defaultTypes, varTypes)
-          ) {
+          if (arraysEqual(defaultStats, varStats) && arraysEqual(defaultTypes, varTypes)) {
             continue;
           }
         }
@@ -622,7 +610,9 @@ async function seed() {
           } else {
             // その他のフォルム: PokeAPIのpokemon-formから日本語名を取得試行
             try {
-              const formData = await fetchWithRetry(`https://pokeapi.co/api/v2/pokemon-form/${pokemonId}`);
+              const formData = await fetchWithRetry(
+                `https://pokeapi.co/api/v2/pokemon-form/${pokemonId}`
+              );
               const formJa = formData.names?.find((n: any) => n.language.name === 'ja')?.name;
               if (formJa && formJa !== nameJa) {
                 formNameJa = formJa;
@@ -646,15 +636,10 @@ async function seed() {
         const getStat = (name: string) =>
           stats.find((s: any) => s.stat.name === name)?.base_stat ?? 0;
 
-        const abilitiesList = pokemonData.abilities.sort(
-          (a: any, b: any) => a.slot - b.slot
-        );
-        const ability0 =
-          abilitiesList.find((a: any) => a.slot === 1)?.ability.name ?? '';
-        const ability1 =
-          abilitiesList.find((a: any) => a.slot === 2)?.ability.name ?? null;
-        const abilityH =
-          abilitiesList.find((a: any) => a.is_hidden)?.ability.name ?? null;
+        const abilitiesList = pokemonData.abilities.sort((a: any, b: any) => a.slot - b.slot);
+        const ability0 = abilitiesList.find((a: any) => a.slot === 1)?.ability.name ?? '';
+        const ability1 = abilitiesList.find((a: any) => a.slot === 2)?.ability.name ?? null;
+        const abilityH = abilitiesList.find((a: any) => a.is_hidden)?.ability.name ?? null;
 
         // 特性ID収集
         if (ability0) allAbilityIds.add(ability0);
@@ -720,7 +705,9 @@ async function seed() {
         }
 
         // SVデータがある場合はSVのみ、ない場合はフォールバックを使用
-        allLearnsetRows.push(...(svLearnsetRows.length > 0 ? svLearnsetRows : fallbackLearnsetRows));
+        allLearnsetRows.push(
+          ...(svLearnsetRows.length > 0 ? svLearnsetRows : fallbackLearnsetRows)
+        );
       }
 
       pokemonCount++;
@@ -754,9 +741,7 @@ async function seed() {
   const moveRows = await parallelFetch(
     moveIdList,
     async (moveName) => {
-      const data = await fetchWithRetry(
-        `https://pokeapi.co/api/v2/move/${moveName}`
-      );
+      const data = await fetchWithRetry(`https://pokeapi.co/api/v2/move/${moveName}`);
       return {
         id: moveName,
         num: data.id as number,
@@ -770,11 +755,8 @@ async function seed() {
         priority: data.priority as number,
         target: data.target.name as string,
         shortDesc:
-          (
-            data.effect_entries.find(
-              (e: any) => e.language.name === 'en'
-            ) as any
-          )?.short_effect ?? null,
+          (data.effect_entries.find((e: any) => e.language.name === 'en') as any)?.short_effect ??
+          null,
       };
     },
     5
@@ -790,20 +772,15 @@ async function seed() {
   const abilityRows = await parallelFetch(
     abilityIdList,
     async (abilityName) => {
-      const data = await fetchWithRetry(
-        `https://pokeapi.co/api/v2/ability/${abilityName}`
-      );
+      const data = await fetchWithRetry(`https://pokeapi.co/api/v2/ability/${abilityName}`);
       return {
         id: abilityName,
         num: data.id as number,
         name: data.name as string,
         nameJa: getJaName(data.names),
         shortDesc:
-          (
-            data.effect_entries.find(
-              (e: any) => e.language.name === 'en'
-            ) as any
-          )?.short_effect ?? null,
+          (data.effect_entries.find((e: any) => e.language.name === 'en') as any)?.short_effect ??
+          null,
       };
     },
     5
@@ -819,20 +796,15 @@ async function seed() {
     COMPETITIVE_ITEM_IDS,
     async (showdownId) => {
       const pokeApiName = SHOWDOWN_TO_POKEAPI_ITEM[showdownId];
-      const data = await fetchWithRetry(
-        `https://pokeapi.co/api/v2/item/${pokeApiName}`
-      );
+      const data = await fetchWithRetry(`https://pokeapi.co/api/v2/item/${pokeApiName}`);
       return {
         id: pokeApiName,
         num: data.id as number,
         name: data.name as string,
         nameJa: getJaName(data.names),
         shortDesc:
-          (
-            data.effect_entries.find(
-              (e: any) => e.language.name === 'en'
-            ) as any
-          )?.short_effect ?? null,
+          (data.effect_entries.find((e: any) => e.language.name === 'en') as any)?.short_effect ??
+          null,
         isCompetitive: true,
       };
     },
@@ -842,7 +814,9 @@ async function seed() {
 
   // メガストーンをPokeAPIから取得
   console.log('\nメガストーン取得中...');
-  const megaStonesCategory = await fetchWithRetry('https://pokeapi.co/api/v2/item-category/mega-stones/');
+  const megaStonesCategory = await fetchWithRetry(
+    'https://pokeapi.co/api/v2/item-category/mega-stones/'
+  );
   const megaStoneNames: string[] = megaStonesCategory.items.map((i: any) => i.name);
 
   const megaStoneRows = await parallelFetch(
@@ -854,7 +828,9 @@ async function seed() {
         num: data.id as number,
         name: data.name as string,
         nameJa: getJaName(data.names),
-        shortDesc: (data.effect_entries.find((e: any) => e.language.name === 'en') as any)?.short_effect ?? null,
+        shortDesc:
+          (data.effect_entries.find((e: any) => e.language.name === 'en') as any)?.short_effect ??
+          null,
         isCompetitive: false, // SVでは使えない
       };
     },
@@ -870,10 +846,7 @@ async function seed() {
   // -----------------------------------------------------------------------
   const regIPokemonRows = allPokemonRows
     .filter(
-      (p) =>
-        regINums.has(p.num) &&
-        p.category !== 'mythical' &&
-        !p.id.includes('-mega') // メガシンカは除外
+      (p) => regINums.has(p.num) && p.category !== 'mythical' && !p.id.includes('-mega') // メガシンカは除外
     )
     .map((p) => ({
       regulationId: 'sv-reg-i',

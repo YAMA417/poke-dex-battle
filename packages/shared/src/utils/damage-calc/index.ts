@@ -67,8 +67,13 @@ export function calculateDamageV2(
   const baseDamage = calculateBaseDamage(attacker.level, finalPower, finalAttack, finalDefense);
 
   // 5. 補正を適用（min/maxダメージに分岐）
-  const { minDamage, maxDamage, stab, typeEffectiveness, weatherModifier, fieldModifier } =
-    calculateModifier(baseDamage, attacker, defender, move, context);
+  const { minDamage, maxDamage, stab, typeEffectiveness, weatherModifier } = calculateModifier(
+    baseDamage,
+    attacker,
+    defender,
+    move,
+    context
+  );
 
   // 6. HPを決定
   const defenderHp = defender.maxHp ?? defender.stats.hp ?? 100;

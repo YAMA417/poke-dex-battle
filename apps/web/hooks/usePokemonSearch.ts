@@ -4,7 +4,7 @@ import { toSpeciesData } from '@/lib/api-adapters';
 
 export function usePokemonSearch(pokemonName: string) {
   const name = pokemonName?.trim() || null;
-  const { data: raw, error, isLoading } = usePokemonByName(name);
+  const { data: raw, isLoading } = usePokemonByName(name);
   const data = useMemo(() => toSpeciesData(raw), [raw]);
 
   return {

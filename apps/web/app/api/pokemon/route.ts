@@ -1,21 +1,25 @@
+import { cache } from 'react';
 import { db } from '@poke-dex-battle/db';
 import { pokemon, regulationPokemon, abilities } from '@poke-dex-battle/db/schema';
 import { ilike, or, asc, eq, and } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
-// 特性ID→日本語名マップを構築
-async function getAbilityJaMap(): Promise<Map<string, string>> {
+// 特性ID→日本語名マップを構築（リクエスト単位で重複排除）
+const getAbilityJaMap = cache(async (): Promise<Map<string, string>> => {
   const rows = await db.select({ id: abilities.id, nameJa: abilities.nameJa }).from(abilities);
   return new Map(rows.map((r) => [r.id, r.nameJa]));
-}
+});
 
 // ポケモン行に特性日本語名を付与
-function attachAbilityJa(rows: any[], abilityJaMap: Map<string, string>): any[] {
+function attachAbilityJa(
+  rows: Record<string, unknown>[],
+  abilityJaMap: Map<string, string>
+): Record<string, unknown>[] {
   return rows.map((row) => ({
     ...row,
-    ability0Ja: abilityJaMap.get(row.ability0) ?? null,
-    ability1Ja: row.ability1 ? (abilityJaMap.get(row.ability1) ?? null) : null,
-    abilityHJa: row.abilityH ? (abilityJaMap.get(row.abilityH) ?? null) : null,
+    ability0Ja: abilityJaMap.get(row.ability0 as string) ?? null,
+    ability1Ja: row.ability1 ? (abilityJaMap.get(row.ability1 as string) ?? null) : null,
+    abilityHJa: row.abilityH ? (abilityJaMap.get(row.abilityH as string) ?? null) : null,
   }));
 }
 

@@ -143,7 +143,7 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
 
   // 特殊技フラグの判定（ボディプレス等）
   const { data: moveData } = useMoveByName(data.moveName || null);
-  const moveFlags = moveData ? getMoveFlags(moveData.name, moveData.shortDesc) : null;
+  const moveFlags = moveData ? getMoveFlags(moveData.name, moveData.shortDesc ?? undefined) : null;
   const usesDefenseAsAttack = moveFlags?.usesDefenseAsAttack ?? false;
 
   // ボディプレス時は防御ステータスを使用
@@ -166,7 +166,13 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
           <div className="flex items-center gap-2">
             {spriteUrl && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={spriteUrl} alt={data.pokemonName} width={40} height={40} className="shrink-0" />
+              <img
+                src={spriteUrl}
+                alt={data.pokemonName}
+                width={40}
+                height={40}
+                className="shrink-0"
+              />
             )}
             <div>
               <CardTitle className="text-base">{data.pokemonName || 'ポケモンを選択'}</CardTitle>

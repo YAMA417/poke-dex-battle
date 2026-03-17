@@ -144,7 +144,13 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
           <div className="flex items-center gap-2">
             {spriteUrl && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={spriteUrl} alt={data.pokemonName} width={40} height={40} className="shrink-0" />
+              <img
+                src={spriteUrl}
+                alt={data.pokemonName}
+                width={40}
+                height={40}
+                className="shrink-0"
+              />
             )}
             <div>
               <CardTitle className="text-base">{data.pokemonName || 'ポケモンを選択'}</CardTitle>

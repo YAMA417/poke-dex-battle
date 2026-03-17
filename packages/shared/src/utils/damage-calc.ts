@@ -180,7 +180,7 @@ export function calculateAttackerItemModifier(
  */
 export function calculateDefenderItemModifier(
   item: string | undefined,
-  moveCategory: 'Physical' | 'Special'
+  _moveCategory: 'Physical' | 'Special'
 ): number {
   if (!item) return 1.0;
 

@@ -4,7 +4,7 @@ import { toMoveData } from '@/lib/api-adapters';
 
 export function useMoveSearch(moveName: string) {
   const name = moveName?.trim() || null;
-  const { data: raw, error, isLoading } = useMoveByName(name);
+  const { data: raw, isLoading } = useMoveByName(name);
   const data = useMemo(() => toMoveData(raw), [raw]);
 
   return {

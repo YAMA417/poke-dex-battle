@@ -112,7 +112,8 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
     const poke = DEFAULT_POKEMON(species);
     // 固定アイテム・固定テラスタイプを自動設定
     if (species.fixedItem) {
-      poke.item = species.fixedItemNameJa ?? itemNameJaMap.get(species.fixedItem) ?? species.fixedItem;
+      poke.item =
+        species.fixedItemNameJa ?? itemNameJaMap.get(species.fixedItem) ?? species.fixedItem;
     }
     if (species.fixedTeraType) {
       poke.teraType = species.fixedTeraType as PokemonSpeciesData['types'][number];
@@ -270,13 +271,19 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                     setStep(3);
                   }}
                 >
-                  <img
-                    src={species.spriteUrl ?? ''}
-                    alt={species.nameJa}
-                    width={56}
-                    height={56}
-                    className="h-full w-full object-contain"
-                  />
+                  {species.spriteUrl ? (
+                    <img
+                      src={species.spriteUrl}
+                      alt={species.nameJa}
+                      width={56}
+                      height={56}
+                      className="h-full w-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-lg font-bold text-gray-300">
+                      {species.nameJa.charAt(0)}
+                    </span>
+                  )}
                 </div>
                 <span className="w-full truncate text-center text-[10px] font-medium text-gray-600">
                   {species.nameJa}
@@ -328,13 +335,19 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                 onClick={() => setEditingIdx(i)}
                 className={`flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-semibold transition-all ${editingIdx === i ? 'border-pokemon-blue bg-white text-pokemon-blue' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
               >
-                <img
-                  src={species.spriteUrl ?? ''}
-                  alt=""
-                  width={24}
-                  height={24}
-                  className="h-6 w-6 object-contain"
-                />
+                {species.spriteUrl ? (
+                  <img
+                    src={species.spriteUrl}
+                    alt=""
+                    width={24}
+                    height={24}
+                    className="h-6 w-6 object-contain"
+                  />
+                ) : (
+                  <span className="flex h-6 w-6 items-center justify-center text-xs text-gray-400">
+                    {species.nameJa.charAt(0)}
+                  </span>
+                )}
                 {species.nameJa}
               </button>
             ))}

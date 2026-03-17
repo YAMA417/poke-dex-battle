@@ -4,7 +4,7 @@ import { toAbilityData } from '@/lib/api-adapters';
 
 export function useAbilitySearch(abilityName: string) {
   const name = abilityName?.trim() || null;
-  const { data: raw, error, isLoading } = useAbilityByName(name);
+  const { data: raw, isLoading } = useAbilityByName(name);
   const data = useMemo(() => toAbilityData(raw), [raw]);
 
   return {

@@ -173,7 +173,9 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
                 <div className="rounded-lg bg-gray-50 px-1 py-1">
                   <div className="font-bold text-gray-700">持ち物</div>
-                  <div className="truncate">{pk.item ? (itemNameJaMap.get(pk.item) ?? pk.item) : 'なし'}</div>
+                  <div className="truncate">
+                    {pk.item ? (itemNameJaMap.get(pk.item) ?? pk.item) : 'なし'}
+                  </div>
                 </div>
                 <div className="rounded-lg bg-gray-50 px-1 py-1">
                   <div className="font-bold text-gray-700">性格</div>
