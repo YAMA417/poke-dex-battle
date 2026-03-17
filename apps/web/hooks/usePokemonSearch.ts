@@ -1,31 +1,15 @@
-import type { PokemonSpeciesData } from '@poke-dex-battle/shared';
-import { getPokemonByName } from '@poke-dex-battle/shared';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
+import { usePokemonByName } from './useApiData';
+import { toSpeciesData } from '@/lib/api-adapters';
 
 export function usePokemonSearch(pokemonName: string) {
-  const [data, setData] = useState<PokemonSpeciesData | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const name = pokemonName?.trim() || null;
+  const { data: raw, isLoading } = usePokemonByName(name);
+  const data = useMemo(() => toSpeciesData(raw), [raw]);
 
-  useEffect(() => {
-    if (!pokemonName || pokemonName.trim().length === 0) {
-      setData(null);
-      setError(null);
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      const result = getPokemonByName(pokemonName);
-      if (result) {
-        setData(result);
-        setError(null);
-      } else {
-        setData(null);
-        setError(`ポケモン「${pokemonName}」が見つかりませんでした`);
-      }
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [pokemonName]);
-
-  return { data, loading: false, error };
+  return {
+    data,
+    loading: isLoading,
+    error: !isLoading && name && !data ? `ポケモン「${pokemonName}」が見つかりませんでした` : null,
+  };
 }

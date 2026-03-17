@@ -1,31 +1,15 @@
-import type { ItemData } from '@poke-dex-battle/shared';
-import { getItemByName } from '@poke-dex-battle/shared';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
+import { useItemByName } from './useApiData';
+import { toItemData } from '@/lib/api-adapters';
 
 export function useItemSearch(itemName: string) {
-  const [data, setData] = useState<ItemData | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const name = itemName?.trim() || null;
+  const { data: raw, isLoading } = useItemByName(name);
+  const data = useMemo(() => toItemData(raw), [raw]);
 
-  useEffect(() => {
-    if (!itemName || itemName.trim().length === 0) {
-      setData(null);
-      setError(null);
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      const result = getItemByName(itemName);
-      if (result) {
-        setData(result);
-        setError(null);
-      } else {
-        setData(null);
-        setError(`アイテム「${itemName}」が見つかりませんでした`);
-      }
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [itemName]);
-
-  return { data, loading: false, error };
+  return {
+    data,
+    loading: isLoading,
+    error: !isLoading && name && !data ? `アイテム「${itemName}」が見つかりませんでした` : null,
+  };
 }

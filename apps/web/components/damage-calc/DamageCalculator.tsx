@@ -9,13 +9,12 @@ import type {
 } from '@poke-dex-battle/shared';
 import {
   calculateDamage,
-  getAbilityByName,
   getAbilityConditionEffect,
-  getItemByName,
-  getMoveByName,
   getMoveFlags,
   isSpreadMoveTarget,
 } from '@poke-dex-battle/shared';
+import { useAllMoves, useAllAbilities, useAllItems } from '@/hooks/useApiData';
+import { toMoveData, toAbilityData, toItemData } from '@/lib/api-adapters';
 import type { DoubleBattleResult } from '@/types/damage';
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { ArrowLeftRight } from 'lucide-react';
@@ -88,6 +87,42 @@ function combineDamage(
 
 export function DamageCalculator() {
   const isMounted = useHydrationSafe();
+
+  // API経由で全データを取得し、名前→データのMapを構築
+  const { data: allMovesRaw } = useAllMoves();
+  const { data: allAbilitiesRaw } = useAllAbilities();
+  const { data: allItemsRaw } = useAllItems();
+
+  const moveByNameJa = useMemo(() => {
+    if (!allMovesRaw) return new Map<string, ReturnType<typeof toMoveData>>();
+    const map = new Map<string, ReturnType<typeof toMoveData>>();
+    for (const row of allMovesRaw) {
+      const md = toMoveData(row);
+      if (md) map.set(md.nameJa, md);
+    }
+    return map;
+  }, [allMovesRaw]);
+
+  const abilityByNameJa = useMemo(() => {
+    if (!allAbilitiesRaw) return new Map<string, ReturnType<typeof toAbilityData>>();
+    const map = new Map<string, ReturnType<typeof toAbilityData>>();
+    for (const row of allAbilitiesRaw) {
+      const ad = toAbilityData(row);
+      if (ad) map.set(ad.nameJa, ad);
+    }
+    return map;
+  }, [allAbilitiesRaw]);
+
+  const itemByNameJa = useMemo(() => {
+    if (!allItemsRaw) return new Map<string, ReturnType<typeof toItemData>>();
+    const map = new Map<string, ReturnType<typeof toItemData>>();
+    for (const row of allItemsRaw) {
+      const id = toItemData(row);
+      if (id) map.set(id.nameJa, id);
+    }
+    return map;
+  }, [allItemsRaw]);
+
   const [attackerAData, setAttackerAData] = useState<AttackerData>(DEFAULT_ATTACKER_DATA);
   const [attackerBData, setAttackerBData] = useState<AttackerData>(DEFAULT_ATTACKER_DATA);
   const [defenderData1, setDefenderData1] = useState<DefenderData>(DEFAULT_DEFENDER_DATA);
@@ -120,7 +155,10 @@ export function DamageCalculator() {
 
     for (const name of allAbilities) {
       if (!name) continue;
-      const effect = getAbilityConditionEffect(name);
+      // 日本語名→英語名に変換してから渡す
+      const abilityData = abilityByNameJa.get(name);
+      const englishName = abilityData?.name ?? name;
+      const effect = getAbilityConditionEffect(englishName);
       if (effect?.weather) abilityWeather = effect.weather;
       if (effect?.field) abilityField = effect.field;
     }
@@ -168,7 +206,7 @@ export function DamageCalculator() {
     // 攻撃側サイドの全特性を収集（わざわいシリーズ等の場に影響する特性用）
     const resolveAbilityName = (jaName: string): string | undefined => {
       if (!jaName) return undefined;
-      return getAbilityByName(jaName)?.name || undefined;
+      return abilityByNameJa.get(jaName)?.name || undefined;
     };
     const allAttackerSideAbilities = [
       resolveAbilityName(attackerAData.abilityName),
@@ -186,7 +224,7 @@ export function DamageCalculator() {
     ): DamageCalculationInput => {
       const isPhysical = attacker.moveCategory === 'Physical';
       // 技の英語名とフラグを取得
-      const moveData = attacker.moveName ? getMoveByName(attacker.moveName) : null;
+      const moveData = attacker.moveName ? (moveByNameJa.get(attacker.moveName) ?? null) : null;
       const moveEnglishName = moveData?.name || '';
       const moveFlags = getMoveFlags(moveEnglishName, moveData?.shortDesc);
 
@@ -249,16 +287,16 @@ export function DamageCalculator() {
           isSpreadMove: isSpread,
           isCriticalHit,
           attackerAbility: attacker.abilityName
-            ? getAbilityByName(attacker.abilityName)?.name || undefined
+            ? abilityByNameJa.get(attacker.abilityName)?.name || undefined
             : undefined,
           defenderAbility: defender.abilityName
-            ? getAbilityByName(defender.abilityName)?.name || undefined
+            ? abilityByNameJa.get(defender.abilityName)?.name || undefined
             : undefined,
           attackerItem: attacker.itemName
-            ? getItemByName(attacker.itemName)?.name || attacker.itemName
+            ? itemByNameJa.get(attacker.itemName)?.name || attacker.itemName
             : undefined,
           defenderItem: defender.itemName
-            ? getItemByName(defender.itemName)?.name || defender.itemName
+            ? itemByNameJa.get(defender.itemName)?.name || defender.itemName
             : undefined,
           attackerBurned: attacker.isBurned,
           reflect: isReflect,
@@ -323,6 +361,9 @@ export function DamageCalculator() {
     attackerBReady,
     defender1Ready,
     defender2Ready,
+    moveByNameJa,
+    abilityByNameJa,
+    itemByNameJa,
   ]);
 
   // 攻撃側 ↔ 防御側 入れ替え

@@ -1,17 +1,19 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { searchPokemon } from '@poke-dex-battle/shared';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { PokemonSpeciesData } from '@poke-dex-battle/shared';
 import { POKEMON_TYPE_COLORS } from '@/lib/constants';
 import { POKEMON_TYPE_LABELS_JA } from '@poke-dex-battle/shared';
-import { X, Search } from 'lucide-react';
+import { X, Search, Loader2 } from 'lucide-react';
+import { useAllPokemon } from '@/hooks/useApiData';
+import { toSpeciesData } from '@/lib/api-adapters';
 
 interface PokemonSearchModalProps {
   open: boolean;
   onClose: () => void;
   onSelect: (species: PokemonSpeciesData) => void;
   disabledIds?: number[];
+  regulation?: string;
 }
 
 export function PokemonSearchModal({
@@ -19,28 +21,38 @@ export function PokemonSearchModal({
   onClose,
   onSelect,
   disabledIds = [],
+  regulation,
 }: PokemonSearchModalProps) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<PokemonSpeciesData[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // モーダルを開いたとき初期リストを表示（上位20件）
+  const { data: rawPokemon, isLoading } = useAllPokemon(regulation);
+
+  // API データを PokemonSpeciesData に変換（キャッシュ）
+  const allPokemon = useMemo(() => {
+    if (!rawPokemon) return [];
+    return rawPokemon.map(toSpeciesData).filter((p): p is PokemonSpeciesData => p !== null);
+  }, [rawPokemon]);
+
+  // クライアント側フィルタ
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return allPokemon;
+    return allPokemon.filter(
+      (p) => p.nameJa.toLowerCase().includes(q) || p.name.toLowerCase().includes(q)
+    );
+  }, [allPokemon, query]);
+
+  // モーダルを開いたとき初期化
   useEffect(() => {
     if (open) {
       setQuery('');
-      setResults(searchPokemon(''));
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [open]);
 
   const handleSearch = useCallback((value: string) => {
     setQuery(value);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      const res = value.trim() ? searchPokemon(value) : searchPokemon('');
-      setResults(res);
-    }, 180);
   }, []);
 
   // ESCキーで閉じる
@@ -56,9 +68,18 @@ export function PokemonSearchModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+      role="dialog"
+      aria-modal="true"
+      aria-label="ポケモン検索"
+    >
       {/* 背景オーバーレイ */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
       <div className="relative flex max-h-[85vh] w-full flex-col rounded-t-2xl bg-white shadow-2xl sm:max-w-lg sm:rounded-2xl">
         {/* ヘッダー */}
@@ -74,6 +95,7 @@ export function PokemonSearchModal({
           />
           <button
             onClick={onClose}
+            aria-label="閉じる"
             className="rounded-full p-1 transition-colors hover:bg-gray-100"
           >
             <X size={18} className="text-gray-400" />
@@ -82,7 +104,12 @@ export function PokemonSearchModal({
 
         {/* 結果リスト */}
         <div className="flex-1 overflow-y-auto py-2">
-          {results.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 size={24} className="animate-spin text-gray-400" />
+              <span className="ml-2 text-sm text-gray-400">読み込み中...</span>
+            </div>
+          ) : results.length === 0 ? (
             <p className="py-10 text-center text-sm text-gray-400">
               該当するポケモンが見つかりません
             </p>

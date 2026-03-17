@@ -11,14 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useAllMoves, useLearnset, usePokemonByName } from '@/hooks/useApiData';
+import type { MoveRow } from '@/lib/api-adapters';
 import type { PokemonType } from '@poke-dex-battle/shared';
-import {
-  POKEMON_TYPE_OPTIONS,
-  getAllMoves,
-  getMoveByName,
-  getLevelMoves,
-  getMachineMoves,
-} from '@poke-dex-battle/shared';
+import { POKEMON_TYPE_OPTIONS } from '@poke-dex-battle/shared';
 import { useMemo } from 'react';
 
 export interface MoveSelectData {
@@ -56,14 +52,20 @@ export function MoveInput({
   onMoveCategoryChange,
   compact,
 }: MoveInputProps) {
+  // API経由でデータを取得
+  const { data: allMoves } = useAllMoves();
+  const { data: pokemonData } = usePokemonByName(pokemonName || null);
+  const pokemonId = pokemonData?.id ?? null;
+  const { data: learnsetData } = useLearnset(pokemonId);
+
   // 全技データ（ポケモン選択時は learnset で絞り込み、レベル技/わざマシンで分類）
   const moveOptions = useMemo(() => {
-    const allMoves = getAllMoves();
+    if (!allMoves) return [];
     const moveById = new Map(allMoves.map((m) => [m.id, m]));
 
-    if (pokemonName) {
-      const levelMoveIds = getLevelMoves(pokemonName);
-      const machineMoveIds = getMachineMoves(pokemonName);
+    if (pokemonName && learnsetData) {
+      const levelMoveIds: string[] = learnsetData.level ?? [];
+      const machineMoveIds: string[] = learnsetData.machine ?? [];
 
       if (levelMoveIds.length > 0 || machineMoveIds.length > 0) {
         const levelOptions = levelMoveIds
@@ -99,11 +101,17 @@ export function MoveInput({
       value: move.nameJa,
       id: `move-${move.id}`,
     }));
-  }, [pokemonName]);
+  }, [pokemonName, allMoves, learnsetData]);
 
-  // rerender-move-effect-to-event: 技選択時にデータを同期的に取得し一括反映
+  // 全技のMap（技選択時の検索用）
+  const moveByNameJa = useMemo(() => {
+    if (!allMoves) return new Map<string, MoveRow>();
+    return new Map(allMoves.map((m) => [m.nameJa, m]));
+  }, [allMoves]);
+
+  // rerender-move-effect-to-event: 技選択時にデータを一括反映
   const handleMoveSelect = (selectedName: string) => {
-    const moveData = getMoveByName(selectedName);
+    const moveData = moveByNameJa.get(selectedName);
     if (moveData) {
       onMoveSelect({
         name: selectedName,
