@@ -240,23 +240,24 @@ PokeAPI（外部）→ seed.ts → PostgreSQL → API Routes → フロントエ
 ### ローカル DB セットアップ（Docker）
 
 ```bash
-# 1. PostgreSQL 起動
+# 1. PostgreSQL 起動（ホスト側で実行）
 docker compose up -d
 
 # 2. 環境変数設定
 cp apps/web/.env.local.example apps/web/.env.local
-# デフォルトでローカル接続（postgresql://postgres:postgres@localhost:5432/poke_dex_battle）が設定済み
+# Dev Container 内からは host.docker.internal を使う:
+# DATABASE_URL=postgresql://postgres:postgres@host.docker.internal:5432/poke_dex_battle
 
 # 3. スキーマをDBに反映
-npx drizzle-kit push --config apps/web/drizzle.config.ts
+npm run db:push
 
 # 4. シードデータ投入（PokeAPIから取得、約5〜10分）
-npx tsx apps/web/db/seed.ts
+npm run db:seed
 
-# DB停止
+# DB停止（ホスト側で実行）
 docker compose down
 
-# DB停止 + データ削除
+# DB停止 + データ削除（ホスト側で実行）
 docker compose down -v
 ```
 
@@ -276,27 +277,26 @@ DATABASE_URL=postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-1-ap-northeast-1
 
 ```bash
 # スキーマファイル
-apps/web/db/schema.ts
+packages/db/src/schema.ts
 ```
 
 #### 2. マイグレーションファイル生成
 
 ```bash
-npx drizzle-kit generate --config apps/web/drizzle.config.ts
-# → apps/web/db/migrations/ にSQLファイルが生成される
+npm run -w @poke-dex-battle/db -- drizzle-kit generate
+# → packages/db/migrations/ にSQLファイルが生成される
 ```
 
 #### 3. ローカルDBに適用して検証
 
 ```bash
 # .env.local がローカルDB向けになっていることを確認
-# DATABASE_URL=postgresql://postgres:postgres@localhost:5432/poke_dex_battle
 
 # マイグレーション適用
-npx drizzle-kit migrate --config apps/web/drizzle.config.ts
+npm run -w @poke-dex-battle/db -- drizzle-kit migrate
 
 # seed再実行（必要な場合）
-npx tsx apps/web/db/seed.ts
+npm run db:seed
 
 # 動作確認
 npm run dev:frontend
@@ -309,17 +309,17 @@ npm run dev:frontend
 DATABASE_URL=postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres
 
 # マイグレーション適用
-npx drizzle-kit migrate --config apps/web/drizzle.config.ts
+npm run -w @poke-dex-battle/db -- drizzle-kit migrate
 
 # seed再実行（必要な場合）
-npx tsx apps/web/db/seed.ts
+npm run db:seed
 
 # 完了後、.env.local をローカルDB向けに戻す
 ```
 
-> **`push` vs `migrate`**: `drizzle-kit push` はスキーマを直接DBに同期する開発用コマンド（マイグレーションファイルを生成しない）。初回セットアップや開発中の試行錯誤には便利だが、本番環境や変更履歴を残したい場合は `generate` → `migrate` を使うこと。
+> **`push` vs `migrate`**: `npm run db:push` はスキーマを直接DBに同期する開発用コマンド（マイグレーションファイルを生成しない）。初回セットアップや開発中の試行錯誤には便利だが、本番環境や変更履歴を残したい場合は `generate` → `migrate` を使うこと。
 
-### seed.ts の構成
+### seed.ts の構成（packages/db/src/seed.ts）
 
 | 定数 | 用途 |
 |------|------|

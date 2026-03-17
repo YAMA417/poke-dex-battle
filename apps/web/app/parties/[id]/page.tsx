@@ -10,6 +10,7 @@ import type { PokemonSpeciesData } from '@poke-dex-battle/shared';
 import { POKEMON_TYPE_LABELS_JA } from '@poke-dex-battle/shared';
 import { ActualStatsDisplay } from '@/components/pokemon/ActualStatsDisplay';
 import { POKEMON_TYPE_COLORS } from '@/lib/constants';
+import { NATURE_JA } from '@/components/pokemon/NatureSelector';
 import { ChevronLeft, Edit, Trash2, Copy, Download } from 'lucide-react';
 
 export default function PartyDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -154,8 +155,8 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                 </div>
               </div>
-              {/* テラスタイプ・持ち物・性格 */}
-              <div className="grid grid-cols-3 gap-1 text-center text-[11px] text-gray-500">
+              {/* テラスタイプ・特性・持ち物・性格 */}
+              <div className="grid grid-cols-4 gap-1 text-center text-[11px] text-gray-500">
                 <div className="rounded-lg bg-gray-50 px-1 py-1">
                   <div className="font-bold text-gray-700">テラス</div>
                   <div
@@ -165,12 +166,18 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                 </div>
                 <div className="rounded-lg bg-gray-50 px-1 py-1">
+                  <div className="font-bold text-gray-700">特性</div>
+                  <div className="truncate">
+                    {species?.abilities.find((a) => a.name === pk.ability)?.nameJa ?? pk.ability}
+                  </div>
+                </div>
+                <div className="rounded-lg bg-gray-50 px-1 py-1">
                   <div className="font-bold text-gray-700">持ち物</div>
                   <div className="truncate">{pk.item ? (itemNameJaMap.get(pk.item) ?? pk.item) : 'なし'}</div>
                 </div>
                 <div className="rounded-lg bg-gray-50 px-1 py-1">
                   <div className="font-bold text-gray-700">性格</div>
-                  <div>{pk.nature}</div>
+                  <div>{NATURE_JA[pk.nature] ?? pk.nature}</div>
                 </div>
               </div>
               {/* 技 */}

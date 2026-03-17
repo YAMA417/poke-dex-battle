@@ -1,5 +1,5 @@
-import { db } from '@/db';
-import { items } from '@/db/schema';
+import { db } from '@poke-dex-battle/db';
+import { items } from '@poke-dex-battle/db/schema';
 import { ilike, or, asc, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 

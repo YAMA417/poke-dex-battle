@@ -1,5 +1,5 @@
-import { db } from '@/db';
-import { learnsets, pokemon } from '@/db/schema';
+import { db } from '@poke-dex-battle/db';
+import { learnsets, pokemon } from '@poke-dex-battle/db/schema';
 import { eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 

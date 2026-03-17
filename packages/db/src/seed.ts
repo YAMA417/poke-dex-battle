@@ -17,7 +17,7 @@ import {
   regulationPokemon,
 } from './schema';
 
-dotenv.config({ path: resolve(__dirname, '../.env.local') });
+dotenv.config({ path: resolve(__dirname, '../../../apps/web/.env.local') });
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -91,6 +91,11 @@ const SV_VERSION_GROUPS = new Set([
   'scarlet-violet',
   'the-teal-mask',
   'the-indigo-disk',
+]);
+
+// PokeAPIにSVデータがないポケモン用のフォールバック（HOME経由参加可能なポケモン）
+const FALLBACK_VERSION_GROUPS = new Set([
+  'sword-shield',
 ]);
 
 const VALID_LEARN_METHODS = new Set(['level-up', 'machine', 'egg']);
@@ -266,9 +271,11 @@ const FORM_NAME_JA_MAP: Record<string, string> = {
   'kyurem-black': 'ブラックキュレム',
   // フーパ
   'hoopa-unbound': 'フーパ（ときはなたれしフーパ）',
-  // ネクロズマ
+  // ネクロズマ（PokeAPIのIDは necrozma-dusk / necrozma-dawn）
   'necrozma-dusk-mane': 'ネクロズマ（たそがれのたてがみ）',
   'necrozma-dawn-wings': 'ネクロズマ（あかつきのつばさ）',
+  'necrozma-dusk': 'ネクロズマ（たそがれのたてがみ）',
+  'necrozma-dawn': 'ネクロズマ（あかつきのつばさ）',
   // ザシアン・ザマゼンタ
   'zacian-crowned': 'ザシアン（けんのおう）',
   'zamazenta-crowned': 'ザマゼンタ（たてのおう）',
@@ -292,6 +299,7 @@ const FORM_NAME_JA_MAP: Record<string, string> = {
   'palkia-origin': 'パルキア（オリジンフォルム）',
   // ヒヒダルマ
   'darmanitan-zen': 'ヒヒダルマ（ダルマモード）',
+  'darmanitan-galar-standard': 'ヒヒダルマ（ガラルのすがた）',
   'darmanitan-galar-zen': 'ヒヒダルマ（ガラルダルマモード）',
   // メロエッタ
   'meloetta-pirouette': 'メロエッタ（ステップフォルム）',
@@ -327,6 +335,32 @@ const FORM_NAME_JA_MAP: Record<string, string> = {
   // ウネルミナモ等のパラドックスはベースフォルムのみなので不要
   // バサギリ
   'basculegion-female': 'イダイトウ（めすのすがた）',
+  // コオリッポ
+  'eiscue-noice': 'コオリッポ（ナイスフェイス）',
+  // ムゲンダイナ
+  'eternatus-eternamax': 'ムゲンダイナ（ムゲンダイマックス）',
+  // フラエッテ
+  'floette-eternal': 'フラエッテ（エターナルフラワー）',
+  // ゲッコウガ
+  'greninja-ash': 'サトシゲッコウガ',
+  // コレクレー
+  'gimmighoul-roaming': 'コレクレー（とほフォルム）',
+  // イエッサン
+  'indeedee-female': 'イエッサン（めすのすがた）',
+  // パフュートン
+  'oinkologne-female': 'パフュートン（めすのすがた）',
+  // ヨワシ
+  'wishiwashi-school': 'ヨワシ（むれたすがた）',
+  // ジガルデ（スワームチェンジ）
+  'zygarde-10-power-construct': 'ジガルデ（10%フォルム・スワームチェンジ）',
+  // メテノ（コア各色）
+  'minior-red': 'メテノ（あかいろのコア）',
+  'minior-orange': 'メテノ（だいだいいろのコア）',
+  'minior-yellow': 'メテノ（きいろのコア）',
+  'minior-green': 'メテノ（みどりいろのコア）',
+  'minior-blue': 'メテノ（あおいろのコア）',
+  'minior-indigo': 'メテノ（あいいろのコア）',
+  'minior-violet': 'メテノ（むらさきいろのコア）',
 };
 
 // フォルム別の固定アイテム（PokeAPI ID → 日本語名ペア）
@@ -652,27 +686,41 @@ async function seed() {
           fixedTeraType: FIXED_TERA_TYPE_MAP[pokemonId] ?? null,
         });
 
-        // 覚える技（SVのみ）
+        // 覚える技（SV優先、なければsword-shieldにフォールバック）
+        const svLearnsetRows: LearnsetRow[] = [];
+        const fallbackLearnsetRows: LearnsetRow[] = [];
+
         for (const moveEntry of pokemonData.moves) {
           const moveName: string = moveEntry.move.name;
           const versionDetails: any[] = moveEntry.version_group_details;
 
           for (const detail of versionDetails) {
             const vgName: string = detail.version_group.name;
-            if (!SV_VERSION_GROUPS.has(vgName)) continue;
-
             const method: string = detail.move_learn_method.name;
             if (!VALID_LEARN_METHODS.has(method)) continue;
 
-            allMoveIds.add(moveName);
-            allLearnsetRows.push({
-              pokemonId,
-              moveId: moveName,
-              method,
-              level: detail.level_learned_at ?? 0,
-            });
+            if (SV_VERSION_GROUPS.has(vgName)) {
+              allMoveIds.add(moveName);
+              svLearnsetRows.push({
+                pokemonId,
+                moveId: moveName,
+                method,
+                level: detail.level_learned_at ?? 0,
+              });
+            } else if (FALLBACK_VERSION_GROUPS.has(vgName)) {
+              allMoveIds.add(moveName);
+              fallbackLearnsetRows.push({
+                pokemonId,
+                moveId: moveName,
+                method,
+                level: detail.level_learned_at ?? 0,
+              });
+            }
           }
         }
+
+        // SVデータがある場合はSVのみ、ない場合はフォールバックを使用
+        allLearnsetRows.push(...(svLearnsetRows.length > 0 ? svLearnsetRows : fallbackLearnsetRows));
       }
 
       pokemonCount++;

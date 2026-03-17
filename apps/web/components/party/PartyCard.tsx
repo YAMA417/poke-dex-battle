@@ -107,19 +107,23 @@ export function PartyCard({ party, onDuplicate, onDelete }: PartyCardProps) {
                 key={i}
                 className="flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-50"
               >
-                {pk?.spriteUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={pk.spriteUrl}
-                    alt={pk.speciesName}
-                    width={40}
-                    height={40}
-                    className="h-full w-full object-contain"
-                    loading="lazy"
-                  />
-                ) : (
-                  <span className="text-xl text-gray-200">?</span>
-                )}
+                {pk ? (
+                  pk.spriteUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={pk.spriteUrl}
+                      alt={pk.speciesName}
+                      width={40}
+                      height={40}
+                      className="h-full w-full object-contain"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span className="text-[10px] font-medium text-gray-400">
+                      {pk.speciesName.charAt(0)}
+                    </span>
+                  )
+                ) : null}
               </div>
             );
           })}

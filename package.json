@@ -20,7 +20,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules backend/*/node_modules"
+    "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules backend/*/node_modules",
+    "db:push": "npm run db:push -w @poke-dex-battle/db",
+    "db:seed": "npm run db:seed -w @poke-dex-battle/db"
   },
   "overrides": {
     "minimist": "^1.2.8"
@@ -43,10 +45,5 @@
   "volta": {
     "node": "24.11.1"
   },
-  "dependencies": {
-    "dotenv": "^17.3.1",
-    "drizzle-kit": "^0.31.9",
-    "drizzle-orm": "^0.45.1",
-    "postgres": "^3.4.8"
-  }
+  "dependencies": {}
 }
