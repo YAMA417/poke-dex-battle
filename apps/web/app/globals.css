@@ -80,3 +80,25 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .hero-gradient {
+    @apply bg-gradient-to-br from-pokemon-blue via-purple-500 to-pink-500;
+  }
+  
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-pokemon-blue/20 hover:scale-105;
+  }
+  
+  .card-hover-safe {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-pokemon-blue/20;
+  }
+
+  .glass-effect {
+    @apply bg-white/90 backdrop-blur-sm border border-white/20;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-pokemon-blue via-purple-600 to-pink-500 bg-clip-text text-transparent;
+  }
+}

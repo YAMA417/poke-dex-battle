@@ -61,6 +61,24 @@ const config: Config = {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      backgroundImage: {
+        'gradient-pokemon': 'linear-gradient(135deg, #3B4CCA 0%, #6C5DFA 50%, #FF0000 100%)',
+        'gradient-hero': 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+      },
+      animation: {
+        'bounce-subtle': 'bounce-subtle 2s infinite',
+        'pulse-glow': 'pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+      keyframes: {
+        'bounce-subtle': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-4px)' },
+        },
+        'pulse-glow': {
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(59, 76, 202, 0.7)' },
+          '50%': { boxShadow: '0 0 0 10px rgba(59, 76, 202, 0)' },
+        },
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],
