@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `apps/web/` — Next.js 16 フロントエンド（App Router）
 - `packages/shared/` — 共通ロジック・型定義・定数（tsup / dual CJS+ESM）
+- `packages/db/` — DB スキーマ・接続・seed（Drizzle ORM + PostgreSQL）
 - `backend/api/` — Hono API（未着手）
 
 ## 開発コマンド
@@ -22,6 +23,8 @@ npm run lint             # Lint（web）
 npm test -w @poke-dex-battle/shared          # テスト実行
 npx vitest run -w packages/shared -- <path>  # テスト単体実行
 npm run typecheck -w @poke-dex-battle/shared # 型チェック
+npm run db:push              # DBスキーマ反映（開発用）
+npm run db:seed              # シードデータ投入
 ```
 
 ---

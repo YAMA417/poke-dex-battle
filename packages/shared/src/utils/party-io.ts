@@ -9,21 +9,6 @@ function isRecordArray(value: unknown): value is Record<string, unknown>[] {
 }
 
 /**
- * Type guard to check if object has the required createdAt property
- */
-function hasDateProperty(
-  obj: unknown,
-  prop: string
-): obj is Record<string, unknown> & { [key: string]: unknown } {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    prop in obj &&
-    typeof (obj as Record<string, unknown>)[prop] === 'string'
-  );
-}
-
-/**
  * パーティ配列をJSON文字列に変換
  */
 export function exportPartiesToJson(parties: Party[]): string {

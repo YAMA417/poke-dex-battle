@@ -1,12 +1,16 @@
 'use client';
 
-import { use } from 'react';
+import { use, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePartyStore } from '@/hooks/use-party-store';
-import { getPokemonByName } from '@poke-dex-battle/shared';
+import { useAllPokemon, useAllItems } from '@/hooks/useApiData';
+import { toSpeciesData, toItemData } from '@/lib/api-adapters';
+import type { PokemonSpeciesData } from '@poke-dex-battle/shared';
+import { POKEMON_TYPE_LABELS_JA } from '@poke-dex-battle/shared';
 import { ActualStatsDisplay } from '@/components/pokemon/ActualStatsDisplay';
 import { POKEMON_TYPE_COLORS } from '@/lib/constants';
+import { NATURE_JA } from '@/components/pokemon/NatureSelector';
 import { ChevronLeft, Edit, Trash2, Copy, Download } from 'lucide-react';
 
 export default function PartyDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -14,6 +18,33 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
   const router = useRouter();
   const { getParty, deleteParty, duplicateParty } = usePartyStore();
   const party = getParty(id);
+
+  // API経由でアイテムデータを取得し、英語名→日本語名のMapを構築
+  const { data: allItemsRaw } = useAllItems();
+  const itemNameJaMap = useMemo(() => {
+    if (!allItemsRaw) return new Map<string, string>();
+    const map = new Map<string, string>();
+    for (const row of allItemsRaw) {
+      const item = toItemData(row);
+      if (item) map.set(item.name, item.nameJa);
+    }
+    return map;
+  }, [allItemsRaw]);
+
+  // API経由で全ポケモンデータを取得し、名前→種族データのMapを構築
+  const { data: allPokemonRaw } = useAllPokemon();
+  const allPokemonByName = useMemo(() => {
+    if (!allPokemonRaw) return new Map<string, PokemonSpeciesData>();
+    const map = new Map<string, PokemonSpeciesData>();
+    for (const row of allPokemonRaw) {
+      const sp = toSpeciesData(row);
+      if (sp) {
+        map.set(sp.nameJa, sp);
+        map.set(sp.name, sp);
+      }
+    }
+    return map;
+  }, [allPokemonRaw]);
 
   if (!party) {
     return (
@@ -89,7 +120,7 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
       {/* ポケモングリッド */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {party.pokemons.map((pk) => {
-          const species = getPokemonByName(pk.speciesName);
+          const species = allPokemonByName.get(pk.speciesName) ?? null;
           return (
             <div
               key={pk.id}
@@ -118,29 +149,37 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
                         key={t}
                         className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold text-white ${POKEMON_TYPE_COLORS[t] ?? 'bg-gray-400'}`}
                       >
-                        {t}
+                        {POKEMON_TYPE_LABELS_JA[t] ?? t}
                       </span>
                     ))}
                   </div>
                 </div>
               </div>
-              {/* テラスタイプ・持ち物・性格 */}
-              <div className="grid grid-cols-3 gap-1 text-center text-[11px] text-gray-500">
+              {/* テラスタイプ・特性・持ち物・性格 */}
+              <div className="grid grid-cols-4 gap-1 text-center text-[11px] text-gray-500">
                 <div className="rounded-lg bg-gray-50 px-1 py-1">
                   <div className="font-bold text-gray-700">テラス</div>
                   <div
                     className={`mt-0.5 inline-block rounded-full px-1 py-0.5 text-[10px] text-white ${POKEMON_TYPE_COLORS[pk.teraType] ?? 'bg-gray-400'}`}
                   >
-                    {pk.teraType}
+                    {POKEMON_TYPE_LABELS_JA[pk.teraType] ?? pk.teraType}
+                  </div>
+                </div>
+                <div className="rounded-lg bg-gray-50 px-1 py-1">
+                  <div className="font-bold text-gray-700">特性</div>
+                  <div className="truncate">
+                    {species?.abilities.find((a) => a.name === pk.ability)?.nameJa ?? pk.ability}
                   </div>
                 </div>
                 <div className="rounded-lg bg-gray-50 px-1 py-1">
                   <div className="font-bold text-gray-700">持ち物</div>
-                  <div className="truncate">{pk.item ?? 'なし'}</div>
+                  <div className="truncate">
+                    {pk.item ? (itemNameJaMap.get(pk.item) ?? pk.item) : 'なし'}
+                  </div>
                 </div>
                 <div className="rounded-lg bg-gray-50 px-1 py-1">
                   <div className="font-bold text-gray-700">性格</div>
-                  <div>{pk.nature}</div>
+                  <div>{NATURE_JA[pk.nature] ?? pk.nature}</div>
                 </div>
               </div>
               {/* 技 */}
@@ -149,8 +188,9 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
                   <div key={i} className="flex items-center gap-1.5 text-xs text-gray-700">
                     <span
                       className={`h-2 w-2 shrink-0 rounded-full ${POKEMON_TYPE_COLORS[m.type] ?? 'bg-gray-300'}`}
+                      title={POKEMON_TYPE_LABELS_JA[m.type] ?? m.type}
                     />
-                    {m.name}
+                    {m.nameJa ?? m.name}
                     {m.power && (
                       <span className="ml-auto tabular-nums text-gray-400">威力{m.power}</span>
                     )}

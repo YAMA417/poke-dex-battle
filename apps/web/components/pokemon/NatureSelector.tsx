@@ -36,7 +36,7 @@ const NATURES: Nature[] = [
   'Naive',
 ];
 
-const NATURE_JA: Record<string, string> = {
+export const NATURE_JA: Record<string, string> = {
   Hardy: 'がんばりや',
   Lonely: 'さみしがり',
   Brave: 'ゆうかん',

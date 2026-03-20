@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Regulation, Pokemon, PokemonSpeciesData } from '@poke-dex-battle/shared';
-import { getPokemonByName } from '@poke-dex-battle/shared';
+import { useAllPokemon, useAllItems } from '@/hooks/useApiData';
+import { toSpeciesData } from '@/lib/api-adapters';
 import { usePartyStore } from '@/hooks/use-party-store';
 import { PokemonSearchModal } from '@/components/pokemon/PokemonSearchModal';
 import { PokemonEditForm } from '@/components/pokemon/PokemonEditForm';
@@ -26,6 +27,7 @@ const DEFAULT_POKEMON = (species: PokemonSpeciesData): Pokemon => ({
   evs: { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0 },
   moves: [],
   actualStats: undefined,
+  spriteUrl: species.spriteUrl,
 });
 
 const STEPS: { label: string; desc: string }[] = [
@@ -49,18 +51,54 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
   // Step 1 state
   const [partyName, setPartyName] = useState(existingParty?.name ?? '');
   const [regulation, setRegulation] = useState<Regulation>(existingParty?.regulation ?? 'SV');
+
+  // レギュレーション → DB regulation ID マッピング
+  const regulationDbId = regulation === 'SV' ? 'sv-reg-i' : undefined;
+
+  // API経由でレギュレーション対応ポケモンを取得
+  const { data: allPokemonRaw } = useAllPokemon(regulationDbId);
+  const allPokemonByName = useMemo(() => {
+    if (!allPokemonRaw) return new Map<string, PokemonSpeciesData>();
+    const map = new Map<string, PokemonSpeciesData>();
+    for (const row of allPokemonRaw) {
+      const sp = toSpeciesData(row);
+      if (sp) {
+        map.set(sp.nameJa, sp);
+        map.set(sp.name, sp);
+      }
+    }
+    return map;
+  }, [allPokemonRaw]);
+
+  // アイテムのID→日本語名マップ
+  const { data: allItemsRaw } = useAllItems();
+  const itemNameJaMap = useMemo(() => {
+    if (!allItemsRaw) return new Map<string, string>();
+    const map = new Map<string, string>();
+    for (const row of allItemsRaw) {
+      if (row.id && row.nameJa) map.set(row.id, row.nameJa);
+      if (row.name && row.nameJa) map.set(row.name, row.nameJa);
+    }
+    return map;
+  }, [allItemsRaw]);
+
   const [memo, setMemo] = useState(existingParty?.memo ?? '');
 
   // Step 2/3 state
-  const [pokemons, setPokemons] = useState<{ pokemon: Pokemon; species: PokemonSpeciesData }[]>(
-    () => {
-      if (!existingParty) return [];
-      return existingParty.pokemons.flatMap((pk) => {
-        const sp = getPokemonByName(pk.speciesName);
-        return sp ? [{ pokemon: pk, species: sp }] : [];
-      });
-    }
-  );
+  const [pokemons, setPokemons] = useState<{ pokemon: Pokemon; species: PokemonSpeciesData }[]>([]);
+  const [pokemonsInitialized, setPokemonsInitialized] = useState(false);
+
+  // 既存パーティのポケモンをAPI取得後に復元
+  useEffect(() => {
+    if (pokemonsInitialized || !existingParty || allPokemonByName.size === 0) return;
+    const restored = existingParty.pokemons.flatMap((pk) => {
+      const sp = allPokemonByName.get(pk.speciesName);
+      return sp ? [{ pokemon: pk, species: sp }] : [];
+    });
+    setPokemons(restored);
+    setPokemonsInitialized(true);
+  }, [existingParty, allPokemonByName, pokemonsInitialized]);
+
   const [searchOpen, setSearchOpen] = useState(false);
   const [editingIdx, setEditingIdx] = useState<number>(0);
   const [step, setStep] = useState<Step>(1);
@@ -71,7 +109,16 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
   const step2Valid = pokemons.length > 0;
 
   function handleSpeciesSelect(species: PokemonSpeciesData) {
-    setPokemons((prev) => [...prev, { pokemon: DEFAULT_POKEMON(species), species }]);
+    const poke = DEFAULT_POKEMON(species);
+    // 固定アイテム・固定テラスタイプを自動設定
+    if (species.fixedItem) {
+      poke.item =
+        species.fixedItemNameJa ?? itemNameJaMap.get(species.fixedItem) ?? species.fixedItem;
+    }
+    if (species.fixedTeraType) {
+      poke.teraType = species.fixedTeraType as PokemonSpeciesData['types'][number];
+    }
+    setPokemons((prev) => [...prev, { pokemon: poke, species }]);
   }
 
   function handlePokemonChange(idx: number, data: Partial<Pokemon>) {
@@ -224,13 +271,19 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                     setStep(3);
                   }}
                 >
-                  <img
-                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${species.id}.png`}
-                    alt={species.nameJa}
-                    width={56}
-                    height={56}
-                    className="h-full w-full object-contain"
-                  />
+                  {species.spriteUrl ? (
+                    <img
+                      src={species.spriteUrl}
+                      alt={species.nameJa}
+                      width={56}
+                      height={56}
+                      className="h-full w-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-lg font-bold text-gray-300">
+                      {species.nameJa.charAt(0)}
+                    </span>
+                  )}
                 </div>
                 <span className="w-full truncate text-center text-[10px] font-medium text-gray-600">
                   {species.nameJa}
@@ -282,13 +335,19 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                 onClick={() => setEditingIdx(i)}
                 className={`flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-semibold transition-all ${editingIdx === i ? 'border-pokemon-blue bg-white text-pokemon-blue' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
               >
-                <img
-                  src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${species.id}.png`}
-                  alt=""
-                  width={24}
-                  height={24}
-                  className="h-6 w-6 object-contain"
-                />
+                {species.spriteUrl ? (
+                  <img
+                    src={species.spriteUrl}
+                    alt=""
+                    width={24}
+                    height={24}
+                    className="h-6 w-6 object-contain"
+                  />
+                ) : (
+                  <span className="flex h-6 w-6 items-center justify-center text-xs text-gray-400">
+                    {species.nameJa.charAt(0)}
+                  </span>
+                )}
                 {species.nameJa}
               </button>
             ))}
@@ -325,6 +384,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
         onClose={() => setSearchOpen(false)}
         onSelect={handleSpeciesSelect}
         disabledIds={pokemons.map((p) => p.species.id)}
+        regulation={regulationDbId}
       />
     </div>
   );

@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useAllPokemon, useAllItems } from '@/hooks/useApiData';
 import { usePokemonSearch } from '@/hooks/usePokemonSearch';
 import type { PokemonType, StatStage } from '@poke-dex-battle/shared';
 import {
@@ -18,8 +19,6 @@ import {
   calcOtherStat,
   reverseCalcHpEv,
   reverseCalcOtherEv,
-  getAllPokemon,
-  getCompetitiveItemNames,
 } from '@poke-dex-battle/shared';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { NatureModifierCompact, EvPreset, TypeBadges } from './SharedFormComponents';
@@ -73,13 +72,14 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
 
   const { data: pokemonData } = usePokemonSearch(data.pokemonName);
 
+  const { data: allPokemon } = useAllPokemon('sv-reg-i');
   const pokemonOptions = useMemo(() => {
-    return getAllPokemon().map((pokemon) => ({
+    return (allPokemon ?? []).map((pokemon) => ({
       label: pokemon.nameJa,
       value: pokemon.nameJa,
       id: `pokemon-${pokemon.id}`,
     }));
-  }, []);
+  }, [allPokemon]);
 
   // 特性オプション
   const abilityOptions = useMemo(() => {
@@ -93,14 +93,18 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
     return [];
   }, [pokemonData]);
 
+  // スプライトURL
+  const spriteUrl = pokemonData?.spriteUrl;
+
   // 持ち物オプション（競技用のみ）
+  const { data: allItems } = useAllItems();
   const itemOptions = useMemo(() => {
-    return getCompetitiveItemNames().map((item) => ({
+    return (allItems ?? []).map((item) => ({
       label: item.nameJa,
       value: item.nameJa,
       id: `item-${item.id}`,
     }));
-  }, []);
+  }, [allItems]);
 
   // ポケモンデータ取得時に種族値・タイプ・第1特性を自動反映
   useEffect(() => {
@@ -137,8 +141,22 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
     return (
       <Card className="border-t-2 border-t-primary/60">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">{data.pokemonName || 'ポケモンを選択'}</CardTitle>
-          <TypeBadges types={data.pokemonTypes} />
+          <div className="flex items-center gap-2">
+            {spriteUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={spriteUrl}
+                alt={data.pokemonName}
+                width={40}
+                height={40}
+                className="shrink-0"
+              />
+            )}
+            <div>
+              <CardTitle className="text-base">{data.pokemonName || 'ポケモンを選択'}</CardTitle>
+              <TypeBadges types={data.pokemonTypes} />
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
           {/* ポケモン名 */}

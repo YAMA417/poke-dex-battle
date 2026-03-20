@@ -17,6 +17,10 @@ export interface PokemonSpeciesData {
   spriteUrl?: string;
   height: number;
   weight: number;
+  category?: string;
+  fixedItem?: string | null;
+  fixedItemNameJa?: string | null;
+  fixedTeraType?: string | null;
 }
 
 /**
