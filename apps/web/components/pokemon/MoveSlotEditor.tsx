@@ -81,7 +81,6 @@ export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps
       .filter((o): o is NonNullable<typeof o> => o !== null);
 
     const eggOptions = eggIds
-      .filter((id) => !levelIdSet.has(id) && !machineIdSet.has(id))
       .map((id) => toOption(id, 'タマゴわざ'))
       .filter((o): o is NonNullable<typeof o> => o !== null);
 

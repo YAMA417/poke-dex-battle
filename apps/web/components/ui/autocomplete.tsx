@@ -205,7 +205,7 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
               return groups.map((section, sectionIndex) => (
                 <div key={section.group ?? `section-${sectionIndex}`}>
                   {section.group && (
-                    <div className="border-b border-border bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+                    <div className="sticky top-0 z-10 border-b border-border bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground">
                       {section.group}
                     </div>
                   )}
