@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type {
   Pokemon,
   PokemonSpeciesData,
@@ -21,6 +21,10 @@ import { NatureSelector } from './NatureSelector';
 import { MoveSlotEditor } from './MoveSlotEditor';
 import { ActualStatsDisplay } from './ActualStatsDisplay';
 import { POKEMON_TYPE_COLORS } from '@/lib/constants';
+import { Autocomplete } from '@/components/ui/autocomplete';
+import type { AutocompleteOption } from '@/components/ui/autocomplete';
+import type { ItemRow } from '@/lib/api-adapters';
+import { Lock } from 'lucide-react';
 
 const TYPES: PokemonType[] = [
   'Normal',
@@ -51,10 +55,11 @@ const GENDER_OPTIONS = [
 interface PokemonEditFormProps {
   pokemon: Pokemon;
   species: PokemonSpeciesData;
+  items: ItemRow[];
   onChange: (updated: Partial<Pokemon>) => void;
 }
 
-export function PokemonEditForm({ pokemon, species, onChange }: PokemonEditFormProps) {
+export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEditFormProps) {
   const [actualStatInputs, setActualStatInputs] = useState<Partial<Record<keyof Stats, string>>>(
     {}
   );
@@ -62,6 +67,14 @@ export function PokemonEditForm({ pokemon, species, onChange }: PokemonEditFormP
     {}
   );
   const [isEVsOpen, setIsEVsOpen] = useState<boolean>(false);
+
+  // 対戦用アイテムの Autocomplete options（先頭に「なし」）
+  const itemOptions = useMemo<AutocompleteOption[]>(() => {
+    const competitive = items
+      .filter((item) => item.isCompetitive)
+      .map((item) => ({ label: item.nameJa, value: item.name, id: item.id }));
+    return [{ label: 'なし', value: '', id: 'none' }, ...competitive];
+  }, [items]);
 
   const natureEffect = NATURE_EFFECTS_MAP[pokemon.nature] ?? [];
   const natureUp = natureEffect[0] as keyof Stats | undefined;
@@ -157,13 +170,21 @@ export function PokemonEditForm({ pokemon, species, onChange }: PokemonEditFormP
           </div>
           <div>
             <label className="text-xs font-medium text-gray-500">持ち物</label>
-            <input
-              type="text"
-              value={pokemon.item ?? ''}
-              onChange={(e) => onChange({ item: e.target.value || undefined })}
-              placeholder="なし"
-              className="mt-0.5 w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
-            />
+            {species.fixedItem ? (
+              <div className="mt-0.5 flex items-center gap-1.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-500">
+                <Lock size={12} className="shrink-0 text-gray-400" />
+                <span>{species.fixedItemNameJa ?? species.fixedItem}</span>
+              </div>
+            ) : (
+              <Autocomplete
+                options={itemOptions}
+                value={pokemon.item ?? ''}
+                onSelect={(value) => onChange({ item: value || undefined })}
+                onClear={() => onChange({ item: undefined })}
+                placeholder="なし"
+                className="mt-0.5 rounded border border-gray-200 text-sm"
+              />
+            )}
           </div>
         </div>
       </section>

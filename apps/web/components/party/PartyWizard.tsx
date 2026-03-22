@@ -358,6 +358,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                 key={editingIdx}
                 pokemon={pokemons[editingIdx].pokemon}
                 species={pokemons[editingIdx].species}
+                items={allItemsRaw ?? []}
                 onChange={(data) => handlePokemonChange(editingIdx, data)}
               />
             )}
