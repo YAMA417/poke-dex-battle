@@ -11,7 +11,7 @@ import { POKEMON_TYPE_LABELS_JA } from '@poke-dex-battle/shared';
 import { ActualStatsDisplay } from '@/components/pokemon/ActualStatsDisplay';
 import { POKEMON_TYPE_COLORS } from '@/lib/constants';
 import { NATURE_JA } from '@/components/pokemon/NatureSelector';
-import { ChevronLeft, Edit, Trash2, Copy, Download } from 'lucide-react';
+import { ChevronLeft, Edit, Trash2, Copy } from 'lucide-react';
 
 export default function PartyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

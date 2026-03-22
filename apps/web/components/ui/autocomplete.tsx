@@ -22,7 +22,7 @@ export interface AutocompleteProps extends Omit<
 }
 
 export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps>(
-  ({ options, onSelect, onClear, isLoading, className, ...props }, ref) => {
+  ({ options, onSelect, onClear, className, ...props }, ref) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const listboxId = React.useId();
     const [open, setOpen] = React.useState(false);

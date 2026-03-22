@@ -43,8 +43,7 @@ interface PartyWizardProps {
 
 export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
   const router = useRouter();
-  const { createParty, updateParty, addPokemon, updatePokemon, removePokemon, getParty } =
-    usePartyStore();
+  const { createParty, updateParty, addPokemon, removePokemon, getParty } = usePartyStore();
 
   const existingParty = initialPartyId ? getParty(initialPartyId) : undefined;
 
@@ -277,7 +276,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
             <p className="text-sm text-gray-400">{STEPS[1].desc}</p>
           </div>
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-            {pokemons.map(({ pokemon, species }, i) => (
+            {pokemons.map(({ species }, i) => (
               <div key={i} className="group relative flex flex-col items-center gap-1">
                 <div
                   className="flex aspect-square w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-gray-100 bg-gray-50 transition-all hover:border-pokemon-blue"

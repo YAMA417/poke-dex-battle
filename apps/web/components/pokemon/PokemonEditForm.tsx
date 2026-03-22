@@ -1,17 +1,10 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import type {
-  Pokemon,
-  PokemonSpeciesData,
-  Nature,
-  PokemonType,
-  Stats,
-} from '@poke-dex-battle/shared';
+import type { Pokemon, PokemonSpeciesData, PokemonType, Stats } from '@poke-dex-battle/shared';
 import {
   findClosestRealizableEv,
   getNatureModifier,
-  calcActualStats,
   POKEMON_TYPE_LABELS_JA,
 } from '@poke-dex-battle/shared';
 import { NATURE_EFFECTS_MAP } from '@/lib/constants';
@@ -82,7 +75,6 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
     if (genderRate === 0 && pokemon.gender !== 'male') onChange({ gender: 'male' });
     else if (genderRate === 8 && pokemon.gender !== 'female') onChange({ gender: 'female' });
     else if (genderRate === -1 && pokemon.gender !== 'unknown') onChange({ gender: 'unknown' });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [species.genderRate]);
 
   const natureEffect = NATURE_EFFECTS_MAP[pokemon.nature] ?? [];
