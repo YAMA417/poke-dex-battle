@@ -82,7 +82,7 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
     if (genderRate === 0 && pokemon.gender !== 'male') onChange({ gender: 'male' });
     else if (genderRate === 8 && pokemon.gender !== 'female') onChange({ gender: 'female' });
     else if (genderRate === -1 && pokemon.gender !== 'unknown') onChange({ gender: 'unknown' });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [species.genderRate]);
 
   const natureEffect = NATURE_EFFECTS_MAP[pokemon.nature] ?? [];
@@ -139,7 +139,9 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
         <h4 className="border-b pb-1 text-sm font-bold text-gray-700">基本情報</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="pokemon-nickname" className="text-xs font-medium text-gray-500">ニックネーム</label>
+            <label htmlFor="pokemon-nickname" className="text-xs font-medium text-gray-500">
+              ニックネーム
+            </label>
             <input
               id="pokemon-nickname"
               type="text"
@@ -150,7 +152,9 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
             />
           </div>
           <div>
-            <label htmlFor="pokemon-level" className="text-xs font-medium text-gray-500">レベル</label>
+            <label htmlFor="pokemon-level" className="text-xs font-medium text-gray-500">
+              レベル
+            </label>
             <input
               id="pokemon-level"
               type="number"
@@ -166,7 +170,9 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="pokemon-gender" className="text-xs font-medium text-gray-500">性別</label>
+            <label htmlFor="pokemon-gender" className="text-xs font-medium text-gray-500">
+              性別
+            </label>
             {species.genderRate === -1 ? (
               <div className="mt-0.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-400">
                 性別なし
@@ -195,7 +201,9 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
             )}
           </div>
           <div>
-            <label htmlFor="pokemon-item" className="text-xs font-medium text-gray-500">持ち物</label>
+            <label htmlFor="pokemon-item" className="text-xs font-medium text-gray-500">
+              持ち物
+            </label>
             {species.fixedItem ? (
               <div className="mt-0.5 flex items-center gap-1.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-500">
                 <Lock size={12} aria-hidden className="shrink-0 text-gray-400" />
@@ -303,7 +311,12 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
 
       {/* ── メモ ── */}
       <section className="space-y-2">
-        <label htmlFor="pokemon-memo" className="block border-b pb-1 text-sm font-bold text-gray-700">メモ</label>
+        <label
+          htmlFor="pokemon-memo"
+          className="block border-b pb-1 text-sm font-bold text-gray-700"
+        >
+          メモ
+        </label>
         <textarea
           id="pokemon-memo"
           value={pokemon.memo ?? ''}
