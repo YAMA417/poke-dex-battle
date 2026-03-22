@@ -70,7 +70,7 @@ export interface ItemRow {
   name: string;
   nameJa: string;
   shortDesc: string | null;
-  isCompetitive?: boolean;
+  isCompetitive: boolean;
 }
 
 // ---------------------------------------------------------------------------

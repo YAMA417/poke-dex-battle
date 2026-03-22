@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type {
   Pokemon,
   PokemonSpeciesData,
@@ -75,6 +75,15 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
       .map((item) => ({ label: item.nameJa, value: item.name, id: item.id }));
     return [{ label: 'なし', value: '', id: 'none' }, ...competitive];
   }, [items]);
+
+  // 性別固定ポケモンの場合、既存データの gender 値を正しい値に修正する（編集モード対応）
+  useEffect(() => {
+    const { genderRate } = species;
+    if (genderRate === 0 && pokemon.gender !== 'male') onChange({ gender: 'male' });
+    else if (genderRate === 8 && pokemon.gender !== 'female') onChange({ gender: 'female' });
+    else if (genderRate === -1 && pokemon.gender !== 'unknown') onChange({ gender: 'unknown' });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [species.genderRate]);
 
   const natureEffect = NATURE_EFFECTS_MAP[pokemon.nature] ?? [];
   const natureUp = natureEffect[0] as keyof Stats | undefined;
