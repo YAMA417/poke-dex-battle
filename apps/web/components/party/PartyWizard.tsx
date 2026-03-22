@@ -126,7 +126,14 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
     } else if (species.genderRate === 8) {
       poke.gender = 'female';
     }
-    setPokemons((prev) => [...prev, { pokemon: poke, species }]);
+    setPokemons((prev) => {
+      const next = [...prev, { pokemon: poke, species }];
+      // Step3 表示中は追加したポケモンを自動的に選択
+      if (step === 3) {
+        setEditingIdx(next.length - 1);
+      }
+      return next;
+    });
   }
 
   function handlePokemonChange(idx: number, data: Partial<Pokemon>) {
@@ -321,13 +328,22 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
             >
               <ChevronLeft size={16} /> 戻る
             </button>
-            <button
-              disabled={!step2Valid}
-              onClick={() => setStep(3)}
-              className={`flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold transition-all ${step2Valid ? 'bg-pokemon-blue text-white shadow hover:bg-blue-700' : 'cursor-not-allowed bg-gray-100 text-gray-300'}`}
-            >
-              次へ: 詳細設定 <ChevronRight size={16} />
-            </button>
+            <div className="flex gap-2">
+              <button
+                disabled={!step2Valid}
+                onClick={handleSave}
+                className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${step2Valid ? 'border border-green-400 text-green-600 hover:bg-green-50' : 'cursor-not-allowed text-gray-300'}`}
+              >
+                <Check size={16} /> このまま保存
+              </button>
+              <button
+                disabled={!step2Valid}
+                onClick={() => setStep(3)}
+                className={`flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold transition-all ${step2Valid ? 'bg-pokemon-blue text-white shadow hover:bg-blue-700' : 'cursor-not-allowed bg-gray-100 text-gray-300'}`}
+              >
+                各ポケモンを詳細設定 <ChevronRight size={16} />
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -359,6 +375,14 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                 {species.nameJa}
               </button>
             ))}
+            {pokemons.length < 6 && (
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="flex shrink-0 items-center gap-1 border-b-2 border-transparent px-3 py-2 text-xs text-gray-300 transition-all hover:text-pokemon-blue"
+              >
+                <Plus size={14} /> 追加
+              </button>
+            )}
           </div>
           <div className="max-h-[60vh] overflow-y-auto p-6">
             {pokemons[editingIdx] && (
