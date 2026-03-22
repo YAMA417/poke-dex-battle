@@ -156,17 +156,31 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-medium text-gray-500">性別</label>
-            <select
-              value={pokemon.gender ?? 'unknown'}
-              onChange={(e) => onChange({ gender: e.target.value as Pokemon['gender'] })}
-              className="mt-0.5 w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
-            >
-              {GENDER_OPTIONS.map((g) => (
-                <option key={g.value} value={g.value}>
-                  {g.label}
-                </option>
-              ))}
-            </select>
+            {species.genderRate === -1 ? (
+              <div className="mt-0.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-400">
+                性別なし
+              </div>
+            ) : species.genderRate === 0 ? (
+              <div className="mt-0.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-500">
+                ♂ オス（固定）
+              </div>
+            ) : species.genderRate === 8 ? (
+              <div className="mt-0.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-500">
+                ♀ メス（固定）
+              </div>
+            ) : (
+              <select
+                value={pokemon.gender ?? 'unknown'}
+                onChange={(e) => onChange({ gender: e.target.value as Pokemon['gender'] })}
+                className="mt-0.5 w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
+              >
+                {GENDER_OPTIONS.map((g) => (
+                  <option key={g.value} value={g.value}>
+                    {g.label}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           <div>
             <label className="text-xs font-medium text-gray-500">持ち物</label>
@@ -271,6 +285,18 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
             />
           </div>
         )}
+      </section>
+
+      {/* ── メモ ── */}
+      <section className="space-y-2">
+        <h4 className="border-b pb-1 text-sm font-bold text-gray-700">メモ</h4>
+        <textarea
+          value={pokemon.memo ?? ''}
+          onChange={(e) => onChange({ memo: e.target.value || undefined })}
+          rows={3}
+          placeholder="調整意図や技の選択理由など"
+          className="w-full resize-none rounded border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
+        />
       </section>
 
       {/* ── 実数値（リアルタイム） ── */}

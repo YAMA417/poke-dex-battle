@@ -118,6 +118,14 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
     if (species.fixedTeraType) {
       poke.teraType = species.fixedTeraType as PokemonSpeciesData['types'][number];
     }
+    // genderRate に応じた初期性別を設定
+    if (species.genderRate === -1) {
+      poke.gender = 'unknown';
+    } else if (species.genderRate === 0) {
+      poke.gender = 'male';
+    } else if (species.genderRate === 8) {
+      poke.gender = 'female';
+    }
     setPokemons((prev) => [...prev, { pokemon: poke, species }]);
   }
 
