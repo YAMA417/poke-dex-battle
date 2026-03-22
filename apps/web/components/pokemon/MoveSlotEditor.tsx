@@ -58,9 +58,10 @@ export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps
   const learnsetOptions = useMemo(() => {
     if (!learnsetData || moveByIdMap.size === 0) return [];
 
-    const levelIds = learnsetData.level ?? [];
-    const machineIds = learnsetData.machine ?? [];
-    const eggIds = learnsetData.egg ?? [];
+    // 各グループ内の重複を排除
+    const levelIds = [...new Set(learnsetData.level ?? [])];
+    const machineIds = [...new Set(learnsetData.machine ?? [])];
+    const eggIds = [...new Set(learnsetData.egg ?? [])];
     const levelIdSet = new Set(levelIds);
     const machineIdSet = new Set(machineIds);
 
@@ -87,21 +88,10 @@ export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps
     return [...levelOptions, ...machineOptions, ...eggOptions];
   }, [learnsetData, moveByIdMap]);
 
-  // 選択時に MoveData を引くためのフラットリスト
-  const learnset = useMemo<MoveData[]>(() => {
-    if (!learnsetData || moveByIdMap.size === 0) return [];
-    const allIds = new Set([
-      ...(learnsetData.level ?? []),
-      ...(learnsetData.machine ?? []),
-      ...(learnsetData.egg ?? []),
-    ]);
-    return [...allIds].map((id) => moveByIdMap.get(id)).filter((m): m is MoveData => m != null);
-  }, [learnsetData, moveByIdMap]);
-
   const dupMoveIds = getDuplicateMoveIds(moves);
 
   function selectMoveById(slot: number, moveIdStr: string) {
-    const md = learnset.find((m) => m.id.toString() === moveIdStr);
+    const md = moveByIdMap.get(moveIdStr);
     if (!md) return;
     selectMove(slot, md);
   }
