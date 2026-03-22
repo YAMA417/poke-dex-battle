@@ -1,69 +1,44 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## IMPORTANT: 必須ルール
 
-## プロジェクト概要
+- 応答は日本語、コミットは英語（Conventional Commits）
+- `packages/shared/` に新しいモジュールを追加したら、同階層にテストファイルを作成すること
+- `npm run build:shared` を実行してから web を起動すること（shared が未ビルドだと型エラーが出る）
+- コーディング規約は `.github/copilot-instructions.md` を参照すること
+- テストコードは Copilot が苦戦している場合のみ Claude が直接実装する
 
-ポケモンダブルバトル支援アプリ（Pokédex Battle）。npm workspaces モノレポ構成。
+## WHAT: 構成
 
-- `apps/web/` — Next.js 16 フロントエンド（App Router）
-- `packages/shared/` — 共通ロジック・型定義・定数（tsup / dual CJS+ESM）
-- `packages/db/` — DB スキーマ・接続・seed（Drizzle ORM + PostgreSQL）
-- `backend/api/` — Hono API（未着手）
+ポケモンダブルバトル支援アプリ。npm workspaces モノレポ。
 
-## 開発コマンド
-
-```bash
-npm install              # 依存関係インストール
-npm run dev              # 全サービス同時起動（shared watch + web + api）
-npm run dev:frontend     # フロントエンドのみ
-npm run build            # ビルド（shared → web）
-npm run build:shared     # shared のみビルド（web 起動前に必須）
-npm run lint             # Lint（web）
-npm test -w @poke-dex-battle/shared          # テスト実行
-npx vitest run -w packages/shared -- <path>  # テスト単体実行
-npm run typecheck -w @poke-dex-battle/shared # 型チェック
-npm run db:push              # DBスキーマ反映（開発用）
-npm run db:seed              # シードデータ投入
+```
+apps/web/          Next.js 16（App Router）
+packages/shared/   共通ロジック・型定義（tsup / dual CJS+ESM）
+packages/db/       DB スキーマ・接続（Drizzle ORM + PostgreSQL）
+backend/api/       Hono API（未着手）
 ```
 
----
+## HOW: コマンド
 
-## Claude の使い方
+```bash
+npm install                                        # 依存関係インストール
+npm run build:shared                               # MUST: web 起動前に実行
+npm run dev                                        # 全サービス同時起動
+npm run dev:frontend                               # フロントエンドのみ
+npm test -w @poke-dex-battle/shared                # テスト実行
+npx vitest run -w packages/shared -- <path>        # テスト単体実行
+npm run typecheck -w @poke-dex-battle/shared       # 型チェック
+npm run db:push                                    # DB スキーマ反映（開発用）
+npm run db:seed                                    # シードデータ投入
+```
 
-| やりたいこと                    | コマンド           | 出力先                                  |
-| ------------------------------- | ------------------ | --------------------------------------- |
-| 機能の設計 → Copilot 指示書作成 | `/design-review`   | `.claude/docs/{branch}/instructions.md` |
-| Copilot 実装のセルフレビュー    | `/review-impl`     | 指示書内に追記                          |
-| 他人のブランチレビュー          | `/review`          | `.claude/docs/{branch}/review.md`       |
-| ブランチの変更を学習解説        | `/explain`         | `.claude/docs/{branch}/explain.md`      |
-| レビューへの意見回答            | `/review-feedback` | コンソール                              |
-| 進捗確認                        | `/progress`        | コンソール                              |
-| ツイート生成                    | `/tweet`           | コンソール                              |
+## スキル
 
-テストコードは Copilot が苦戦している場合のみ Claude が直接実装する。
-
----
-
-## トークン効率化ルール
-
-- コードを読む前に Glob/Grep で対象を絞り込む
-- 大きなファイルは必要な行範囲のみ読む
-- 冗長な説明を避け、簡潔に応答する
-- 設計指示書は必要十分な情報量に留める
-
----
-
-## 言語ルール
-
-- 内部思考: 英語
-- ユーザーへの応答: 日本語
-- JSDoc: 英語
-- コードコメント: 日本語
-- コミットメッセージ: 英語（Conventional Commits）
-
----
-
-## コーディング規約
-
-`.github/copilot-instructions.md` に定義済み。Claude もレビュー時にこれを基準とする。
+| やりたいこと          | コマンド           |
+| --------------------- | ------------------ |
+| 機能設計 → 指示書作成 | `/design-review`   |
+| 実装のセルフレビュー  | `/review-impl`     |
+| ブランチレビュー      | `/review`          |
+| 変更の学習解説        | `/explain`         |
+| レビューへの意見回答  | `/review-feedback` |

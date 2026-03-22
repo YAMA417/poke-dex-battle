@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import type { Move, MoveData, PokemonSpeciesData } from '@poke-dex-battle/shared';
 import { getDuplicateMoveIds } from '@poke-dex-battle/shared';
 import { useLearnset, useAllMoves } from '@/hooks/useApiData';
 import { toMoveData } from '@/lib/api-adapters';
 import { POKEMON_TYPE_COLORS } from '@/lib/constants';
 import { POKEMON_TYPE_LABELS_JA } from '@poke-dex-battle/shared';
+import { Autocomplete } from '@/components/ui/autocomplete';
 import { AlertTriangle } from 'lucide-react';
 
 /**
@@ -53,36 +54,44 @@ export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps
     return map;
   }, [allMovesRaw]);
 
-  // learnset の技IDリストから MoveData 配列を構築
-  const learnset = useMemo<MoveData[]>(() => {
+  // learnset をグループ付き Autocomplete options に変換
+  const learnsetOptions = useMemo(() => {
     if (!learnsetData || moveByIdMap.size === 0) return [];
-    const allMoveIds = [
-      ...new Set([...(learnsetData.level ?? []), ...(learnsetData.machine ?? [])]),
-    ];
-    return allMoveIds.map((id) => moveByIdMap.get(id)).filter((m): m is MoveData => m != null);
-  }, [learnsetData, moveByIdMap]);
 
-  const [moveSearch, setMoveSearch] = useState<string[]>(['', '', '', '']);
-  const [moveResults, setMoveResults] = useState<MoveData[][]>([[], [], [], []]);
+    // 各グループ内の重複を排除
+    const levelIds = [...new Set(learnsetData.level ?? [])];
+    const machineIds = [...new Set(learnsetData.machine ?? [])];
+    const eggIds = [...new Set(learnsetData.egg ?? [])];
+    const levelIdSet = new Set(levelIds);
+
+    const toOption = (id: string, group: string) => {
+      const m = moveByIdMap.get(id);
+      if (!m) return null;
+      return { label: m.nameJa, value: id, id: `${group}-${id}`, group };
+    };
+
+    const levelOptions = levelIds
+      .map((id) => toOption(id, 'レベルアップ'))
+      .filter((o): o is NonNullable<typeof o> => o !== null);
+
+    const machineOptions = machineIds
+      .filter((id) => !levelIdSet.has(id))
+      .map((id) => toOption(id, 'わざマシン'))
+      .filter((o): o is NonNullable<typeof o> => o !== null);
+
+    const eggOptions = eggIds
+      .map((id) => toOption(id, 'タマゴわざ'))
+      .filter((o): o is NonNullable<typeof o> => o !== null);
+
+    return [...levelOptions, ...machineOptions, ...eggOptions];
+  }, [learnsetData, moveByIdMap]);
 
   const dupMoveIds = getDuplicateMoveIds(moves);
 
-  function handleMoveSearch(slot: number, query: string) {
-    const next = [...moveSearch];
-    next[slot] = query;
-    setMoveSearch(next);
-    if (!query.trim()) {
-      const nextRes = [...moveResults];
-      nextRes[slot] = [];
-      setMoveResults(nextRes);
-      return;
-    }
-    const filtered = learnset
-      .filter((m) => m.nameJa.includes(query) || m.name.toLowerCase().includes(query.toLowerCase()))
-      .slice(0, 8);
-    const nextRes = [...moveResults];
-    nextRes[slot] = filtered;
-    setMoveResults(nextRes);
+  function selectMoveById(slot: number, moveIdStr: string) {
+    const md = moveByIdMap.get(moveIdStr);
+    if (!md) return;
+    selectMove(slot, md);
   }
 
   function selectMove(slot: number, md: MoveData) {
@@ -99,12 +108,6 @@ export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps
     };
     newMoves[slot] = move;
     onChange(newMoves);
-    const nextSearch = [...moveSearch];
-    nextSearch[slot] = '';
-    setMoveSearch(nextSearch);
-    const nextRes = [...moveResults];
-    nextRes[slot] = [];
-    setMoveResults(nextRes);
   }
 
   function clearMove(slot: number) {
@@ -138,44 +141,20 @@ export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps
                 <button
                   type="button"
                   onClick={() => clearMove(slot)}
+                  aria-label={`${moveByNameMap.get(move.name)?.nameJa ?? move.name}を削除`}
                   className="text-lg leading-none text-gray-300 hover:text-red-400"
                 >
                   ×
                 </button>
               </div>
             ) : (
-              <div className="relative">
-                <input
-                  type="text"
-                  value={moveSearch[slot]}
-                  onChange={(e) => handleMoveSearch(slot, e.target.value)}
-                  placeholder={`技スロット ${slot + 1} を検索...`}
-                  className="w-full rounded-lg border border-dashed border-gray-300 px-3 py-2 text-sm focus:border-solid focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
-                />
-                {moveResults[slot].length > 0 && (
-                  <div className="absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
-                    {moveResults[slot].map((md) => (
-                      <button
-                        key={md.id}
-                        type="button"
-                        onClick={() => selectMove(slot, md)}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-blue-50"
-                      >
-                        <span className="text-xs">{MOVE_CAT_ICON[md.category]}</span>
-                        <span
-                          className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold text-white ${POKEMON_TYPE_COLORS[md.type]}`}
-                        >
-                          {POKEMON_TYPE_LABELS_JA[md.type] ?? md.type}
-                        </span>
-                        <span className="flex-1 text-sm font-medium text-gray-800">
-                          {md.nameJa}
-                        </span>
-                        {md.power && <span className="text-xs text-gray-400">威力{md.power}</span>}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <Autocomplete
+                options={learnsetOptions}
+                onSelect={(value) => selectMoveById(slot, value)}
+                placeholder={`技スロット ${slot + 1}（クリックで一覧表示）`}
+                aria-label={`技スロット ${slot + 1}`}
+                className="rounded-lg border-dashed text-sm"
+              />
             )}
           </div>
         );

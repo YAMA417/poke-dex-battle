@@ -72,6 +72,7 @@ export const pokemon = pgTable('pokemon', {
   spriteUrl: text('sprite_url'),
   fixedItem: text('fixed_item'),
   fixedTeraType: pokemonTypeEnum('fixed_tera_type'),
+  genderRate: integer('gender_rate'),
 });
 
 // レギュレーション別使用可否
