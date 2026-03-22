@@ -182,6 +182,12 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
                   <div>{NATURE_JA[pk.nature] ?? pk.nature}</div>
                 </div>
               </div>
+              {/* メモ */}
+              {pk.memo && (
+                <div className="rounded-lg bg-gray-50 px-2 py-1.5 text-xs text-gray-500">
+                  {pk.memo}
+                </div>
+              )}
               {/* 技 */}
               <div className="space-y-1">
                 {pk.moves.slice(0, 4).map((m, i) => (
