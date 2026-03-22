@@ -54,27 +54,51 @@ export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps
     return map;
   }, [allMovesRaw]);
 
-  // learnset の技IDリストから MoveData 配列を構築
+  // learnset をグループ付き Autocomplete options に変換
+  const learnsetOptions = useMemo(() => {
+    if (!learnsetData || moveByIdMap.size === 0) return [];
+
+    const levelIds = learnsetData.level ?? [];
+    const machineIds = learnsetData.machine ?? [];
+    const eggIds = learnsetData.egg ?? [];
+    const levelIdSet = new Set(levelIds);
+    const machineIdSet = new Set(machineIds);
+
+    const toOption = (id: string, group: string) => {
+      const m = moveByIdMap.get(id);
+      if (!m) return null;
+      return { label: m.nameJa, value: id, id: `${group}-${id}`, group };
+    };
+
+    const levelOptions = levelIds
+      .map((id) => toOption(id, 'レベルアップ'))
+      .filter((o): o is NonNullable<typeof o> => o !== null);
+
+    const machineOptions = machineIds
+      .filter((id) => !levelIdSet.has(id))
+      .map((id) => toOption(id, 'わざマシン'))
+      .filter((o): o is NonNullable<typeof o> => o !== null);
+
+    const eggOptions = eggIds
+      .filter((id) => !levelIdSet.has(id) && !machineIdSet.has(id))
+      .map((id) => toOption(id, 'タマゴわざ'))
+      .filter((o): o is NonNullable<typeof o> => o !== null);
+
+    return [...levelOptions, ...machineOptions, ...eggOptions];
+  }, [learnsetData, moveByIdMap]);
+
+  // 選択時に MoveData を引くためのフラットリスト
   const learnset = useMemo<MoveData[]>(() => {
     if (!learnsetData || moveByIdMap.size === 0) return [];
-    const allMoveIds = [
-      ...new Set([...(learnsetData.level ?? []), ...(learnsetData.machine ?? [])]),
-    ];
-    return allMoveIds.map((id) => moveByIdMap.get(id)).filter((m): m is MoveData => m != null);
+    const allIds = new Set([
+      ...(learnsetData.level ?? []),
+      ...(learnsetData.machine ?? []),
+      ...(learnsetData.egg ?? []),
+    ]);
+    return [...allIds].map((id) => moveByIdMap.get(id)).filter((m): m is MoveData => m != null);
   }, [learnsetData, moveByIdMap]);
 
   const dupMoveIds = getDuplicateMoveIds(moves);
-
-  // learnset を Autocomplete の options 形式に変換
-  const learnsetOptions = useMemo(
-    () =>
-      learnset.map((m) => ({
-        label: m.nameJa,
-        value: m.id.toString(),
-        id: m.id,
-      })),
-    [learnset]
-  );
 
   function selectMoveById(slot: number, moveIdStr: string) {
     const md = learnset.find((m) => m.id.toString() === moveIdStr);
