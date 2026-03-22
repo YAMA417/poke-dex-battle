@@ -63,7 +63,6 @@ export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps
     const machineIds = [...new Set(learnsetData.machine ?? [])];
     const eggIds = [...new Set(learnsetData.egg ?? [])];
     const levelIdSet = new Set(levelIds);
-    const machineIdSet = new Set(machineIds);
 
     const toOption = (id: string, group: string) => {
       const m = moveByIdMap.get(id);
@@ -142,6 +141,7 @@ export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps
                 <button
                   type="button"
                   onClick={() => clearMove(slot)}
+                  aria-label={`${moveByNameMap.get(move.name)?.nameJa ?? move.name}を削除`}
                   className="text-lg leading-none text-gray-300 hover:text-red-400"
                 >
                   ×
@@ -152,6 +152,7 @@ export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps
                 options={learnsetOptions}
                 onSelect={(value) => selectMoveById(slot, value)}
                 placeholder={`技スロット ${slot + 1}（クリックで一覧表示）`}
+                aria-label={`技スロット ${slot + 1}`}
                 className="rounded-lg border-dashed text-sm"
               />
             )}

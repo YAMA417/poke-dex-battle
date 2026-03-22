@@ -139,8 +139,9 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
         <h4 className="border-b pb-1 text-sm font-bold text-gray-700">基本情報</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-medium text-gray-500">ニックネーム</label>
+            <label htmlFor="pokemon-nickname" className="text-xs font-medium text-gray-500">ニックネーム</label>
             <input
+              id="pokemon-nickname"
               type="text"
               value={pokemon.nickname ?? ''}
               onChange={(e) => onChange({ nickname: e.target.value || undefined })}
@@ -149,8 +150,9 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-500">レベル</label>
+            <label htmlFor="pokemon-level" className="text-xs font-medium text-gray-500">レベル</label>
             <input
+              id="pokemon-level"
               type="number"
               min={1}
               max={100}
@@ -164,7 +166,7 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-medium text-gray-500">性別</label>
+            <label htmlFor="pokemon-gender" className="text-xs font-medium text-gray-500">性別</label>
             {species.genderRate === -1 ? (
               <div className="mt-0.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-400">
                 性別なし
@@ -179,6 +181,7 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
               </div>
             ) : (
               <select
+                id="pokemon-gender"
                 value={pokemon.gender ?? 'unknown'}
                 onChange={(e) => onChange({ gender: e.target.value as Pokemon['gender'] })}
                 className="mt-0.5 w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
@@ -192,14 +195,15 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
             )}
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-500">持ち物</label>
+            <label htmlFor="pokemon-item" className="text-xs font-medium text-gray-500">持ち物</label>
             {species.fixedItem ? (
               <div className="mt-0.5 flex items-center gap-1.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-500">
-                <Lock size={12} className="shrink-0 text-gray-400" />
+                <Lock size={12} aria-hidden className="shrink-0 text-gray-400" />
                 <span>{species.fixedItemNameJa ?? species.fixedItem}</span>
               </div>
             ) : (
               <Autocomplete
+                id="pokemon-item"
                 options={itemOptions}
                 value={pokemon.item ?? ''}
                 onSelect={(value) => onChange({ item: value || undefined })}
@@ -278,6 +282,7 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
         <div className="flex items-center justify-between">
           <h4 className="flex-1 border-b pb-1 text-sm font-bold text-gray-700">努力値 (EV)</h4>
           <button
+            type="button"
             onClick={() => setIsEVsOpen(!isEVsOpen)}
             className="rounded bg-pokemon-blue px-3 py-1 text-xs text-white transition-colors hover:bg-pokemon-blue/90"
           >
@@ -298,8 +303,9 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
 
       {/* ── メモ ── */}
       <section className="space-y-2">
-        <h4 className="border-b pb-1 text-sm font-bold text-gray-700">メモ</h4>
+        <label htmlFor="pokemon-memo" className="block border-b pb-1 text-sm font-bold text-gray-700">メモ</label>
         <textarea
+          id="pokemon-memo"
           value={pokemon.memo ?? ''}
           onChange={(e) => onChange({ memo: e.target.value || undefined })}
           rows={3}

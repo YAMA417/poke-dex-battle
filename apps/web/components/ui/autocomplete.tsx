@@ -211,6 +211,7 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
                   )}
                   {section.items.map(({ option, globalIndex }) => (
                     <button
+                      type="button"
                       key={option.id || `${option.value}-${globalIndex}`}
                       role="option"
                       aria-selected={highlightedIndex === globalIndex}
