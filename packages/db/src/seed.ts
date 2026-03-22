@@ -669,6 +669,7 @@ async function seed() {
           spriteUrl,
           fixedItem: MEGA_STONE_MAP[pokemonId] ?? FIXED_ITEM_MAP[pokemonId]?.id ?? null,
           fixedTeraType: FIXED_TERA_TYPE_MAP[pokemonId] ?? null,
+          genderRate: (speciesData.gender_rate as number) ?? null,
         });
 
         // 覚える技（SV優先、なければsword-shieldにフォールバック）
