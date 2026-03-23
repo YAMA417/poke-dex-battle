@@ -64,6 +64,7 @@ const config: Config = {
       backgroundImage: {
         'gradient-pokemon': 'linear-gradient(135deg, #3B4CCA 0%, #6C5DFA 50%, #FF0000 100%)',
         'gradient-hero': 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        'gradient-hero-blue': 'linear-gradient(135deg, #002E5C 0%, #3B4CCA 50%, #5B7FE5 100%)',
       },
       animation: {
         'bounce-subtle': 'bounce-subtle 2s infinite',
@@ -101,6 +102,7 @@ const config: Config = {
     'bg-gray-800',
     'bg-gray-500',
     'bg-pink-300',
+    'bg-cyan-500',
   ],
 };
 

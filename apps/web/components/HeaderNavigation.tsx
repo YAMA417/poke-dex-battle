@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -12,6 +13,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
  */
 export const HeaderNavigation: React.FC = () => {
   const { locale } = useLanguage();
+  const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = locale === 'ja'
     ? [
@@ -24,20 +26,25 @@ export const HeaderNavigation: React.FC = () => {
       ];
 
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="text-white hover:bg-pokemon-blue/5 transition-colors duration-200"
+        >
           <Menu className="h-5 w-5" />
           <span className="sr-only">Navigation menu</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-48 p-0" align="end">
-        <nav className="flex flex-col">
+      <PopoverContent className="w-56 p-2 bg-cyan-500" align="end">
+        <nav className="flex flex-col gap-1">
           {menuItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="px-4 py-2 text-sm hover:bg-gray-100 border-b last:border-b-0"
+              onClick={() => setIsOpen(false)}
+              className="px-4 py-3 text-sm font-medium text-white rounded-md transition-all duration-200 hover:text-pokemon-yellow border-b-0 last:border-b-0"
             >
               {item.label}
             </Link>
