@@ -67,6 +67,7 @@ export async function GET(request: Request) {
         spriteUrl: pokemon.spriteUrl,
         fixedItem: pokemon.fixedItem,
         fixedTeraType: pokemon.fixedTeraType,
+        genderRate: pokemon.genderRate,
       })
       .from(pokemon)
       .innerJoin(regulationPokemon, eq(pokemon.id, regulationPokemon.pokemonId))

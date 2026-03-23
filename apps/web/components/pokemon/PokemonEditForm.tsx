@@ -1,17 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import type {
-  Pokemon,
-  PokemonSpeciesData,
-  Nature,
-  PokemonType,
-  Stats,
-} from '@poke-dex-battle/shared';
+import { useState, useMemo, useEffect } from 'react';
+import type { Pokemon, PokemonSpeciesData, PokemonType, Stats } from '@poke-dex-battle/shared';
 import {
   findClosestRealizableEv,
   getNatureModifier,
-  calcActualStats,
   POKEMON_TYPE_LABELS_JA,
 } from '@poke-dex-battle/shared';
 import { NATURE_EFFECTS_MAP } from '@/lib/constants';
@@ -21,6 +14,10 @@ import { NatureSelector } from './NatureSelector';
 import { MoveSlotEditor } from './MoveSlotEditor';
 import { ActualStatsDisplay } from './ActualStatsDisplay';
 import { POKEMON_TYPE_COLORS } from '@/lib/constants';
+import { Autocomplete } from '@/components/ui/autocomplete';
+import type { AutocompleteOption } from '@/components/ui/autocomplete';
+import type { ItemRow } from '@/lib/api-adapters';
+import { Lock } from 'lucide-react';
 
 const TYPES: PokemonType[] = [
   'Normal',
@@ -51,10 +48,11 @@ const GENDER_OPTIONS = [
 interface PokemonEditFormProps {
   pokemon: Pokemon;
   species: PokemonSpeciesData;
+  items: ItemRow[];
   onChange: (updated: Partial<Pokemon>) => void;
 }
 
-export function PokemonEditForm({ pokemon, species, onChange }: PokemonEditFormProps) {
+export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEditFormProps) {
   const [actualStatInputs, setActualStatInputs] = useState<Partial<Record<keyof Stats, string>>>(
     {}
   );
@@ -62,6 +60,22 @@ export function PokemonEditForm({ pokemon, species, onChange }: PokemonEditFormP
     {}
   );
   const [isEVsOpen, setIsEVsOpen] = useState<boolean>(false);
+
+  // 対戦用アイテムの Autocomplete options（先頭に「なし」）
+  const itemOptions = useMemo<AutocompleteOption[]>(() => {
+    const competitive = items
+      .filter((item) => item.isCompetitive)
+      .map((item) => ({ label: item.nameJa, value: item.name, id: item.id }));
+    return [{ label: 'なし', value: '', id: 'none' }, ...competitive];
+  }, [items]);
+
+  // 性別固定ポケモンの場合、既存データの gender 値を正しい値に修正する（編集モード対応）
+  useEffect(() => {
+    const { genderRate } = species;
+    if (genderRate === 0 && pokemon.gender !== 'male') onChange({ gender: 'male' });
+    else if (genderRate === 8 && pokemon.gender !== 'female') onChange({ gender: 'female' });
+    else if (genderRate === -1 && pokemon.gender !== 'unknown') onChange({ gender: 'unknown' });
+  }, [species.genderRate]);
 
   const natureEffect = NATURE_EFFECTS_MAP[pokemon.nature] ?? [];
   const natureUp = natureEffect[0] as keyof Stats | undefined;
@@ -117,8 +131,11 @@ export function PokemonEditForm({ pokemon, species, onChange }: PokemonEditFormP
         <h4 className="border-b pb-1 text-sm font-bold text-gray-700">基本情報</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-medium text-gray-500">ニックネーム</label>
+            <label htmlFor="pokemon-nickname" className="text-xs font-medium text-gray-500">
+              ニックネーム
+            </label>
             <input
+              id="pokemon-nickname"
               type="text"
               value={pokemon.nickname ?? ''}
               onChange={(e) => onChange({ nickname: e.target.value || undefined })}
@@ -127,8 +144,11 @@ export function PokemonEditForm({ pokemon, species, onChange }: PokemonEditFormP
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-500">レベル</label>
+            <label htmlFor="pokemon-level" className="text-xs font-medium text-gray-500">
+              レベル
+            </label>
             <input
+              id="pokemon-level"
               type="number"
               min={1}
               max={100}
@@ -142,28 +162,56 @@ export function PokemonEditForm({ pokemon, species, onChange }: PokemonEditFormP
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-medium text-gray-500">性別</label>
-            <select
-              value={pokemon.gender ?? 'unknown'}
-              onChange={(e) => onChange({ gender: e.target.value as Pokemon['gender'] })}
-              className="mt-0.5 w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
-            >
-              {GENDER_OPTIONS.map((g) => (
-                <option key={g.value} value={g.value}>
-                  {g.label}
-                </option>
-              ))}
-            </select>
+            <label htmlFor="pokemon-gender" className="text-xs font-medium text-gray-500">
+              性別
+            </label>
+            {species.genderRate === -1 ? (
+              <div className="mt-0.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-400">
+                性別なし
+              </div>
+            ) : species.genderRate === 0 ? (
+              <div className="mt-0.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-500">
+                ♂ オス（固定）
+              </div>
+            ) : species.genderRate === 8 ? (
+              <div className="mt-0.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-500">
+                ♀ メス（固定）
+              </div>
+            ) : (
+              <select
+                id="pokemon-gender"
+                value={pokemon.gender ?? 'unknown'}
+                onChange={(e) => onChange({ gender: e.target.value as Pokemon['gender'] })}
+                className="mt-0.5 w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
+              >
+                {GENDER_OPTIONS.map((g) => (
+                  <option key={g.value} value={g.value}>
+                    {g.label}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-500">持ち物</label>
-            <input
-              type="text"
-              value={pokemon.item ?? ''}
-              onChange={(e) => onChange({ item: e.target.value || undefined })}
-              placeholder="なし"
-              className="mt-0.5 w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
-            />
+            <label htmlFor="pokemon-item" className="text-xs font-medium text-gray-500">
+              持ち物
+            </label>
+            {species.fixedItem ? (
+              <div className="mt-0.5 flex items-center gap-1.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-500">
+                <Lock size={12} aria-hidden className="shrink-0 text-gray-400" />
+                <span>{species.fixedItemNameJa ?? species.fixedItem}</span>
+              </div>
+            ) : (
+              <Autocomplete
+                id="pokemon-item"
+                options={itemOptions}
+                value={pokemon.item ?? ''}
+                onSelect={(value) => onChange({ item: value || undefined })}
+                onClear={() => onChange({ item: undefined })}
+                placeholder="なし"
+                className="mt-0.5 rounded border border-gray-200 text-sm"
+              />
+            )}
           </div>
         </div>
       </section>
@@ -234,6 +282,7 @@ export function PokemonEditForm({ pokemon, species, onChange }: PokemonEditFormP
         <div className="flex items-center justify-between">
           <h4 className="flex-1 border-b pb-1 text-sm font-bold text-gray-700">努力値 (EV)</h4>
           <button
+            type="button"
             onClick={() => setIsEVsOpen(!isEVsOpen)}
             className="rounded bg-pokemon-blue px-3 py-1 text-xs text-white transition-colors hover:bg-pokemon-blue/90"
           >
@@ -250,6 +299,24 @@ export function PokemonEditForm({ pokemon, species, onChange }: PokemonEditFormP
             />
           </div>
         )}
+      </section>
+
+      {/* ── メモ ── */}
+      <section className="space-y-2">
+        <label
+          htmlFor="pokemon-memo"
+          className="block border-b pb-1 text-sm font-bold text-gray-700"
+        >
+          メモ
+        </label>
+        <textarea
+          id="pokemon-memo"
+          value={pokemon.memo ?? ''}
+          onChange={(e) => onChange({ memo: e.target.value || undefined })}
+          rows={3}
+          placeholder="調整意図や技の選択理由など"
+          className="w-full resize-none rounded border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
+        />
       </section>
 
       {/* ── 実数値（リアルタイム） ── */}

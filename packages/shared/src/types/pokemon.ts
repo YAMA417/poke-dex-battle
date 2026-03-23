@@ -87,6 +87,7 @@ export interface Pokemon {
   ivs: Stats;
   evs: Stats;
   moves: Move[];
+  memo?: string;
   actualStats?: Stats;
   spriteUrl?: string;
 }

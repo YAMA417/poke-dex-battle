@@ -43,8 +43,7 @@ interface PartyWizardProps {
 
 export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
   const router = useRouter();
-  const { createParty, updateParty, addPokemon, updatePokemon, removePokemon, getParty } =
-    usePartyStore();
+  const { createParty, updateParty, addPokemon, removePokemon, getParty } = usePartyStore();
 
   const existingParty = initialPartyId ? getParty(initialPartyId) : undefined;
 
@@ -118,7 +117,22 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
     if (species.fixedTeraType) {
       poke.teraType = species.fixedTeraType as PokemonSpeciesData['types'][number];
     }
-    setPokemons((prev) => [...prev, { pokemon: poke, species }]);
+    // genderRate に応じた初期性別を設定
+    if (species.genderRate === -1) {
+      poke.gender = 'unknown';
+    } else if (species.genderRate === 0) {
+      poke.gender = 'male';
+    } else if (species.genderRate === 8) {
+      poke.gender = 'female';
+    }
+    setPokemons((prev) => {
+      const next = [...prev, { pokemon: poke, species }];
+      // Step3 表示中は追加したポケモンを自動的に選択
+      if (step === 3) {
+        setEditingIdx(next.length - 1);
+      }
+      return next;
+    });
   }
 
   function handlePokemonChange(idx: number, data: Partial<Pokemon>) {
@@ -262,7 +276,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
             <p className="text-sm text-gray-400">{STEPS[1].desc}</p>
           </div>
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-            {pokemons.map(({ pokemon, species }, i) => (
+            {pokemons.map(({ species }, i) => (
               <div key={i} className="group relative flex flex-col items-center gap-1">
                 <div
                   className="flex aspect-square w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-gray-100 bg-gray-50 transition-all hover:border-pokemon-blue"
@@ -313,13 +327,22 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
             >
               <ChevronLeft size={16} /> 戻る
             </button>
-            <button
-              disabled={!step2Valid}
-              onClick={() => setStep(3)}
-              className={`flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold transition-all ${step2Valid ? 'bg-pokemon-blue text-white shadow hover:bg-blue-700' : 'cursor-not-allowed bg-gray-100 text-gray-300'}`}
-            >
-              次へ: 詳細設定 <ChevronRight size={16} />
-            </button>
+            <div className="flex gap-2">
+              <button
+                disabled={!step2Valid}
+                onClick={handleSave}
+                className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${step2Valid ? 'border border-green-400 text-green-600 hover:bg-green-50' : 'cursor-not-allowed text-gray-300'}`}
+              >
+                <Check size={16} /> このまま保存
+              </button>
+              <button
+                disabled={!step2Valid}
+                onClick={() => setStep(3)}
+                className={`flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold transition-all ${step2Valid ? 'bg-pokemon-blue text-white shadow hover:bg-blue-700' : 'cursor-not-allowed bg-gray-100 text-gray-300'}`}
+              >
+                各ポケモンを詳細設定 <ChevronRight size={16} />
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -351,6 +374,14 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                 {species.nameJa}
               </button>
             ))}
+            {pokemons.length < 6 && (
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="flex shrink-0 items-center gap-1 border-b-2 border-transparent px-3 py-2 text-xs text-gray-300 transition-all hover:text-pokemon-blue"
+              >
+                <Plus size={14} /> 追加
+              </button>
+            )}
           </div>
           <div className="max-h-[60vh] overflow-y-auto p-6">
             {pokemons[editingIdx] && (
@@ -358,6 +389,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                 key={editingIdx}
                 pokemon={pokemons[editingIdx].pokemon}
                 species={pokemons[editingIdx].species}
+                items={allItemsRaw ?? []}
                 onChange={(data) => handlePokemonChange(editingIdx, data)}
               />
             )}
