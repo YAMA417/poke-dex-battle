@@ -102,7 +102,6 @@ const config: Config = {
     'bg-gray-800',
     'bg-gray-500',
     'bg-pink-300',
-    'bg-cyan-500',
   ],
 };
 

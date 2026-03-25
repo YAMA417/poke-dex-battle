@@ -6,37 +6,7 @@ import type { BaseStats, Stats, Nature } from '@poke-dex-battle/shared';
 import Link from 'next/link';
 import { Zap, Users, BarChart3 } from 'lucide-react';
 
-// サンプル：ガブリアスの実数値計算
-const gabiteBaseStats: BaseStats = {
-  hp: 108,
-  attack: 130,
-  defense: 95,
-  specialAttack: 80,
-  specialDefense: 85,
-  speed: 102,
-};
-
-const sampleIvs: Stats = {
-  hp: 31,
-  attack: 31,
-  defense: 31,
-  specialAttack: 31,
-  specialDefense: 31,
-  speed: 31,
-};
-
-const sampleEvs: Stats = {
-  hp: 0,
-  attack: 252,
-  defense: 0,
-  specialAttack: 0,
-  specialDefense: 4,
-  speed: 252,
-};
-
 export default function Home() {
-  const actualStats = calcActualStats(gabiteBaseStats, sampleIvs, sampleEvs, 50, 'Jolly' as Nature);
-
   return (
     <div className="min-h-screen bg-white">
       {/* ヒーローセクション - グラデーション背景 */}
@@ -53,10 +23,7 @@ export default function Home() {
             🎮 ポケモンダブルバトル支援アプリ
           </div>
           <p className="mb-4 text-lg text-white/90 sm:text-xl">
-            初級者から上級者まで、ダブルバトルを徹底サポート！
-          </p>
-          <p className="mb-4 text-lg text-white/90 sm:text-xl">
-            ダブルバトルで勝利を掴もう！
+            初級者から上級者まで、ダブルバトルを徹底サポート！ダブルバトルで勝利を掴もう！
           </p>
           <Button
             asChild

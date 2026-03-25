@@ -1,19 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { Menu } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
- * Header navigation menu component.
- * Displays a dropdown menu with links to damage calculator and party manager.
+ * Header navigation component.
+ * Displays a flat, always-visible navigation menu with links to damage calculator and party manager.
+ * Current page is highlighted with yellow text and bold font weight.
  */
 export const HeaderNavigation: React.FC = () => {
   const { locale } = useLanguage();
-  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
 
   const menuItems = locale === 'ja'
     ? [
@@ -25,32 +23,34 @@ export const HeaderNavigation: React.FC = () => {
         { label: 'Party Manager', href: '/parties' },
       ];
 
+  /**
+   * Determine if a nav link is active based on current pathname.
+   * 現在のパスが href と一致するかを判定
+   */
+  const isActive = (href: string): boolean => {
+    return pathname === href;
+  };
+
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="text-white hover:bg-pokemon-blue/5 transition-colors duration-200"
-        >
-          <Menu className="h-5 w-5" />
-          <span className="sr-only">Navigation menu</span>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-56 p-2 bg-cyan-500" align="end">
-        <nav className="flex flex-col gap-1">
-          {menuItems.map((item) => (
+    <nav className="overflow-x-auto">
+      <ul className="flex items-center gap-6 whitespace-nowrap">
+        {menuItems.map((item) => (
+          <li key={item.href}>
             <Link
-              key={item.href}
               href={item.href}
-              onClick={() => setIsOpen(false)}
-              className="px-4 py-3 text-sm font-medium text-white rounded-md transition-all duration-200 hover:text-pokemon-yellow border-b-0 last:border-b-0"
+              className={`
+                text-sm font-medium transition-colors duration-200
+                ${isActive(item.href)
+                  ? 'text-pokemon-yellow font-bold'
+                  : 'text-white hover:text-pokemon-yellow'
+                }
+              `}
             >
               {item.label}
             </Link>
-          ))}
-        </nav>
-      </PopoverContent>
-    </Popover>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 };

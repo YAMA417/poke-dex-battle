@@ -86,10 +86,6 @@
     @apply bg-gradient-to-br from-blue-900 via-pokemon-blue to-blue-500;
   }
   
-  .card-hover {
-    @apply transition-all duration-300 hover:shadow-lg hover:shadow-pokemon-blue/20 hover:scale-105;
-  }
-  
   .card-hover-safe {
     @apply transition-all duration-300 hover:shadow-lg hover:shadow-pokemon-blue/20;
   }
