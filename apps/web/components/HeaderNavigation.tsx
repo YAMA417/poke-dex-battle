@@ -5,9 +5,9 @@ import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
- * Header navigation component.
- * Displays a flat, always-visible navigation menu with links to damage calculator and party manager.
- * Current page is highlighted with yellow text and bold font weight.
+ * ヘッダーナビゲーションコンポーネント。
+ * ダメージ計算機とパーティマネージャーへのリンクを含む、常に表示されるフラットなナビゲーションメニューを表示する。
+ * 現在のページは黄色のテキストと太字で強調される。
  */
 export const HeaderNavigation: React.FC = () => {
   const { locale } = useLanguage();
@@ -24,13 +24,8 @@ export const HeaderNavigation: React.FC = () => {
           { label: 'Party Manager', href: '/parties' },
         ];
 
-  /**
-   * Determine if a nav link is active based on current pathname.
-   * 現在のパスが href と一致するかを判定
-   */
-  const isActive = (href: string): boolean => {
-    return pathname === href;
-  };
+  // 現在のパス名で対応するナビゲーションリンクがアクティブかを判定する
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <nav className="overflow-x-auto">

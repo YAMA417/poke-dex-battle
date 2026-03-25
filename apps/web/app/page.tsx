@@ -22,9 +22,9 @@ export default function Home() {
           <div className="mb-6 inline-block rounded-full bg-white/20 px-4 py-2 text-sm font-semibold backdrop-blur-sm">
             🎮 ポケモンダブルバトル支援アプリ
           </div>
-          <p className="mb-4 text-lg text-white/90 sm:text-xl">
+          <h2 className="mb-4 text-lg text-white/90 sm:text-xl">
             初級者から上級者まで、ダブルバトルを徹底サポート！ダブルバトルで勝利を掴もう！
-          </p>
+          </h2>
           <Button
             asChild
             className="h-14 rounded-lg bg-white px-8 text-lg font-bold text-pokemon-blue shadow-lg transition-all hover:scale-105 hover:bg-yellow-400 hover:text-black hover:shadow-xl hover:shadow-white/50"
