@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <header className="bg-pokemon-blue p-4 text-white shadow-lg">
             <div className="container mx-auto flex items-center justify-between">
               <Link href="/">
-                <h1 className="text-xl font-bold hover:opacity-80 transition-opacity">
+                <h1 className="text-xl font-bold transition-opacity hover:opacity-80">
                   ポケモンダブルバトル支援
                 </h1>
               </Link>

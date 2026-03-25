@@ -15,7 +15,8 @@ const buttonVariants = cva(
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
-        pokemon: 'bg-gradient-to-r from-pokemon-blue to-purple-600 text-white hover:shadow-lg hover:shadow-pokemon-blue/50 transition-all duration-200',
+        pokemon:
+          'bg-gradient-to-r from-pokemon-blue to-purple-600 text-white hover:shadow-lg hover:shadow-pokemon-blue/50 transition-all duration-200',
       },
       size: {
         default: 'h-10 px-4 py-2',

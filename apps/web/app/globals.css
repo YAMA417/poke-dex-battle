@@ -85,13 +85,13 @@
   .hero-gradient {
     @apply bg-gradient-to-br from-blue-900 via-pokemon-blue to-blue-500;
   }
-  
+
   .card-hover-safe {
     @apply transition-all duration-300 hover:shadow-lg hover:shadow-pokemon-blue/20;
   }
 
   .glass-effect {
-    @apply bg-white/90 backdrop-blur-sm border border-white/20;
+    @apply border border-white/20 bg-white/90 backdrop-blur-sm;
   }
 
   .text-gradient {

@@ -13,15 +13,16 @@ export const HeaderNavigation: React.FC = () => {
   const { locale } = useLanguage();
   const pathname = usePathname();
 
-  const menuItems = locale === 'ja'
-    ? [
-        { label: 'ダメージ計算', href: '/calc' },
-        { label: 'パーティ管理', href: '/parties' },
-      ]
-    : [
-        { label: 'Damage Calc', href: '/calc' },
-        { label: 'Party Manager', href: '/parties' },
-      ];
+  const menuItems =
+    locale === 'ja'
+      ? [
+          { label: 'ダメージ計算', href: '/calc' },
+          { label: 'パーティ管理', href: '/parties' },
+        ]
+      : [
+          { label: 'Damage Calc', href: '/calc' },
+          { label: 'Party Manager', href: '/parties' },
+        ];
 
   /**
    * Determine if a nav link is active based on current pathname.
@@ -38,13 +39,11 @@ export const HeaderNavigation: React.FC = () => {
           <li key={item.href}>
             <Link
               href={item.href}
-              className={`
-                text-sm font-medium transition-colors duration-200
-                ${isActive(item.href)
-                  ? 'text-pokemon-yellow font-bold'
+              className={`text-sm font-medium transition-colors duration-200 ${
+                isActive(item.href)
+                  ? 'font-bold text-pokemon-yellow'
                   : 'text-white hover:text-pokemon-yellow'
-                }
-              `}
+              } `}
             >
               {item.label}
             </Link>
