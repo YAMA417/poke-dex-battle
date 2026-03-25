@@ -77,7 +77,7 @@ poke-dex-battle/
 
 ## 言語ルール
 
-- **JSDoc / Docstring**: 英語で記述
+- **JSDoc / Docstring**: 日本語で記述
 - **コードコメント**（実装の背景や理由）: 日本語で記述
 - **コミットメッセージ**: 英語で記述（Conventional Commits形式）
 

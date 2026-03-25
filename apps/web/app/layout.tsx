@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import './globals.css';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { LanguageToggle } from '@/components/ui/language-toggle';
+import { HeaderNavigation } from '@/components/HeaderNavigation';
 
 export const metadata: Metadata = {
   title: 'ポケモンダブルバトル支援アプリ',
@@ -15,8 +17,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LanguageProvider>
           <header className="bg-pokemon-blue p-4 text-white shadow-lg">
             <div className="container mx-auto flex items-center justify-between">
-              <h1 className="text-xl font-bold">ポケモンダブルバトル支援</h1>
-              <LanguageToggle />
+              <Link href="/">
+                <h1 className="text-xl font-bold transition-opacity hover:opacity-80">
+                  ポケモンダブルバトル支援
+                </h1>
+              </Link>
+              <div className="flex items-center gap-4">
+                <HeaderNavigation />
+                <LanguageToggle />
+              </div>
             </div>
           </header>
           <main className="container mx-auto p-4">{children}</main>
