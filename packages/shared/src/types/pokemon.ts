@@ -64,6 +64,7 @@ export type MoveCategory = 'Physical' | 'Special' | 'Status';
 export interface Move {
   id: number;
   name: string;
+  nameJa?: string;
   type: PokemonType;
   category: MoveCategory;
   power?: number;
@@ -86,7 +87,9 @@ export interface Pokemon {
   ivs: Stats;
   evs: Stats;
   moves: Move[];
+  memo?: string;
   actualStats?: Stats;
+  spriteUrl?: string;
 }
 
 /** 種族値（PokéAPIから取得） */

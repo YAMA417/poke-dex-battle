@@ -1,39 +1,39 @@
-"use client";
+'use client';
 
-import { useHydrationSafe } from "@/hooks/useHydrationSafe";
+import { useHydrationSafe } from '@/hooks/useHydrationSafe';
 import type {
   DamageCalculationInput,
   DamageResult as DamageResultType,
   Field,
   Weather,
-} from "@poke-dex-battle/shared";
+} from '@poke-dex-battle/shared';
 import {
   calculateDamage,
-  getAbilityByName,
   getAbilityConditionEffect,
-  getItemByName,
-  getMoveByName,
   getMoveFlags,
   isSpreadMoveTarget,
-} from "@poke-dex-battle/shared";
-import type { DoubleBattleResult } from "@/types/damage";
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { ArrowLeftRight } from "lucide-react";
-import type { AttackerData } from "./AttackerInput";
-import { AttackerInput } from "./AttackerInput";
-import { BattleConditionInput } from "./BattleConditionInput";
-import { DoubleBattleDamageResult } from "./DoubleBattleDamageResult";
-import type { DefenderData } from "./DefenderInput";
-import { DefenderInput } from "./DefenderInput";
+  moveIs,
+} from '@poke-dex-battle/shared';
+import { useAllMoves, useAllAbilities, useAllItems } from '@/hooks/useApiData';
+import { toMoveData, toAbilityData, toItemData } from '@/lib/api-adapters';
+import type { DoubleBattleResult } from '@/types/damage';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { ArrowLeftRight } from 'lucide-react';
+import type { AttackerData } from './AttackerInput';
+import { AttackerInput } from './AttackerInput';
+import { BattleConditionInput } from './BattleConditionInput';
+import { DoubleBattleDamageResult } from './DoubleBattleDamageResult';
+import type { DefenderData } from './DefenderInput';
+import { DefenderInput } from './DefenderInput';
 
 const DEFAULT_ATTACKER_DATA: AttackerData = {
-  pokemonName: "",
+  pokemonName: '',
   pokemonTypes: [],
-  moveName: "",
+  moveName: '',
   movePower: 80,
-  moveType: "Normal",
-  moveCategory: "Physical",
-  moveTarget: "",
+  moveType: 'Normal',
+  moveCategory: 'Physical',
+  moveTarget: '',
   attackBaseStat: 100,
   specialAttackBaseStat: 100,
   defenseBaseStat: 100,
@@ -46,13 +46,13 @@ const DEFAULT_ATTACKER_DATA: AttackerData = {
   attackRank: 0,
   specialAttackRank: 0,
   defenseRank: 0,
-  abilityName: "",
-  itemName: "",
+  abilityName: '',
+  itemName: '',
   isBurned: false,
 };
 
 const DEFAULT_DEFENDER_DATA: DefenderData = {
-  pokemonName: "",
+  pokemonName: '',
   pokemonTypes: [],
   hpBaseStat: 100,
   defenseBaseStat: 100,
@@ -64,8 +64,8 @@ const DEFAULT_DEFENDER_DATA: DefenderData = {
   specialDefenseModifier: 1.0,
   defenseRank: 0,
   specialDefenseRank: 0,
-  abilityName: "",
-  itemName: "",
+  abilityName: '',
+  itemName: '',
 };
 
 function combineDamage(
@@ -88,13 +88,49 @@ function combineDamage(
 
 export function DamageCalculator() {
   const isMounted = useHydrationSafe();
+
+  // API経由で全データを取得し、名前→データのMapを構築
+  const { data: allMovesRaw } = useAllMoves();
+  const { data: allAbilitiesRaw } = useAllAbilities();
+  const { data: allItemsRaw } = useAllItems();
+
+  const moveByNameJa = useMemo(() => {
+    if (!allMovesRaw) return new Map<string, ReturnType<typeof toMoveData>>();
+    const map = new Map<string, ReturnType<typeof toMoveData>>();
+    for (const row of allMovesRaw) {
+      const md = toMoveData(row);
+      if (md) map.set(md.nameJa, md);
+    }
+    return map;
+  }, [allMovesRaw]);
+
+  const abilityByNameJa = useMemo(() => {
+    if (!allAbilitiesRaw) return new Map<string, ReturnType<typeof toAbilityData>>();
+    const map = new Map<string, ReturnType<typeof toAbilityData>>();
+    for (const row of allAbilitiesRaw) {
+      const ad = toAbilityData(row);
+      if (ad) map.set(ad.nameJa, ad);
+    }
+    return map;
+  }, [allAbilitiesRaw]);
+
+  const itemByNameJa = useMemo(() => {
+    if (!allItemsRaw) return new Map<string, ReturnType<typeof toItemData>>();
+    const map = new Map<string, ReturnType<typeof toItemData>>();
+    for (const row of allItemsRaw) {
+      const id = toItemData(row);
+      if (id) map.set(id.nameJa, id);
+    }
+    return map;
+  }, [allItemsRaw]);
+
   const [attackerAData, setAttackerAData] = useState<AttackerData>(DEFAULT_ATTACKER_DATA);
   const [attackerBData, setAttackerBData] = useState<AttackerData>(DEFAULT_ATTACKER_DATA);
   const [defenderData1, setDefenderData1] = useState<DefenderData>(DEFAULT_DEFENDER_DATA);
   const [defenderData2, setDefenderData2] = useState<DefenderData>(DEFAULT_DEFENDER_DATA);
 
-  const [weather, setWeather] = useState<Weather>("none");
-  const [field, setField] = useState<Field>("none");
+  const [weather, setWeather] = useState<Weather>('none');
+  const [field, setField] = useState<Field>('none');
   const [isHelpingHand, setIsHelpingHand] = useState(false);
   const [isCriticalHit, setIsCriticalHit] = useState(false);
   const [isReflect, setIsReflect] = useState(false);
@@ -104,8 +140,8 @@ export function DamageCalculator() {
   const [isDetailSettingsOpen, setIsDetailSettingsOpen] = useState(false);
 
   // 特性→天候/フィールドの自動連動（手動変更は保持、特性由来の値が変わったときのみ自動更新）
-  const prevAbilityWeatherRef = useRef<Weather>("none");
-  const prevAbilityFieldRef = useRef<Field>("none");
+  const prevAbilityWeatherRef = useRef<Weather>('none');
+  const prevAbilityFieldRef = useRef<Field>('none');
 
   useEffect(() => {
     const allAbilities = [
@@ -115,12 +151,15 @@ export function DamageCalculator() {
       defenderData2.abilityName,
     ];
 
-    let abilityWeather: Weather = "none";
-    let abilityField: Field = "none";
+    let abilityWeather: Weather = 'none';
+    let abilityField: Field = 'none';
 
     for (const name of allAbilities) {
       if (!name) continue;
-      const effect = getAbilityConditionEffect(name);
+      // 日本語名→英語名に変換してから渡す
+      const abilityData = abilityByNameJa.get(name);
+      const englishName = abilityData?.name ?? name;
+      const effect = getAbilityConditionEffect(englishName);
       if (effect?.weather) abilityWeather = effect.weather;
       if (effect?.field) abilityField = effect.field;
     }
@@ -142,7 +181,7 @@ export function DamageCalculator() {
   ]);
 
   // 全体技の自動検出（攻撃側ごとに個別）
-  const bothDefendersPresent = defenderData1.pokemonName !== "" && defenderData2.pokemonName !== "";
+  const bothDefendersPresent = defenderData1.pokemonName !== '' && defenderData2.pokemonName !== '';
   const autoSpreadA = useMemo(
     () => isSpreadMoveTarget(attackerAData.moveTarget) && bothDefendersPresent,
     [attackerAData.moveTarget, bothDefendersPresent]
@@ -168,7 +207,7 @@ export function DamageCalculator() {
     // 攻撃側サイドの全特性を収集（わざわいシリーズ等の場に影響する特性用）
     const resolveAbilityName = (jaName: string): string | undefined => {
       if (!jaName) return undefined;
-      return getAbilityByName(jaName)?.name || undefined;
+      return abilityByNameJa.get(jaName)?.name || undefined;
     };
     const allAttackerSideAbilities = [
       resolveAbilityName(attackerAData.abilityName),
@@ -184,11 +223,16 @@ export function DamageCalculator() {
       defender: DefenderData,
       isSpread: boolean
     ): DamageCalculationInput => {
-      const isPhysical = attacker.moveCategory === "Physical";
+      const isPhysical = attacker.moveCategory === 'Physical';
       // 技の英語名とフラグを取得
-      const moveData = attacker.moveName ? getMoveByName(attacker.moveName) : null;
-      const moveEnglishName = moveData?.name || "";
+      const moveData = attacker.moveName ? (moveByNameJa.get(attacker.moveName) ?? null) : null;
+      const moveEnglishName = moveData?.name || '';
       const moveFlags = getMoveFlags(moveEnglishName, moveData?.shortDesc);
+
+      // ワイドフォース: サイコフィールド時は全体技化（防御側2体いる場合のみ）
+      const isExpandingForcePsychic =
+        moveIs(moveEnglishName, 'Expanding Force') && field === 'psychic' && bothDefendersPresent;
+      const effectiveIsSpread = isSpread || isExpandingForcePsychic;
 
       // 特殊技のステータス参照を解決
       let attackerAttack: number;
@@ -224,29 +268,42 @@ export function DamageCalculator() {
           attackerStatStages: {
             attack: moveFlags.usesDefenseAsAttack
               ? attacker.defenseRank
-              : isPhysical ? attacker.attackRank : 0,
+              : isPhysical
+                ? attacker.attackRank
+                : 0,
             defense: 0,
             specialAttack: moveFlags.usesDefenseAsAttack
               ? 0
-              : isPhysical ? 0 : attacker.specialAttackRank,
+              : isPhysical
+                ? 0
+                : attacker.specialAttackRank,
             specialDefense: 0,
             speed: 0,
           },
           defenderStatStages: {
             attack: 0,
-            defense: (isPhysical || moveFlags.targetsPhysicalDefense) ? defender.defenseRank : 0,
+            defense: isPhysical || moveFlags.targetsPhysicalDefense ? defender.defenseRank : 0,
             specialAttack: 0,
-            specialDefense: (!isPhysical && !moveFlags.targetsPhysicalDefense) ? defender.specialDefenseRank : 0,
+            specialDefense:
+              !isPhysical && !moveFlags.targetsPhysicalDefense ? defender.specialDefenseRank : 0,
             speed: 0,
           },
           isDoubleBattle: true,
           isHelpingHand,
-          isSpreadMove: isSpread,
+          isSpreadMove: effectiveIsSpread,
           isCriticalHit,
-          attackerAbility: attacker.abilityName ? (getAbilityByName(attacker.abilityName)?.name || undefined) : undefined,
-          defenderAbility: defender.abilityName ? (getAbilityByName(defender.abilityName)?.name || undefined) : undefined,
-          attackerItem: attacker.itemName ? (getItemByName(attacker.itemName)?.name || attacker.itemName) : undefined,
-          defenderItem: defender.itemName ? (getItemByName(defender.itemName)?.name || defender.itemName) : undefined,
+          attackerAbility: attacker.abilityName
+            ? abilityByNameJa.get(attacker.abilityName)?.name || undefined
+            : undefined,
+          defenderAbility: defender.abilityName
+            ? abilityByNameJa.get(defender.abilityName)?.name || undefined
+            : undefined,
+          attackerItem: attacker.itemName
+            ? itemByNameJa.get(attacker.itemName)?.name || attacker.itemName
+            : undefined,
+          defenderItem: defender.itemName
+            ? itemByNameJa.get(defender.itemName)?.name || defender.itemName
+            : undefined,
           attackerBurned: attacker.isBurned,
           reflect: isReflect,
           lightScreen: isLightScreen,
@@ -257,25 +314,63 @@ export function DamageCalculator() {
     };
 
     // 各ペアリングを個別に計算（準備ができているもののみ）
-    const t1A = (attackerAReady && defender1Ready) ? calculateDamage(makeInput(attackerAData, defenderData1, autoSpreadA)) : null;
-    const t1B = (attackerBReady && defender1Ready) ? calculateDamage(makeInput(attackerBData, defenderData1, autoSpreadB)) : null;
-    const t2A = (attackerAReady && defender2Ready) ? calculateDamage(makeInput(attackerAData, defenderData2, autoSpreadA)) : null;
-    const t2B = (attackerBReady && defender2Ready) ? calculateDamage(makeInput(attackerBData, defenderData2, autoSpreadB)) : null;
+    const t1A =
+      attackerAReady && defender1Ready
+        ? calculateDamage(makeInput(attackerAData, defenderData1, autoSpreadA))
+        : null;
+    const t1B =
+      attackerBReady && defender1Ready
+        ? calculateDamage(makeInput(attackerBData, defenderData1, autoSpreadB))
+        : null;
+    const t2A =
+      attackerAReady && defender2Ready
+        ? calculateDamage(makeInput(attackerAData, defenderData2, autoSpreadA))
+        : null;
+    const t2B =
+      attackerBReady && defender2Ready
+        ? calculateDamage(makeInput(attackerBData, defenderData2, autoSpreadB))
+        : null;
 
-    const target1 = (t1A || t1B) ? {
-      attackerAOnly: t1A,
-      attackerBOnly: t1B,
-      combined: (t1A && t1B) ? combineDamage(t1A, t1B, defenderData1.hpStat) : null,
-    } : null;
+    const target1 =
+      t1A || t1B
+        ? {
+            attackerAOnly: t1A,
+            attackerBOnly: t1B,
+            combined: t1A && t1B ? combineDamage(t1A, t1B, defenderData1.hpStat) : null,
+          }
+        : null;
 
-    const target2 = (t2A || t2B) ? {
-      attackerAOnly: t2A,
-      attackerBOnly: t2B,
-      combined: (t2A && t2B) ? combineDamage(t2A, t2B, defenderData2.hpStat) : null,
-    } : null;
+    const target2 =
+      t2A || t2B
+        ? {
+            attackerAOnly: t2A,
+            attackerBOnly: t2B,
+            combined: t2A && t2B ? combineDamage(t2A, t2B, defenderData2.hpStat) : null,
+          }
+        : null;
 
     return { target1, target2 };
-  }, [attackerAData, attackerBData, defenderData1, defenderData2, weather, field, isHelpingHand, isCriticalHit, isReflect, isLightScreen, autoSpreadA, autoSpreadB, attackerAReady, attackerBReady, defender1Ready, defender2Ready]);
+  }, [
+    attackerAData,
+    attackerBData,
+    defenderData1,
+    defenderData2,
+    weather,
+    field,
+    isHelpingHand,
+    isCriticalHit,
+    isReflect,
+    isLightScreen,
+    autoSpreadA,
+    autoSpreadB,
+    attackerAReady,
+    attackerBReady,
+    defender1Ready,
+    defender2Ready,
+    moveByNameJa,
+    abilityByNameJa,
+    itemByNameJa,
+  ]);
 
   // 攻撃側 ↔ 防御側 入れ替え
   const handleSwapSides = useCallback(() => {
@@ -324,9 +419,9 @@ export function DamageCalculator() {
   return (
     <div className="space-y-4">
       {/* メイン3カラム: 攻撃側 | 結果 | 防御側 */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(300px,auto)_1fr] gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_minmax(300px,auto)_1fr]">
         {/* 左カラム: 攻撃側 */}
-        <div className="space-y-4 order-1">
+        <div className="order-1 space-y-4">
           <AttackerInput
             data={attackerAData}
             onDataChange={setAttackerAData}
@@ -346,7 +441,7 @@ export function DamageCalculator() {
           <button
             type="button"
             onClick={handleSwapSides}
-            className="w-full flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors border rounded-lg hover:bg-accent"
+            className="flex w-full items-center justify-center gap-2 rounded-lg border py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             title="攻撃側と防御側を入れ替える"
           >
             <ArrowLeftRight className="h-4 w-4" />
@@ -366,7 +461,7 @@ export function DamageCalculator() {
         </div>
 
         {/* 右カラム: 防御側 */}
-        <div className="space-y-4 order-3">
+        <div className="order-3 space-y-4">
           <DefenderInput
             data={defenderData1}
             onDataChange={setDefenderData1}
@@ -403,22 +498,38 @@ export function DamageCalculator() {
         <button
           type="button"
           onClick={() => setIsDetailSettingsOpen((prev) => !prev)}
-          className="w-full flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors border rounded-lg"
+          className="flex w-full items-center justify-center gap-2 rounded-lg border py-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          {isDetailSettingsOpen ? "詳細設定を隠す" : "▼ 詳細設定（個体値・ランク）"}
+          {isDetailSettingsOpen ? '詳細設定を隠す' : '▼ 詳細設定（個体値・ランク）'}
         </button>
 
         {isDetailSettingsOpen && (
-          <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              <AttackerInput data={attackerAData} onDataChange={setAttackerAData}
-                idKey="attacker-a-detail" displayMode="full" />
-              <AttackerInput data={attackerBData} onDataChange={setAttackerBData}
-                idKey="attacker-b-detail" displayMode="full" />
-              <DefenderInput data={defenderData1} onDataChange={setDefenderData1}
-                idKey="target-1-detail" displayMode="full" />
-              <DefenderInput data={defenderData2} onDataChange={setDefenderData2}
-                idKey="target-2-detail" displayMode="full" />
+          <div className="mt-4 space-y-4 duration-200 animate-in fade-in slide-in-from-top-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <AttackerInput
+                data={attackerAData}
+                onDataChange={setAttackerAData}
+                idKey="attacker-a-detail"
+                displayMode="full"
+              />
+              <AttackerInput
+                data={attackerBData}
+                onDataChange={setAttackerBData}
+                idKey="attacker-b-detail"
+                displayMode="full"
+              />
+              <DefenderInput
+                data={defenderData1}
+                onDataChange={setDefenderData1}
+                idKey="target-1-detail"
+                displayMode="full"
+              />
+              <DefenderInput
+                data={defenderData2}
+                onDataChange={setDefenderData2}
+                idKey="target-2-detail"
+                displayMode="full"
+              />
             </div>
           </div>
         )}

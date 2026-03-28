@@ -1,10 +1,10 @@
-import type { PokemonType } from "./pokemon";
+import type { PokemonType } from './pokemon';
 
 /** 天候 */
-export type Weather = "none" | "sun" | "rain" | "sandstorm" | "snow";
+export type Weather = 'none' | 'sun' | 'rain' | 'sandstorm' | 'snow';
 
 /** フィールド */
-export type Field = "none" | "electric" | "grassy" | "misty" | "psychic";
+export type Field = 'none' | 'electric' | 'grassy' | 'misty' | 'psychic';
 
 /** 能力ランク（-6〜+6） */
 export type StatStage = -6 | -5 | -4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -47,17 +47,17 @@ export interface BattleCondition {
 /** 特性の種類（Phase 1: 基本10個） */
 export type Ability =
   // 攻撃側
-  | "Technician" // テクニシャン
-  | "Iron Fist" // てつのこぶし
-  | "Reckless" // すてみ
-  | "Huge Power" // ちからもち
-  | "Pure Power" // ヨガパワー（ちからもちと同じ効果）
+  | 'Technician' // テクニシャン
+  | 'Iron Fist' // てつのこぶし
+  | 'Reckless' // すてみ
+  | 'Huge Power' // ちからもち
+  | 'Pure Power' // ヨガパワー（ちからもちと同じ効果）
   // 防御側
-  | "Multiscale" // マルチスケイル
-  | "Solid Rock" // ハードロック
-  | "Filter" // フィルター
-  | "Fluffy" // もふもふ
-  | "Thick Fat"; // あついしぼう
+  | 'Multiscale' // マルチスケイル
+  | 'Solid Rock' // ハードロック
+  | 'Filter' // フィルター
+  | 'Fluffy' // もふもふ
+  | 'Thick Fat'; // あついしぼう
 
 /**
  * ダメージ計算用のポケモン型（新エンジン）
@@ -83,7 +83,7 @@ export interface CalcPokemon {
   };
   ability?: string;
   item?: string;
-  status?: "burn" | "none";
+  status?: 'burn' | 'none';
   currentHp?: number;
   maxHp?: number;
   teraType?: PokemonType;
@@ -97,7 +97,7 @@ export interface CalcMove {
   name: string;
   power: number;
   type: PokemonType;
-  category: "Physical" | "Special";
+  category: 'Physical' | 'Special';
   isCritical?: boolean;
   flags?: MoveFlags;
 }
@@ -120,16 +120,16 @@ export interface BattleContext {
 
 /** 持ち物の種類（Phase 1: 基本10個） */
 export type Item =
-  | "Choice Band" // こだわりハチマキ
-  | "Choice Specs" // こだわりメガネ
-  | "Life Orb" // いのちのたま
-  | "Expert Belt" // たつじんのおび
-  | "Muscle Band" // ちからのハチマキ
-  | "Wise Glasses" // ものしりメガネ
-  | "Eviolite" // しんかのきせき
-  | "Assault Vest" // とつげきチョッキ
-  | "Normal Gem" // ノーマルジュエル
-  | "Punching Glove"; // パンチグローブ
+  | 'Choice Band' // こだわりハチマキ
+  | 'Choice Specs' // こだわりメガネ
+  | 'Life Orb' // いのちのたま
+  | 'Expert Belt' // たつじんのおび
+  | 'Muscle Band' // ちからのハチマキ
+  | 'Wise Glasses' // ものしりメガネ
+  | 'Eviolite' // しんかのきせき
+  | 'Assault Vest' // とつげきチョッキ
+  | 'Normal Gem' // ノーマルジュエル
+  | 'Punching Glove'; // パンチグローブ
 
 /** 技の分類（特性判定用） */
 export interface MoveFlags {
@@ -151,7 +151,7 @@ export interface DamageCalculationInput {
   moveName?: string; // 技の英語名（天候依存の威力変動判定用）
   movePower: number;
   moveType: PokemonType;
-  moveCategory: "Physical" | "Special";
+  moveCategory: 'Physical' | 'Special';
 
   // 攻撃側
   attackerLevel: number;

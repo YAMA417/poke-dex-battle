@@ -1,9 +1,9 @@
-import { Card, CardContent } from "@/components/ui/card";
-import type { DoubleBattleResult, TargetResult } from "@/types/damage";
-import type { DamageResult as DamageResultType } from "@poke-dex-battle/shared";
-import { CheckCircle, AlertTriangle, XCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Card, CardContent } from '@/components/ui/card';
+import type { DoubleBattleResult, TargetResult } from '@/types/damage';
+import type { DamageResult as DamageResultType } from '@poke-dex-battle/shared';
+import { CheckCircle, AlertTriangle, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
 
-type DamageLabelCategory = "ko" | "chance" | "fail";
+type DamageLabelCategory = 'ko' | 'chance' | 'fail';
 
 interface DamageLabel {
   text: string;
@@ -27,37 +27,43 @@ function getDamageLabel(result: DamageResultType): DamageLabel {
 
   // 倒せない場合
   if (guaranteed === Infinity && possible === Infinity) {
-    return { text: "不可", category: "fail" };
+    return { text: '不可', category: 'fail' };
   }
 
   // guaranteed === possible なら確定N発
   if (guaranteed === possible) {
     return {
       text: `確定${guaranteed}発`,
-      category: guaranteed === 1 ? "ko" : "chance",
+      category: guaranteed === 1 ? 'ko' : 'chance',
     };
   }
 
   // guaranteed !== possible なら乱数N発
   return {
     text: `乱数${guaranteed}発`,
-    category: "chance",
+    category: 'chance',
   };
 }
 
 function getLabelIcon(category: DamageLabelCategory) {
   switch (category) {
-    case "ko": return <CheckCircle className="w-4 h-4 text-verdict-ko" />;
-    case "chance": return <AlertTriangle className="w-4 h-4 text-verdict-chance" />;
-    case "fail": return <XCircle className="w-4 h-4 text-verdict-fail" />;
+    case 'ko':
+      return <CheckCircle className="text-verdict-ko h-4 w-4" />;
+    case 'chance':
+      return <AlertTriangle className="text-verdict-chance h-4 w-4" />;
+    case 'fail':
+      return <XCircle className="text-verdict-fail h-4 w-4" />;
   }
 }
 
 function getLabelColorClass(category: DamageLabelCategory): string {
   switch (category) {
-    case "ko": return "text-verdict-ko font-bold";
-    case "chance": return "text-verdict-chance font-semibold";
-    case "fail": return "text-verdict-fail";
+    case 'ko':
+      return 'text-verdict-ko font-bold';
+    case 'chance':
+      return 'text-verdict-chance font-semibold';
+    case 'fail':
+      return 'text-verdict-fail';
   }
 }
 
@@ -74,8 +80,14 @@ function getBestPatternIndex(results: (DamageResultType | null)[]): number {
   return bestIdx;
 }
 
-function PatternBadge({ label, result, isBest }: {
-  label: string; result: DamageResultType | null; isBest?: boolean;
+function PatternBadge({
+  label,
+  result,
+  isBest,
+}: {
+  label: string;
+  result: DamageResultType | null;
+  isBest?: boolean;
 }) {
   if (!result) return null;
 
@@ -84,10 +96,12 @@ function PatternBadge({ label, result, isBest }: {
   const colorClass = getLabelColorClass(damageLabel.category);
 
   return (
-    <div className={`flex items-center gap-1.5 text-sm px-2 py-1.5 rounded ${
-      isBest ? "bg-accent border border-primary/20 shadow-sm" : ""
-    }`}>
-      <span className="text-xs text-muted-foreground whitespace-nowrap">{label}:</span>
+    <div
+      className={`flex items-center gap-1.5 rounded px-2 py-1.5 text-sm ${
+        isBest ? 'border border-primary/20 bg-accent shadow-sm' : ''
+      }`}
+    >
+      <span className="whitespace-nowrap text-xs text-muted-foreground">{label}:</span>
       {icon}
       <span className={colorClass}>{damageLabel.text}</span>
       <span className="font-mono text-xs tabular-nums text-muted-foreground">
@@ -103,17 +117,21 @@ function PatternBadge({ label, result, isBest }: {
 function DamageRow({ label, result }: { label: string; result: DamageResultType | null }) {
   if (!result) return null;
   return (
-    <div className="flex justify-between items-center py-1">
+    <div className="flex items-center justify-between py-1">
       <span className="text-xs text-muted-foreground">{label}</span>
       <span className="font-mono text-xs tabular-nums">
-        {result.minPercent.toFixed(1)}%〜{result.maxPercent.toFixed(1)}%
-        ({result.minDamage}〜{result.maxDamage})
+        {result.minPercent.toFixed(1)}%〜{result.maxPercent.toFixed(1)}% ({result.minDamage}〜
+        {result.maxDamage})
       </span>
     </div>
   );
 }
 
-function TargetSection({ targetName, results, patternLabels }: {
+function TargetSection({
+  targetName,
+  results,
+  patternLabels,
+}: {
   targetName: string;
   results: TargetResult;
   patternLabels: string[];
@@ -126,21 +144,30 @@ function TargetSection({ targetName, results, patternLabels }: {
       <span className="text-sm font-semibold">{targetName}</span>
       <div className="flex flex-wrap gap-2">
         {allResults.map((r, i) => (
-          <PatternBadge key={patternLabels[i]} label={patternLabels[i]} result={r} isBest={i === bestIdx} />
+          <PatternBadge
+            key={patternLabels[i]}
+            label={patternLabels[i]}
+            result={r}
+            isBest={i === bestIdx}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function TargetDetailRows({ label, results, patternLabels }: {
+function TargetDetailRows({
+  label,
+  results,
+  patternLabels,
+}: {
   label: string;
   results: TargetResult;
   patternLabels: string[];
 }) {
   return (
     <div>
-      <h4 className="text-xs font-semibold mb-1">{label}</h4>
+      <h4 className="mb-1 text-xs font-semibold">{label}</h4>
       <DamageRow label={patternLabels[0]} result={results.attackerAOnly} />
       <DamageRow label={patternLabels[1]} result={results.attackerBOnly} />
       <DamageRow label={patternLabels[2]} result={results.combined} />
@@ -149,14 +176,18 @@ function TargetDetailRows({ label, results, patternLabels }: {
 }
 
 export function DoubleBattleDamageResult({
-  result, target1Name, target2Name,
-  attacker1Name, attacker2Name,
-  isDetailNumbersOpen, onToggleDetailNumbers,
+  result,
+  target1Name,
+  target2Name,
+  attacker1Name,
+  attacker2Name,
+  isDetailNumbersOpen,
+  onToggleDetailNumbers,
 }: DoubleBattleDamageResultProps) {
   const patternLabels = [
-    attacker1Name ? `${attacker1Name}のみ` : "攻撃1のみ",
-    attacker2Name ? `${attacker2Name}のみ` : "攻撃2のみ",
-    "集中",
+    attacker1Name ? `${attacker1Name}のみ` : '攻撃1のみ',
+    attacker2Name ? `${attacker2Name}のみ` : '攻撃2のみ',
+    '集中',
   ];
 
   // 結果なし or 両ターゲットとも null
@@ -164,8 +195,10 @@ export function DoubleBattleDamageResult({
     return (
       <Card className="border-dashed">
         <CardContent className="py-8">
-          <p className="text-muted-foreground text-sm text-center">
-            ポケモンと技を入力すると<br />自動で計算されます
+          <p className="text-center text-sm text-muted-foreground">
+            ポケモンと技を入力すると
+            <br />
+            自動で計算されます
           </p>
         </CardContent>
       </Card>
@@ -174,11 +207,11 @@ export function DoubleBattleDamageResult({
 
   return (
     <Card>
-      <CardContent className="py-4 space-y-2">
+      <CardContent className="space-y-2 py-4">
         {/* 防御側1 */}
         {result.target1 && (
           <TargetSection
-            targetName={target1Name || "防御側 1"}
+            targetName={target1Name || '防御側 1'}
             results={result.target1}
             patternLabels={patternLabels}
           />
@@ -189,32 +222,39 @@ export function DoubleBattleDamageResult({
         {/* 防御側2 */}
         {result.target2 && (
           <TargetSection
-            targetName={target2Name || "防御側 2"}
+            targetName={target2Name || '防御側 2'}
             results={result.target2}
             patternLabels={patternLabels}
           />
         )}
 
         {/* 数値詳細トグル */}
-        <button type="button" onClick={onToggleDetailNumbers}
-          className="w-full pt-2 text-xs text-muted-foreground hover:text-foreground text-center flex items-center justify-center gap-1">
-          {isDetailNumbersOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          {isDetailNumbersOpen ? "数値を隠す" : "数値を見る"}
+        <button
+          type="button"
+          onClick={onToggleDetailNumbers}
+          className="flex w-full items-center justify-center gap-1 pt-2 text-center text-xs text-muted-foreground hover:text-foreground"
+        >
+          {isDetailNumbersOpen ? (
+            <ChevronUp className="h-3.5 w-3.5" />
+          ) : (
+            <ChevronDown className="h-3.5 w-3.5" />
+          )}
+          {isDetailNumbersOpen ? '数値を隠す' : '数値を見る'}
         </button>
 
         {/* 数値詳細（折りたたみ） */}
         {isDetailNumbersOpen && (
-          <div className="pt-2 border-t space-y-4">
+          <div className="space-y-4 border-t pt-2">
             {result.target1 && (
               <TargetDetailRows
-                label={target1Name || "防御側 1"}
+                label={target1Name || '防御側 1'}
                 results={result.target1}
                 patternLabels={patternLabels}
               />
             )}
             {result.target2 && (
               <TargetDetailRows
-                label={target2Name || "防御側 2"}
+                label={target2Name || '防御側 2'}
                 results={result.target2}
                 patternLabels={patternLabels}
               />

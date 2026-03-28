@@ -1,14 +1,11 @@
-import { pokeRound } from "./poke-round";
+import { pokeRound } from './poke-round';
 
 /**
  * "other"補正チェーンを適用（特性・持ち物など）
  * shadowtag.xyzと同じ方式: 4096ベースで補正を連鎖させてから最後にダメージに適用
  * 参考: https://shadowtag.xyz/
  */
-export function applyOtherModifiers(
-  baseDamage: number,
-  modifiers: number[],
-): number {
+export function applyOtherModifiers(baseDamage: number, modifiers: number[]): number {
   const INIT_VAL = 4096;
   let chain = INIT_VAL;
 

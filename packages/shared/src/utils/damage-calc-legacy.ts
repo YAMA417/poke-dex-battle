@@ -1,6 +1,6 @@
-import type { DamageCalculationInput, DamageResult } from "../types/damage";
-import { calculateDamageV2 } from "./damage-calc/index";
-import { convertLegacyInput } from "./damage-calc/legacy-adapter";
+import type { DamageCalculationInput, DamageResult } from '../types/damage';
+import { calculateDamageV2 } from './damage-calc/index';
+import { convertLegacyInput } from './damage-calc/legacy-adapter';
 
 /**
  * 旧API互換ラッパー：DamageCalculationInputを新エンジンで処理

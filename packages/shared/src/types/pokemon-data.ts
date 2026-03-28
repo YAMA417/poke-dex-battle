@@ -1,4 +1,4 @@
-import type { PokemonType, Stats } from "./pokemon";
+import type { PokemonType, Stats } from './pokemon';
 
 /**
  * アプリケーション内で使用されるポケモン種族データ（正規化）
@@ -17,6 +17,11 @@ export interface PokemonSpeciesData {
   spriteUrl?: string;
   height: number;
   weight: number;
+  category?: string;
+  fixedItem?: string | null;
+  fixedItemNameJa?: string | null;
+  fixedTeraType?: string | null;
+  genderRate?: number | null;
 }
 
 /**
@@ -27,7 +32,7 @@ export interface MoveData {
   name: string;
   nameJa: string;
   type: PokemonType;
-  category: "Physical" | "Special" | "Status";
+  category: 'Physical' | 'Special' | 'Status';
   power: number | null;
   accuracy: number | null;
   pp: number;

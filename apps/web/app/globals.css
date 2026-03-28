@@ -16,8 +16,6 @@
   }
 }
 
-
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -74,13 +72,21 @@
   }
 }
 
-
-
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .hero-gradient {
+    @apply bg-gradient-to-br from-blue-900 via-pokemon-blue to-blue-500;
+  }
+
+  .card-hover-safe {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-pokemon-blue/20;
   }
 }

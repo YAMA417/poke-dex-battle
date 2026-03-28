@@ -9,6 +9,7 @@
 ### 1. API配置先: Next.js Route Handlers（推奨）
 
 **理由:**
+
 - ポケモンデータは読み取り専用の静的データ → Honoの担うステートフルCRUD（auth/parties/battles）とは責務が異なる
 - 同一オリジン → CORS設定不要
 - Next.jsの組み込みキャッシュ（ISR/static）を活用可能
@@ -17,6 +18,7 @@
 ### 2. ビルド時JSON抽出: 初回から実施（推奨）
 
 **理由:**
+
 - `pokemon-showdown` は巨大パッケージ（バトルシミュレータ全体を含む）→ プロダクションバンドルに含めるべきでない
 - `devDependencies` にすることでプロダクション依存から排除
 - 静的JSONはファイル読み込みのみ → Dex初期化のオーバーヘッドなし
@@ -104,9 +106,11 @@ packages/shared/src/types/pokemon-data.ts         新設。以下のアプリ内
 **目的**: ビルド時に `pokemon-showdown` の Gen9 Dex から必要フィールドのみを抽出し、静的JSONファイルを生成する。
 
 **公開インターフェース**:
+
 - `extractShowdownData(): Promise<void>` — メインエントリ（CLIから直接実行）
 
 **処理手順**:
+
 1. `Dex.mod('gen9')` でGen9インスタンスを生成
 2. 既存の日本語名マップJSON（`pokemon-name-map.json` 等）を読み込み
 3. `dex.species.all()` をループし、`exists === true` のもののみ抽出:
@@ -130,12 +134,12 @@ packages/shared/src/types/pokemon-data.ts         新設。以下のアプリ内
 
 **型定義**:
 
-| 型名 | フィールド |
-|------|-----------|
-| `ShowdownSpecies` | `id: string`, `num: number`, `name: string`, `nameJa: string`, `types: PokemonType[]`, `baseStats: Stats`, `abilities: { 0: string; 1?: string; H?: string }`, `weightkg: number`, `heightm: number` |
-| `ShowdownMove` | `id: string`, `num: number`, `name: string`, `nameJa: string`, `type: PokemonType`, `category: MoveCategory`, `basePower: number`, `accuracy: number \| true`, `pp: number`, `priority: number`, `target: string` |
-| `ShowdownItem` | `id: string`, `num: number`, `name: string`, `nameJa: string`, `desc: string`, `shortDesc: string` |
-| `ShowdownLearnsetEntry` | `{ learnset: Record<string, string[]> }` |
+| 型名                    | フィールド                                                                                                                                                                                                        |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ShowdownSpecies`       | `id: string`, `num: number`, `name: string`, `nameJa: string`, `types: PokemonType[]`, `baseStats: Stats`, `abilities: { 0: string; 1?: string; H?: string }`, `weightkg: number`, `heightm: number`              |
+| `ShowdownMove`          | `id: string`, `num: number`, `name: string`, `nameJa: string`, `type: PokemonType`, `category: MoveCategory`, `basePower: number`, `accuracy: number \| true`, `pp: number`, `priority: number`, `target: string` |
+| `ShowdownItem`          | `id: string`, `num: number`, `name: string`, `nameJa: string`, `desc: string`, `shortDesc: string`                                                                                                                |
+| `ShowdownLearnsetEntry` | `{ learnset: Record<string, string[]> }`                                                                                                                                                                          |
 
 ---
 
@@ -145,13 +149,14 @@ packages/shared/src/types/pokemon-data.ts         新設。以下のアプリ内
 
 **公開インターフェース**:
 
-| 関数 | 引数 | 戻り値 |
-|------|------|--------|
-| `getPokemonByName(name: string)` | name: 英語名またはShowdown ID | `PokemonSpeciesData \| null` |
-| `searchPokemon(query: string)` | query: 部分一致クエリ | `PokemonSpeciesData[]` |
-| `getAllPokemonNames()` | なし | `Array<{ id: string; name: string; nameJa: string }>` |
+| 関数                             | 引数                          | 戻り値                                                |
+| -------------------------------- | ----------------------------- | ----------------------------------------------------- |
+| `getPokemonByName(name: string)` | name: 英語名またはShowdown ID | `PokemonSpeciesData \| null`                          |
+| `searchPokemon(query: string)`   | query: 部分一致クエリ         | `PokemonSpeciesData[]`                                |
+| `getAllPokemonNames()`           | なし                          | `Array<{ id: string; name: string; nameJa: string }>` |
 
 **処理手順** (`getPokemonByName`):
+
 1. species.json をインポート（モジュールキャッシュで1回のみ読み込み）
 2. 入力を小文字化・正規化してShowdown ID形式にする
 3. IDでJSONを検索
@@ -170,13 +175,14 @@ packages/shared/src/types/pokemon-data.ts         新設。以下のアプリ内
 
 **公開インターフェース**:
 
-| 関数 | 引数 | 戻り値 |
-|------|------|--------|
-| `getMoveByName(name: string)` | name: 英語名またはShowdown ID | `MoveData \| null` |
-| `getLearnset(pokemonName: string)` | pokemonName: ポケモン名 | `string[]`（技ID配列） |
-| `getAllMoveNames()` | なし | `Array<{ id: string; name: string; nameJa: string }>` |
+| 関数                               | 引数                          | 戻り値                                                |
+| ---------------------------------- | ----------------------------- | ----------------------------------------------------- |
+| `getMoveByName(name: string)`      | name: 英語名またはShowdown ID | `MoveData \| null`                                    |
+| `getLearnset(pokemonName: string)` | pokemonName: ポケモン名       | `string[]`（技ID配列）                                |
+| `getAllMoveNames()`                | なし                          | `Array<{ id: string; name: string; nameJa: string }>` |
 
 **処理手順** (`getMoveByName`):
+
 1. moves.json をインポート
 2. 入力を正規化してShowdown ID形式にする
 3. IDで検索、見つからなければ move resolver で変換して再検索
@@ -185,6 +191,7 @@ packages/shared/src/types/pokemon-data.ts         新設。以下のアプリ内
 5. 見つからない場合 `null` を返す
 
 **処理手順** (`getLearnset`):
+
 1. learnsets.json をインポート
 2. ポケモン名をShowdown IDに変換
 3. 該当ポケモンのlearnsetオブジェクトからキー（技ID）を配列として返す
@@ -198,10 +205,10 @@ packages/shared/src/types/pokemon-data.ts         新設。以下のアプリ内
 
 **公開インターフェース**:
 
-| 関数 | 引数 | 戻り値 |
-|------|------|--------|
-| `getItemByName(name: string)` | name: 英語名またはShowdown ID | `ItemData \| null` |
-| `getAllItemNames()` | なし | `Array<{ id: string; name: string; nameJa: string }>` |
+| 関数                          | 引数                          | 戻り値                                                |
+| ----------------------------- | ----------------------------- | ----------------------------------------------------- |
+| `getItemByName(name: string)` | name: 英語名またはShowdown ID | `ItemData \| null`                                    |
+| `getAllItemNames()`           | なし                          | `Array<{ id: string; name: string; nameJa: string }>` |
 
 **処理手順**: move-service と同パターン
 
@@ -213,14 +220,15 @@ packages/shared/src/types/pokemon-data.ts         新設。以下のアプリ内
 
 **共通パターン**:
 
-| エンドポイント | サービス関数 |
-|---------------|-------------|
-| `GET /api/pokemon/[name]` | `getPokemonByName(name)` |
-| `GET /api/pokemon/[name]/learnset` | `getLearnset(name)` |
-| `GET /api/move/[name]` | `getMoveByName(name)` |
-| `GET /api/item/[name]` | `getItemByName(name)` |
+| エンドポイント                     | サービス関数             |
+| ---------------------------------- | ------------------------ |
+| `GET /api/pokemon/[name]`          | `getPokemonByName(name)` |
+| `GET /api/pokemon/[name]/learnset` | `getLearnset(name)`      |
+| `GET /api/move/[name]`             | `getMoveByName(name)`    |
+| `GET /api/item/[name]`             | `getItemByName(name)`    |
 
 **処理手順**（全エンドポイント共通）:
+
 1. `params.name` を取得（URLデコード）
 2. 対応するサービス関数を呼び出し
 3. データあり → `Response.json(data)` ステータス200
@@ -234,6 +242,7 @@ packages/shared/src/types/pokemon-data.ts         新設。以下のアプリ内
 **変更方針**: fetch先URLのみ変更。デバウンス・ローディング・エラー管理のロジックは維持。
 
 **変更点**:
+
 - `resolvePokemonName()` + `fetchPokemon()` + `fetchPokemonSpecies()` → `fetch('/api/pokemon/' + encodeURIComponent(name))`
 - `fetchMove()` → `fetch('/api/move/' + encodeURIComponent(name))`
 - `fetchItem()` → `fetch('/api/item/' + encodeURIComponent(name))`
@@ -264,17 +273,21 @@ packages/shared/src/types/pokemon-data.ts         新設。以下のアプリ内
 本設計は [damage-calc-refactoring-design.md](damage-calc-refactoring-design.md) と以下の関係がある。
 
 ### 影響なし（独立）
+
 - ダメージ計算ロジック全体（`utils/damage-calc/`）— `CalcPokemon`, `CalcMove`, `BattleContext` はPokeAPI非依存
 - 定数（`constants/types.ts`）— 両設計から参照されるが変更なし
 
 ### 要注意: `index.ts` エクスポート変更
+
 両設計とも `packages/shared/src/index.ts` を変更する:
+
 - damage-calc設計: `export * from "./utils/damage-calc"` 追加（実装済み）
 - 本設計: `export * from "./api/pokeapi"` 削除、`export * from "./services/*"` 追加
 
 衝突はしないが、実装時に既存のdamage-calcエクスポートを壊さないこと。
 
 ### 要注意: `types/pokeapi.ts` → `types/pokemon-data.ts` 移動
+
 `pokeapi.ts` 内のアプリ内部型（`PokemonSpeciesData` 等）は damage-calc では直接使用していないが、`types/index.ts` の re-export 構造に影響する。`types/index.ts` で `pokemon-data.ts` を re-export すること。
 
 ---

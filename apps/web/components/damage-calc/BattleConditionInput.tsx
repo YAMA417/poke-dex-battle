@@ -1,15 +1,15 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import type { Field, Weather } from "@poke-dex-battle/shared";
-import { WEATHER_OPTIONS, FIELD_OPTIONS } from "@poke-dex-battle/shared";
+} from '@/components/ui/select';
+import type { Field, Weather } from '@poke-dex-battle/shared';
+import { WEATHER_OPTIONS, FIELD_OPTIONS } from '@poke-dex-battle/shared';
 
 interface BattleConditionInputProps {
   weather: Weather;
@@ -45,8 +45,10 @@ export function BattleConditionInput({
       <CardContent className="py-3">
         <div className="flex flex-wrap items-end gap-4">
           {/* 天候 */}
-          <div className="space-y-1 min-w-[120px]">
-            <Label htmlFor="weather" className="text-xs">天候</Label>
+          <div className="min-w-[120px] space-y-1">
+            <Label htmlFor="weather" className="text-xs">
+              天候
+            </Label>
             <Select
               value={weather}
               onValueChange={(value: string) => onWeatherChange(value as Weather)}
@@ -65,12 +67,11 @@ export function BattleConditionInput({
           </div>
 
           {/* フィールド */}
-          <div className="space-y-1 min-w-[140px]">
-            <Label htmlFor="field" className="text-xs">フィールド</Label>
-            <Select
-              value={field}
-              onValueChange={(value: string) => onFieldChange(value as Field)}
-            >
+          <div className="min-w-[140px] space-y-1">
+            <Label htmlFor="field" className="text-xs">
+              フィールド
+            </Label>
+            <Select value={field} onValueChange={(value: string) => onFieldChange(value as Field)}>
               <SelectTrigger id="field" className="h-8 text-sm">
                 <SelectValue />
               </SelectTrigger>
@@ -91,7 +92,7 @@ export function BattleConditionInput({
               checked={isHelpingHand}
               onCheckedChange={onHelpingHandChange}
             />
-            <Label htmlFor="helpingHand" className="text-xs font-normal cursor-pointer">
+            <Label htmlFor="helpingHand" className="cursor-pointer text-xs font-normal">
               てだすけ（1.5倍）
             </Label>
           </div>
@@ -103,19 +104,15 @@ export function BattleConditionInput({
               checked={isCriticalHit}
               onCheckedChange={onCriticalHitChange}
             />
-            <Label htmlFor="criticalHit" className="text-xs font-normal cursor-pointer">
+            <Label htmlFor="criticalHit" className="cursor-pointer text-xs font-normal">
               急所
             </Label>
           </div>
 
           {/* リフレクター */}
           <div className="flex items-center space-x-2 pb-1">
-            <Checkbox
-              id="reflect"
-              checked={isReflect}
-              onCheckedChange={onReflectChange}
-            />
-            <Label htmlFor="reflect" className="text-xs font-normal cursor-pointer">
+            <Checkbox id="reflect" checked={isReflect} onCheckedChange={onReflectChange} />
+            <Label htmlFor="reflect" className="cursor-pointer text-xs font-normal">
               リフレクター（物理0.5倍）
             </Label>
           </div>
@@ -127,7 +124,7 @@ export function BattleConditionInput({
               checked={isLightScreen}
               onCheckedChange={onLightScreenChange}
             />
-            <Label htmlFor="lightScreen" className="text-xs font-normal cursor-pointer">
+            <Label htmlFor="lightScreen" className="cursor-pointer text-xs font-normal">
               ひかりのかべ（特殊0.5倍）
             </Label>
           </div>

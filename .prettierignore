@@ -5,3 +5,5 @@ out/
 packages/shared/src/data/
 coverage/
 *.tsbuildinfo
+next-env.d.ts
+docs/

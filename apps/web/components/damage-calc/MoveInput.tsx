@@ -1,25 +1,27 @@
-"use client";
+'use client';
 
-import { Autocomplete } from "@/components/ui/autocomplete";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Autocomplete } from '@/components/ui/autocomplete';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import type { PokemonType } from "@poke-dex-battle/shared";
-import { POKEMON_TYPE_OPTIONS, getAllMoves, getMoveByName, getLevelMoves, getMachineMoves } from "@poke-dex-battle/shared";
-import { useMemo } from "react";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useAllMoves, useLearnset, usePokemonByName } from '@/hooks/useApiData';
+import type { MoveRow } from '@/lib/api-adapters';
+import type { PokemonType } from '@poke-dex-battle/shared';
+import { POKEMON_TYPE_OPTIONS } from '@poke-dex-battle/shared';
+import { useMemo } from 'react';
 
 export interface MoveSelectData {
   name: string;
   power: number;
   type: PokemonType;
-  category: "Physical" | "Special";
+  category: 'Physical' | 'Special';
   target: string;
 }
 
@@ -28,13 +30,13 @@ interface MoveInputProps {
   moveName: string;
   movePower: number;
   moveType: PokemonType;
-  moveCategory: "Physical" | "Special";
+  moveCategory: 'Physical' | 'Special';
   // 技選択時の一括更新（rerender-move-effect-to-event）
   onMoveSelect: (data: MoveSelectData) => void;
   // 個別フィールドの手動変更（フルモードのみ）
   onMovePowerChange: (power: number) => void;
   onMoveTypeChange: (type: PokemonType) => void;
-  onMoveCategoryChange: (category: "Physical" | "Special") => void;
+  onMoveCategoryChange: (category: 'Physical' | 'Special') => void;
   compact?: boolean;
 }
 
@@ -50,14 +52,20 @@ export function MoveInput({
   onMoveCategoryChange,
   compact,
 }: MoveInputProps) {
+  // API経由でデータを取得
+  const { data: allMoves } = useAllMoves();
+  const { data: pokemonData } = usePokemonByName(pokemonName || null);
+  const pokemonId = pokemonData?.id ?? null;
+  const { data: learnsetData } = useLearnset(pokemonId);
+
   // 全技データ（ポケモン選択時は learnset で絞り込み、レベル技/わざマシンで分類）
   const moveOptions = useMemo(() => {
-    const allMoves = getAllMoves();
+    if (!allMoves) return [];
     const moveById = new Map(allMoves.map((m) => [m.id, m]));
 
-    if (pokemonName) {
-      const levelMoveIds = getLevelMoves(pokemonName);
-      const machineMoveIds = getMachineMoves(pokemonName);
+    if (pokemonName && learnsetData) {
+      const levelMoveIds: string[] = learnsetData.level ?? [];
+      const machineMoveIds: string[] = learnsetData.machine ?? [];
 
       if (levelMoveIds.length > 0 || machineMoveIds.length > 0) {
         const levelOptions = levelMoveIds
@@ -67,7 +75,7 @@ export function MoveInput({
             label: move.nameJa,
             value: move.nameJa,
             id: `move-${move.id}`,
-            group: "レベル技・思い出し技",
+            group: 'レベル技・思い出し技',
           }));
 
         const levelMoveIdSet = new Set(levelMoveIds);
@@ -80,7 +88,7 @@ export function MoveInput({
             label: move.nameJa,
             value: move.nameJa,
             id: `move-${move.id}`,
-            group: "わざマシン",
+            group: 'わざマシン',
           }));
 
         return [...levelOptions, ...machineOptions];
@@ -93,20 +101,27 @@ export function MoveInput({
       value: move.nameJa,
       id: `move-${move.id}`,
     }));
-  }, [pokemonName]);
+  }, [pokemonName, allMoves, learnsetData]);
 
-  // rerender-move-effect-to-event: 技選択時にデータを同期的に取得し一括反映
+  // 全技のMap（技選択時の検索用）
+  const moveByNameJa = useMemo(() => {
+    if (!allMoves) return new Map<string, MoveRow>();
+    return new Map(allMoves.map((m) => [m.nameJa, m]));
+  }, [allMoves]);
+
+  // rerender-move-effect-to-event: 技選択時にデータを一括反映
   const handleMoveSelect = (selectedName: string) => {
-    const moveData = getMoveByName(selectedName);
+    const moveData = moveByNameJa.get(selectedName);
     if (moveData) {
       onMoveSelect({
         name: selectedName,
         power: moveData.power ?? movePower,
         type: moveData.type as PokemonType,
-        category: (moveData.category === "Physical" || moveData.category === "Special")
-          ? moveData.category
-          : moveCategory,
-        target: moveData.target ?? "",
+        category:
+          moveData.category === 'Physical' || moveData.category === 'Special'
+            ? moveData.category
+            : moveCategory,
+        target: moveData.target ?? '',
       });
     } else {
       onMoveSelect({
@@ -114,7 +129,7 @@ export function MoveInput({
         power: movePower,
         type: moveType,
         category: moveCategory,
-        target: "",
+        target: '',
       });
     }
   };
@@ -181,26 +196,18 @@ export function MoveInput({
         <Label>カテゴリ</Label>
         <RadioGroup
           value={moveCategory}
-          onValueChange={(value: string) =>
-            onMoveCategoryChange(value as "Physical" | "Special")
-          }
+          onValueChange={(value: string) => onMoveCategoryChange(value as 'Physical' | 'Special')}
           className="flex space-x-4"
         >
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="Physical" id="category-physical" />
-            <Label
-              htmlFor="category-physical"
-              className="text-sm font-normal cursor-pointer"
-            >
+            <Label htmlFor="category-physical" className="cursor-pointer text-sm font-normal">
               物理
             </Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="Special" id="category-special" />
-            <Label
-              htmlFor="category-special"
-              className="text-sm font-normal cursor-pointer"
-            >
+            <Label htmlFor="category-special" className="cursor-pointer text-sm font-normal">
               特殊
             </Label>
           </div>

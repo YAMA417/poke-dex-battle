@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface NatureModifierRadioProps {
   statName: string;
@@ -10,16 +10,12 @@ interface NatureModifierRadioProps {
 }
 
 const MODIFIER_OPTIONS = [
-  { value: "1.1", label: "1.1倍" },
-  { value: "1.0", label: "1.0倍" },
-  { value: "0.9", label: "0.9倍" },
+  { value: '1.1', label: '1.1倍' },
+  { value: '1.0', label: '1.0倍' },
+  { value: '0.9', label: '0.9倍' },
 ] as const;
 
-export function NatureModifierRadio({
-  statName,
-  value,
-  onChange,
-}: NatureModifierRadioProps) {
+export function NatureModifierRadio({ statName, value, onChange }: NatureModifierRadioProps) {
   return (
     <div className="space-y-2">
       <Label className="text-sm font-medium">{statName}の性格補正</Label>
@@ -33,7 +29,7 @@ export function NatureModifierRadio({
             <RadioGroupItem value={option.value} id={`${statName}-${option.value}`} />
             <Label
               htmlFor={`${statName}-${option.value}`}
-              className="text-sm font-normal cursor-pointer"
+              className="cursor-pointer text-sm font-normal"
             >
               {option.label}
             </Label>
