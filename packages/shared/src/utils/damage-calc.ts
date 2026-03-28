@@ -1,5 +1,6 @@
 import type { Field, MoveFlags, StatStage, Weather } from '../types/damage';
 import type { PokemonType } from '../types/pokemon';
+import { abilityIs, itemIs } from './normalize-id';
 
 /**
  * 能力ランクから補正倍率を取得
@@ -35,7 +36,7 @@ export function calculateStab(
   isTerastallized?: boolean,
   attackerAbility?: string
 ): number {
-  const isAdaptability = attackerAbility === 'Adaptability';
+  const isAdaptability = abilityIs(attackerAbility, 'Adaptability');
 
   // テラスタル使用時
   if (isTerastallized && attackerTeraType) {
@@ -69,25 +70,29 @@ export function calculateAttackerAbilityModifier(
 ): number {
   if (!ability) return 1.0;
 
-  switch (ability) {
-    case 'Technician': // テクニシャン: 威力60以下の技が1.5倍
-      return movePower <= 60 ? 1.5 : 1.0;
-
-    case 'Iron Fist': // てつのこぶし: パンチ技が1.2倍
-      return moveFlags?.isPunchMove ? 1.2 : 1.0;
-
-    case 'Reckless': // すてみ: 反動技が1.2倍
-      return moveFlags?.isRecoilMove ? 1.2 : 1.0;
-
-    case 'Huge Power': // ちからもち: 物理攻撃が2倍（実数値に適用済みと想定）
-    case 'Pure Power': // ヨガパワー: 物理攻撃が2倍（実数値に適用済みと想定）
-      // 注: この特性は攻撃の実数値に適用されるため、ここでは1.0を返す
-      // UI側で攻撃実数値を入力する際に考慮する
-      return 1.0;
-
-    default:
-      return 1.0;
+  // テクニシャン: 威力60以下の技が1.5倍
+  if (abilityIs(ability, 'Technician')) {
+    return movePower <= 60 ? 1.5 : 1.0;
   }
+
+  // てつのこぶし: パンチ技が1.2倍
+  if (abilityIs(ability, 'Iron Fist')) {
+    return moveFlags?.isPunchMove ? 1.2 : 1.0;
+  }
+
+  // すてみ: 反動技が1.2倍
+  if (abilityIs(ability, 'Reckless')) {
+    return moveFlags?.isRecoilMove ? 1.2 : 1.0;
+  }
+
+  // ちからもち / ヨガパワー: 物理攻撃が2倍（実数値に適用済みと想定）
+  // 注: この特性は攻撃の実数値に適用されるため、ここでは1.0を返す
+  // UI側で攻撃実数値を入力する際に考慮する
+  if (abilityIs(ability, 'Huge Power') || abilityIs(ability, 'Pure Power')) {
+    return 1.0;
+  }
+
+  return 1.0;
 }
 
 /**
@@ -104,32 +109,37 @@ export function calculateDefenderAbilityModifier(
 ): number {
   if (!ability) return 1.0;
 
-  switch (ability) {
-    case 'Multiscale': // マルチスケイル: HP満タン時ダメージ0.5倍
-    case 'Shadow Shield': // ファントムガード: HP満タン時ダメージ0.5倍
-      if (currentHp && maxHp && currentHp === maxHp) {
-        return 0.5;
-      }
-      return 1.0;
-
-    case 'Solid Rock': // ハードロック: 効果抜群を0.75倍
-    case 'Filter': // フィルター: 効果抜群を0.75倍
-      return typeEffectiveness > 1 ? 0.75 : 1.0;
-
-    case 'Fluffy': // もふもふ: 接触技0.5倍、炎技2倍
-      if (moveFlags?.isContactMove) return 0.5;
-      if (moveType === 'Fire') return 2.0;
-      return 1.0;
-
-    case 'Thick Fat': // あついしぼう: 炎・氷技を0.5倍
-      return moveType === 'Fire' || moveType === 'Ice' ? 0.5 : 1.0;
-
-    case 'Ice Scales': // こおりのりんぷん: 特殊ダメージ0.5倍
-      return moveCategory === 'Special' ? 0.5 : 1.0;
-
-    default:
-      return 1.0;
+  // マルチスケイル / ファントムガード: HP満タン時ダメージ0.5倍
+  if (abilityIs(ability, 'Multiscale') || abilityIs(ability, 'Shadow Shield')) {
+    if (currentHp && maxHp && currentHp === maxHp) {
+      return 0.5;
+    }
+    return 1.0;
   }
+
+  // ハードロック / フィルター: 効果抜群を0.75倍
+  if (abilityIs(ability, 'Solid Rock') || abilityIs(ability, 'Filter')) {
+    return typeEffectiveness > 1 ? 0.75 : 1.0;
+  }
+
+  // もふもふ: 接触技0.5倍、炎技2倍
+  if (abilityIs(ability, 'Fluffy')) {
+    if (moveFlags?.isContactMove) return 0.5;
+    if (moveType === 'Fire') return 2.0;
+    return 1.0;
+  }
+
+  // あついしぼう: 炎・氷技を0.5倍
+  if (abilityIs(ability, 'Thick Fat')) {
+    return moveType === 'Fire' || moveType === 'Ice' ? 0.5 : 1.0;
+  }
+
+  // こおりのりんぷん: 特殊ダメージ0.5倍
+  if (abilityIs(ability, 'Ice Scales')) {
+    return moveCategory === 'Special' ? 0.5 : 1.0;
+  }
+
+  return 1.0;
 }
 
 /**
@@ -143,36 +153,49 @@ export function calculateAttackerItemModifier(
 ): number {
   if (!item) return 1.0;
 
-  switch (item) {
-    case 'Choice Band': // こだわりハチマキ: 物理攻撃1.5倍
-      return moveCategory === 'Physical' ? 1.5 : 1.0;
-
-    case 'Choice Specs': // こだわりメガネ: 特殊攻撃1.5倍
-      return moveCategory === 'Special' ? 1.5 : 1.0;
-
-    case 'Life Orb': // いのちのたま: 全ての技1.3倍
-      return 1.3;
-
-    case 'Expert Belt': // たつじんのおび: 効果抜群1.2倍
-      return typeEffectiveness > 1 ? 1.2 : 1.0;
-
-    case 'Muscle Band': // ちからのハチマキ: 物理攻撃1.1倍
-      return moveCategory === 'Physical' ? 1.1 : 1.0;
-
-    case 'Wise Glasses': // ものしりメガネ: 特殊攻撃1.1倍
-      return moveCategory === 'Special' ? 1.1 : 1.0;
-
-    case 'Normal Gem': // ノーマルジュエル: ノーマルタイプ1.3倍（1回のみ）
-      return moveType === 'Normal' ? 1.3 : 1.0;
-
-    case 'Punching Glove': // パンチグローブ: パンチ技1.1倍
-      // 注: パンチ技かどうかはmoveFlagsで判定する必要がある
-      // ここでは簡易的に1.0を返す（後でcalculateDamageで処理）
-      return 1.0;
-
-    default:
-      return 1.0;
+  // こだわりハチマキ: 物理攻撃1.5倍
+  if (itemIs(item, 'Choice Band')) {
+    return moveCategory === 'Physical' ? 1.5 : 1.0;
   }
+
+  // こだわりメガネ: 特殊攻撃1.5倍
+  if (itemIs(item, 'Choice Specs')) {
+    return moveCategory === 'Special' ? 1.5 : 1.0;
+  }
+
+  // いのちのたま: 全ての技1.3倍
+  if (itemIs(item, 'Life Orb')) {
+    return 1.3;
+  }
+
+  // たつじんのおび: 効果抜群1.2倍
+  if (itemIs(item, 'Expert Belt')) {
+    return typeEffectiveness > 1 ? 1.2 : 1.0;
+  }
+
+  // ちからのハチマキ: 物理攻撃1.1倍
+  if (itemIs(item, 'Muscle Band')) {
+    return moveCategory === 'Physical' ? 1.1 : 1.0;
+  }
+
+  // ものしりメガネ: 特殊攻撃1.1倍
+  if (itemIs(item, 'Wise Glasses')) {
+    return moveCategory === 'Special' ? 1.1 : 1.0;
+  }
+
+  // ノーマルジュエル: ノーマルタイプ1.3倍（1回のみ）
+  if (itemIs(item, 'Normal Gem')) {
+    return moveType === 'Normal' ? 1.3 : 1.0;
+  }
+
+  // パンチグローブ: パンチ技1.1倍
+  // 注: パンチ技かどうかはmoveFlagsで判定する必要がある
+  // ここでは簡易的に1.0を返す（後でcalculateDamageで処理）
+  if (itemIs(item, 'Punching Glove')) {
+    return 1.0;
+  }
+
+  return 1.0;
 }
 
 /**
@@ -184,20 +207,21 @@ export function calculateDefenderItemModifier(
 ): number {
   if (!item) return 1.0;
 
-  switch (item) {
-    case 'Eviolite': // しんかのきせき: 防御・特防1.5倍（実数値に適用済みと想定）
-      // 注: この持ち物は防御/特防の実数値に適用されるため、ここでは1.0を返す
-      // UI側で防御実数値を入力する際に考慮する
-      return 1.0;
-
-    case 'Assault Vest': // とつげきチョッキ: 特防1.5倍（実数値に適用済みと想定）
-      // 注: この持ち物は特防の実数値に適用されるため、ここでは1.0を返す
-      // UI側で防御実数値を入力する際に考慮する
-      return 1.0;
-
-    default:
-      return 1.0;
+  // しんかのきせき: 防御・特防1.5倍（実数値に適用済みと想定）
+  // 注: この持ち物は防御/特防の実数値に適用されるため、ここでは1.0を返す
+  // UI側で防御実数値を入力する際に考慮する
+  if (itemIs(item, 'Eviolite')) {
+    return 1.0;
   }
+
+  // とつげきチョッキ: 特防1.5倍（実数値に適用済みと想定）
+  // 注: この持ち物は特防の実数値に適用されるため、ここでは1.0を返す
+  // UI側で防御実数値を入力する際に考慮する
+  if (itemIs(item, 'Assault Vest')) {
+    return 1.0;
+  }
+
+  return 1.0;
 }
 
 /**

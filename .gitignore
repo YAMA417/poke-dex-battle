@@ -20,6 +20,7 @@ packages/shared/src/data/showdown/
 .env.test.local
 .env.production.local
 .env*.local
+.env.supabase
 
 # IDE
 .vscode/
@@ -66,3 +67,4 @@ expo-env.d.ts
 
 # Misc
 *.pem
+.vercel

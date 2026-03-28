@@ -1,4 +1,5 @@
 import type { BattleContext, CalcMove, CalcPokemon, DamageResult } from '../../types/damage';
+import { moveIs } from '../normalize-id';
 import { calculateBaseDamage } from './calculate-base-damage';
 import { calculateModifier } from './calculate-modifier';
 import { resolveBasePower } from './resolve-base-power';
@@ -54,14 +55,22 @@ export function calculateDamageV2(
   move: CalcMove,
   context: BattleContext
 ): DamageResult {
+  // テラバースト (Tera Blast): テラスタル時にA > Cなら物理技として計算
+  let effectiveMove: CalcMove = move;
+  if (moveIs(move.name, 'Tera Blast') && attacker.isTerastallized) {
+    if (attacker.stats.atk > attacker.stats.spa) {
+      effectiveMove = { ...move, category: 'Physical' };
+    }
+  }
+
   // 1. 技の最終威力を計算
-  const finalPower = resolveBasePower(move, attacker, defender, context);
+  const finalPower = resolveBasePower(effectiveMove, attacker, defender, context);
 
   // 2. 実効攻撃力を計算
-  const finalAttack = resolveEffectiveAttack(attacker, move, context, defender.ability);
+  const finalAttack = resolveEffectiveAttack(attacker, effectiveMove, context, defender.ability);
 
   // 3. 実効防御力を計算
-  const finalDefense = resolveEffectiveDefense(defender, move, attacker.ability, context);
+  const finalDefense = resolveEffectiveDefense(defender, effectiveMove, attacker.ability, context);
 
   // 4. ベースダメージを計算
   const baseDamage = calculateBaseDamage(attacker.level, finalPower, finalAttack, finalDefense);
@@ -71,7 +80,7 @@ export function calculateDamageV2(
     baseDamage,
     attacker,
     defender,
-    move,
+    effectiveMove,
     context
   );
 

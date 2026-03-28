@@ -1,3 +1,4 @@
+import { getTypeResistBerryType } from '../../constants/item-type-map';
 import { calcTypeEffectiveness } from '../../constants/types';
 import type { BattleContext, CalcMove, CalcPokemon } from '../../types/damage';
 import {
@@ -7,6 +8,7 @@ import {
   calculateStab,
   calculateWeatherModifier,
 } from '../damage-calc';
+import { abilityIs, itemIs, moveIs } from '../normalize-id';
 import { applyOtherModifiers } from './apply-other-modifiers';
 
 interface ModifierResult {
@@ -56,7 +58,11 @@ export function calculateModifier(
 
   // 3. Critical (急所補正) - BEFORE random
   // スナイパー (Sniper): 急所時 1.5倍 → 2.25倍
-  const criticalModifier = move.isCritical ? (attacker.ability === 'Sniper' ? 2.25 : 1.5) : 1.0;
+  const criticalModifier = move.isCritical
+    ? abilityIs(attacker.ability, 'Sniper')
+      ? 2.25
+      : 1.5
+    : 1.0;
   minDamage = Math.floor(minDamage * criticalModifier);
   maxDamage = Math.floor(maxDamage * criticalModifier);
 
@@ -81,12 +87,30 @@ export function calculateModifier(
 
   // 色眼鏡 (Tinted Lens): 効果いまひとつの技が2倍
   const effectiveTypeMultiplier =
-    attacker.ability === 'Tinted Lens' && typeEffectiveness < 1
+    abilityIs(attacker.ability, 'Tinted Lens') && typeEffectiveness < 1
       ? typeEffectiveness * 2
       : typeEffectiveness;
 
   minDamage = Math.floor(minDamage * effectiveTypeMultiplier);
   maxDamage = Math.floor(maxDamage * effectiveTypeMultiplier);
+
+  // 6.5 イナズマドライブ / アクセルブレイク: 効果抜群時に 5461/4096倍
+  if (
+    (moveIs(move.name, 'Electro Drift') || moveIs(move.name, 'Collision Course')) &&
+    typeEffectiveness > 1
+  ) {
+    minDamage = Math.floor((minDamage * 5461) / 4096);
+    maxDamage = Math.floor((maxDamage * 5461) / 4096);
+  }
+
+  // 6.6 半減実: 効果抜群のダメージを0.5倍
+  // チランのみ (Normal) はノーマル技が常に等倍以下なので typeEffectiveness > 1 が成立しない → 別途対応
+  const resistBerryType = getTypeResistBerryType(defender.item);
+  const berryActivates = typeEffectiveness > 1 || resistBerryType === 'Normal';
+  if (resistBerryType && resistBerryType === move.type && berryActivates) {
+    minDamage = Math.floor(minDamage * 0.5);
+    maxDamage = Math.floor(maxDamage * 0.5);
+  }
 
   // 7. "other" modifiers (ダメージ補正のみ) - AFTER Type
   const otherModifiers: number[] = [];
@@ -103,20 +127,28 @@ export function calculateModifier(
   }
 
   // いのちのたま: ダメージ1.3倍
-  if (attacker.item === 'Life Orb') {
+  if (itemIs(attacker.item, 'Life Orb')) {
     otherModifiers.push(1.3);
   }
 
-  // 防御側特性によるダメージ補正
-  const defenderAbilityModifier = calculateDefenderAbilityModifier(
-    defender.ability,
-    typeEffectiveness,
-    move.type,
-    move.flags,
-    defender.currentHp,
-    defender.maxHp,
-    move.category
-  );
+  // かたやぶり系 (Mold Breaker / Turboblaze / Teravolt): 防御側特性を無視
+  const isMoldBreaker =
+    abilityIs(attacker.ability, 'Mold Breaker') ||
+    abilityIs(attacker.ability, 'Turboblaze') ||
+    abilityIs(attacker.ability, 'Teravolt');
+
+  // 防御側特性によるダメージ補正（かたやぶり系は無視）
+  const defenderAbilityModifier = isMoldBreaker
+    ? 1.0
+    : calculateDefenderAbilityModifier(
+        defender.ability,
+        typeEffectiveness,
+        move.type,
+        move.flags,
+        defender.currentHp,
+        defender.maxHp,
+        move.category
+      );
   if (defenderAbilityModifier !== 1.0) {
     otherModifiers.push(defenderAbilityModifier);
   }
