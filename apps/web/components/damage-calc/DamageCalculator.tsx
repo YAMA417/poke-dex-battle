@@ -12,6 +12,7 @@ import {
   getAbilityConditionEffect,
   getMoveFlags,
   isSpreadMoveTarget,
+  moveIs,
 } from '@poke-dex-battle/shared';
 import { useAllMoves, useAllAbilities, useAllItems } from '@/hooks/useApiData';
 import { toMoveData, toAbilityData, toItemData } from '@/lib/api-adapters';
@@ -228,6 +229,11 @@ export function DamageCalculator() {
       const moveEnglishName = moveData?.name || '';
       const moveFlags = getMoveFlags(moveEnglishName, moveData?.shortDesc);
 
+      // ワイドフォース: サイコフィールド時は全体技化（防御側2体いる場合のみ）
+      const isExpandingForcePsychic =
+        moveIs(moveEnglishName, 'Expanding Force') && field === 'psychic' && bothDefendersPresent;
+      const effectiveIsSpread = isSpread || isExpandingForcePsychic;
+
       // 特殊技のステータス参照を解決
       let attackerAttack: number;
       let defenderDefense: number;
@@ -284,7 +290,7 @@ export function DamageCalculator() {
           },
           isDoubleBattle: true,
           isHelpingHand,
-          isSpreadMove: isSpread,
+          isSpreadMove: effectiveIsSpread,
           isCriticalHit,
           attackerAbility: attacker.abilityName
             ? abilityByNameJa.get(attacker.abilityName)?.name || undefined
