@@ -117,6 +117,7 @@ export const pokemon = pgTable('pokemon', {
   genderRate: integer('gender_rate'),
   formType: formTypeEnum('form_type').notNull().default('base'),
   baseFormId: bigint('base_form_id', { mode: 'number' }).references((): AnyPgColumn => pokemon.id),
+  nfe: boolean('nfe').notNull().default(false),
 });
 
 // 技マスターデータ

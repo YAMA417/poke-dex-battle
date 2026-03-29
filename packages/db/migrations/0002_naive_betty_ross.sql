@@ -1,0 +1,1 @@
+ALTER TABLE "pokemon" ADD COLUMN "nfe" boolean DEFAULT false NOT NULL;

@@ -1,0 +1,13 @@
+[
+  {
+    "slug": "champions-season1",
+    "name": "チャンピオンズシーズン1",
+    "battleSystems": ["mega"],
+    "restrictedCount": 0,
+    "mythicalAllowed": false,
+    "fromDate": "2026-04-08",
+    "toDate": null,
+    "isDefault": true,
+    "includePokemonCategories": ["normal"]
+  }
+]

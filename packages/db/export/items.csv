@@ -1,0 +1,326 @@
+﻿slug,num,name_en,name_ja,short_desc_en,short_desc_ja,is_competitive,include
+griseous-orb,112,Griseous Orb,はっきんだま,"If held by a Giratina, its Ghost- and Dragon-type attacks have 1.2x power.",ギラティナに　持たせると　ドラゴンと ゴーストタイプの　技の　威力が あがる　光り　輝く　珠。,,○
+douse-drive,116,Douse Drive,アクアカセット,Holder's Techno Blast is Water type.,ゲノセクトに　持たせると テクノバスターという　技が みずタイプになる　カセット。,,○
+shock-drive,117,Shock Drive,イナズマカセット,Holder's Techno Blast is Electric type.,ゲノセクトに　持たせると テクノバスターという　技が でんきタイプになる　カセット。,,○
+burn-drive,118,Burn Drive,ブレイズカセット,Holder's Techno Blast is Fire type.,ゲノセクトに　持たせると テクノバスターという　技が ほのおタイプになる　カセット。,,○
+chill-drive,119,Chill Drive,フリーズカセット,Holder's Techno Blast is Ice type.,ゲノセクトに　持たせると テクノバスターという　技が こおりタイプになる　カセット。,,○
+adamant-orb,135,Adamant Orb,こんごうだま,"If held by a Dialga, its Steel- and Dragon-type attacks have 1.2x power.",ディアルガに　持たせると　ドラゴンと はがねタイプの　技の　威力が あがる　光り　輝く　珠。,,○
+lustrous-orb,136,Lustrous Orb,しらたま,"If held by a Palkia, its Water- and Dragon-type attacks have 1.2x power.",パルキアに　持たせると　ドラゴンと みずタイプの　技の　威力が あがる　美しく　輝く　珠。,,○
+cheri-berry,149,Cheri Berry,クラボのみ,Holder cures itself if it is paralyzed. Single use.,ポケモンに　持たせると まひを　回復する。,,○
+chesto-berry,150,Chesto Berry,カゴのみ,Holder wakes up if it is asleep. Single use.,ポケモンに　持たせると 眠りを　回復する。,,○
+pecha-berry,151,Pecha Berry,モモンのみ,Holder is cured if it is poisoned. Single use.,ポケモンに　持たせると 毒を　回復する。,,○
+rawst-berry,152,Rawst Berry,チーゴのみ,Holder is cured if it is burned. Single use.,ポケモンに　持たせると やけどを　回復する。,,○
+aspear-berry,153,Aspear Berry,ナナシのみ,Holder is cured if it is frozen. Single use.,ポケモンに　持たせると こおりを　回復する。,,○
+leppa-berry,154,Leppa Berry,ヒメリのみ,Restores 10 PP to the first of the holder's moves to reach 0 PP. Single use.,ポケモンに　持たせると ＰＰを　１０だけ　回復する。,,○
+oran-berry,155,Oran Berry,オレンのみ,Restores 10 HP when at 1/2 max HP or less. Single use.,ポケモンに　持たせると ＨＰを　１０だけ　回復する。,,○
+persim-berry,156,Persim Berry,キーのみ,Holder is cured if it is confused. Single use.,ポケモンに　持たせると 混乱を　回復する。,,○
+lum-berry,157,Lum Berry,ラムのみ,Holder cures itself if it has a non-volatile status or is confused. Single use.,ポケモンに　持たせると すべての　状態異常を 回復する。,,○
+sitrus-berry,158,Sitrus Berry,オボンのみ,Restores 1/4 max HP when at 1/2 max HP or less. Single use.,ポケモンに　持たせると ＨＰを　少しだけ　回復する。,,○
+figy-berry,159,Figy Berry,フィラのみ,Restores 1/3 max HP at 1/4 max HP or less; confuses if -Atk Nature. Single use.,ポケモンに　持たせると ピンチのとき　ＨＰを　回復する。 きらいな味だと　混乱する。,,○
+wiki-berry,160,Wiki Berry,ウイのみ,Restores 1/3 max HP at 1/4 max HP or less; confuses if -SpA Nature. Single use.,ポケモンに　持たせると ピンチのとき　ＨＰを　回復する。 きらいな味だと　混乱する。,,○
+mago-berry,161,Mago Berry,マゴのみ,Restores 1/3 max HP at 1/4 max HP or less; confuses if -Spe Nature. Single use.,ポケモンに　持たせると ピンチのとき　ＨＰを　回復する。 きらいな味だと　混乱する。,,○
+aguav-berry,162,Aguav Berry,バンジのみ,Restores 1/3 max HP at 1/4 max HP or less; confuses if -SpD Nature. Single use.,ポケモンに　持たせると ピンチのとき　ＨＰを　回復する。 きらいな味だと　混乱する。,,○
+iapapa-berry,163,Iapapa Berry,イアのみ,Restores 1/3 max HP at 1/4 max HP or less; confuses if -Def Nature. Single use.,ポケモンに　持たせると ピンチのとき　ＨＰを　回復する。 きらいな味だと　混乱する。,,○
+razz-berry,164,Razz Berry,ズリのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,かっこよさに　磨きを　かける　ための ポロックを　つくるとき　使われる。 赤色の実は　食べると　辛い。,,○
+bluk-berry,165,Bluk Berry,ブリーのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,うつくしさに　磨きを　かける　ための ポロックを　つくるとき　使われる。 青色の実は　食べると　渋い。,,○
+nanab-berry,166,Nanab Berry,ナナのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,かわいさに　磨きを　かける　ための ポロックを　つくるとき　使われる。 桃色の実は　食べると　甘い。,,○
+wepear-berry,167,Wepear Berry,セシナのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,かしこさに　磨きを　かける　ための ポロックを　つくるとき　使われる。 緑色の実は　食べると　苦い。,,○
+pinap-berry,168,Pinap Berry,パイルのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,たくましさに　磨きを　かける　ための ポロックを　つくるとき　使われる。 黄色の実は　食べると　酸っぱい。,,○
+pomeg-berry,169,Pomeg Berry,ザロクのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,ポケモンに　あげると とても　なかよく　なりやすくなるが ＨＰの　基礎ポイントは　さがる。,,○
+kelpsy-berry,170,Kelpsy Berry,ネコブのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,ポケモンに　あげると とても　なかよく　なりやすくなるが 攻撃の　基礎ポイントは　さがる。,,○
+qualot-berry,171,Qualot Berry,タポルのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,ポケモンに　あげると とても　なかよく　なりやすくなるが 防御の　基礎ポイントは　さがる。,,○
+hondew-berry,172,Hondew Berry,ロメのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,ポケモンに　あげると とても　なかよく　なりやすくなるが 特攻の　基礎ポイントは　さがる。,,○
+grepa-berry,173,Grepa Berry,ウブのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,ポケモンに　あげると とても　なかよく　なりやすくなるが 特防の　基礎ポイントは　さがる。,,○
+tamato-berry,174,Tamato Berry,マトマのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,ポケモンに　あげると とても　なかよく　なりやすくなるが 素早さの　基礎ポイントは　さがる。,,○
+cornn-berry,175,Cornn Berry,モコシのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,うつくしさに　磨きを　かける　ための ポロックを　つくるとき　使われる。 ほかの　地方では　めずらしい　きのみ。,,○
+magost-berry,176,Magost Berry,ゴスのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,かわいさに　磨きを　かける　ための ポロックを　つくるとき　使われる。 ほかの　地方では　めずらしい　きのみ。,,○
+rabuta-berry,177,Rabuta Berry,ラブタのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,かしこさに　磨きを　かける　ための ポロックを　つくるとき　使われる。 ほかの　地方では　めずらしい　きのみ。,,○
+nomel-berry,178,Nomel Berry,ノメルのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,たくましさに　磨きを　かける　ための ポロックを　つくるとき　使われる。 ほかの　地方では　めずらしい　きのみ。,,○
+spelon-berry,179,Spelon Berry,ノワキのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,かわいさに　磨きを　かける　ための ポロックを　つくるとき　使われる。 ほかの　地方では　めずらしい　きのみ。,,○
+pamtre-berry,180,Pamtre Berry,シーヤのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,うつくしさに　磨きを　かける　ための ポロックを　つくるとき　使われる。 ほかの　地方では　めずらしい　きのみ。,,○
+watmel-berry,181,Watmel Berry,カイスのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,かしこさに　磨きを　かける　ための ポロックを　つくるとき　使われる。 ほかの　地方では　めずらしい　きのみ。,,○
+durin-berry,182,Durin Berry,ドリのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,かしこさに　磨きを　かける　ための ポロックを　つくるとき　使われる。 ほかの　地方では　めずらしい　きのみ。,,○
+belue-berry,183,Belue Berry,ベリブのみ,Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.,うつくしさに　磨きを　かける　ための ポロックを　つくるとき　使われる。 ほかの　地方では　めずらしい　きのみ。,,○
+occa-berry,184,Occa Berry,オッカのみ,Halves damage taken from a supereffective Fire-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　ほのお技を 受けたとき　威力が　弱まる。,,○
+passho-berry,185,Passho Berry,イトケのみ,Halves damage taken from a supereffective Water-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　みず技を 受けたとき　威力が　弱まる。,,○
+wacan-berry,186,Wacan Berry,ソクノのみ,Halves damage taken from a supereffective Electric-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　でんき技を 受けたとき　威力が　弱まる。,,○
+rindo-berry,187,Rindo Berry,リンドのみ,Halves damage taken from a supereffective Grass-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　くさ技を 受けたとき　威力が　弱まる。,,○
+yache-berry,188,Yache Berry,ヤチェのみ,Halves damage taken from a supereffective Ice-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　こおり技を 受けたとき　威力が　弱まる。,,○
+chople-berry,189,Chople Berry,ヨプのみ,Halves damage taken from a supereffective Fighting-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　かくとう技を 受けたとき　威力が　弱まる。,,○
+kebia-berry,190,Kebia Berry,ビアーのみ,Halves damage taken from a supereffective Poison-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　どく技を 受けたとき　威力が　弱まる。,,○
+shuca-berry,191,Shuca Berry,シュカのみ,Halves damage taken from a supereffective Ground-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　じめん技を 受けたとき　威力が　弱まる。,,○
+coba-berry,192,Coba Berry,バコウのみ,Halves damage taken from a supereffective Flying-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　ひこう技を 受けたとき　威力が　弱まる。,,○
+payapa-berry,193,Payapa Berry,ウタンのみ,Halves damage taken from a supereffective Psychic-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　エスパー技を 受けたとき　威力が　弱まる。,,○
+tanga-berry,194,Tanga Berry,タンガのみ,Halves damage taken from a supereffective Bug-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　むし技を 受けたとき　威力が　弱まる。,,○
+charti-berry,195,Charti Berry,ヨロギのみ,Halves damage taken from a supereffective Rock-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　いわ技を 受けたとき　威力が　弱まる。,,○
+kasib-berry,196,Kasib Berry,カシブのみ,Halves damage taken from a supereffective Ghost-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　ゴースト技を 受けたとき　威力が　弱まる。,,○
+haban-berry,197,Haban Berry,ハバンのみ,Halves damage taken from a supereffective Dragon-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　ドラゴン技を 受けたとき　威力が　弱まる。,,○
+colbur-berry,198,Colbur Berry,ナモのみ,Halves damage taken from a supereffective Dark-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　あく技を 受けたとき　威力が　弱まる。,,○
+babiri-berry,199,Babiri Berry,リリバのみ,Halves damage taken from a supereffective Steel-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　はがね技を 受けたとき　威力が　弱まる。,,○
+chilan-berry,200,Chilan Berry,ホズのみ,Halves damage taken from a Normal-type attack. Single use.,ポケモンに　持たせると ノーマル技を　受けたとき 威力が　弱まる。,,○
+liechi-berry,201,Liechi Berry,チイラのみ,Raises holder's Attack by 1 stage when at 1/4 max HP or less. Single use.,ポケモンに　持たせると ピンチのとき　自分の 攻撃が　あがる。,,○
+ganlon-berry,202,Ganlon Berry,リュガのみ,Raises holder's Defense by 1 stage when at 1/4 max HP or less. Single use.,ポケモンに　持たせると ピンチのとき　自分の 防御が　あがる。,,○
+salac-berry,203,Salac Berry,カムラのみ,Raises holder's Speed by 1 stage when at 1/4 max HP or less. Single use.,ポケモンに　持たせると ピンチのとき　自分の 素早さが　あがる。,,○
+petaya-berry,204,Petaya Berry,ヤタピのみ,Raises holder's Sp. Atk by 1 stage when at 1/4 max HP or less. Single use.,ポケモンに　持たせると ピンチのとき　自分の 特攻が　あがる。,,○
+apicot-berry,205,Apicot Berry,ズアのみ,Raises holder's Sp. Def by 1 stage when at 1/4 max HP or less. Single use.,ポケモンに　持たせると ピンチのとき　自分の 特防が　あがる。,,○
+lansat-berry,206,Lansat Berry,サンのみ,Holder gains the Focus Energy effect when at 1/4 max HP or less. Single use.,ポケモンに　持たせると ピンチのとき　攻撃が 急所に　当たりやすくなる。,,○
+starf-berry,207,Starf Berry,スターのみ,Raises a random stat by 2 when at 1/4 max HP or less (not acc/eva). Single use.,ポケモンに　持たせると ピンチのとき　どれか　１つの 能力が　ぐーんと　あがる。,,○
+enigma-berry,208,Enigma Berry,ナゾのみ,Restores 1/4 max HP after holder is hit by a supereffective move. Single use.,ポケモンに　持たせると 効果バツグンの　技を 受けたとき　ＨＰを　回復する。,,○
+micle-berry,209,Micle Berry,ミクルのみ,Holder's next move has 1.2x accuracy when at 1/4 max HP or less. Single use.,ポケモンに　持たせると ピンチのとき　１度だけ 技の　命中率が　あがる。,,○
+custap-berry,210,Custap Berry,イバンのみ,Holder moves first in its priority bracket when at 1/4 max HP or less. Single use.,ポケモンに　持たせると ピンチのとき　１度だけ 行動が　早くなる。,,○
+jaboca-berry,211,Jaboca Berry,ジャポのみ,"If holder is hit by a physical move, attacker loses 1/8 of its max HP. Single use.",ポケモンに　持たせると 物理技を　受けたとき 相手にも　ダメージを　あたえる。,,○
+rowap-berry,212,Rowap Berry,レンブのみ,"If holder is hit by a special move, attacker loses 1/8 of its max HP. Single use.",ポケモンに　持たせると 特殊技を　受けたとき 相手にも　ダメージを　あたえる。,,○
+bright-powder,213,Bright Powder,ひかりのこな,The accuracy of attacks against the holder is 0.9x.,キラキラ　光る粉。　持たせると 光が　相手を　惑わして 技が　命中しにくくなる。,,○
+white-herb,214,White Herb,しろいハーブ,Restores all lowered stat stages to 0 when one is less than 0. Single use.,持たせた　ポケモンの　能力が さがったとき　１度だけ　もとの 状態に　戻す。,,○
+quick-claw,217,Quick Claw,せんせいのツメ,"Each turn, holder has a 20% chance to move first in its priority bracket.",軽くて　鋭い　ツメ。 持たせると　相手より　先に 行動できることが　ある。,,○
+mental-herb,219,Mental Herb,メンタルハーブ,"Cures holder of Attract, Disable, Encore, Heal Block, Taunt, Torment. Single use.",持たせた　ポケモンが　自由に 技を　だせなくなったときに １度だけ　回復する。,,○
+choice-band,220,Choice Band,こだわりハチマキ,"Holder's Attack is 1.5x, but it can only select the first move it executes.",ちょっと　こだわった　ハチマキ。 持たせると　攻撃は　あがるが 同じ　技しか　だせなくなる。,,○
+kings-rock,221,King's Rock,おうじゃのしるし,Holder's attacks without a chance to flinch gain a 10% chance to flinch.,持たせると、攻撃技を使用した時に10%で相手がひるむ効果が追加される(追加効果がある技にも効果が追加される)。また、ヤドンに持たせて通信交換すると進化する。,,○
+silver-powder,222,Silver Powder,ぎんのこな,Holder's Bug-type attacks have 1.2x power.,銀色に　輝く　粉。 持たせると　むしタイプの 技の　威力が　あがる。,,○
+soul-dew,225,Soul Dew,こころのしずく,"If held by a Latias/Latios, its Dragon- and Psychic-type moves have 1.2x power.",ラティオスや　ラティアスに　持たせると エスパーと　ドラゴンタイプの　技の 威力が　あがる　不思議な　珠。,,○
+deep-sea-tooth,226,Deep Sea Tooth,しんかいのキバ,"If held by a Clamperl, its Sp. Atk is doubled.",パールルに　持たせると 特攻が　あがる　キバ。 鋭く　銀色に　光る。,,○
+deep-sea-scale,227,Deep Sea Scale,しんかいのウロコ,"If held by a Clamperl, its Sp. Def is doubled.",パールルに　持たせると 特防が　あがる　ウロコ。 うすい　ピンク色に　光る。,,○
+focus-band,230,Focus Band,きあいのハチマキ,Holder has a 10% chance to survive an attack that would KO it with 1 HP.,持たせると　ひんしに　なりそうな 技を　受けても　ＨＰを　１だけ 残して　耐えることが　ある。,,○
+scope-lens,232,Scope Lens,ピントレンズ,Holder's critical hit ratio is raised by 1 stage.,弱点が　みえる　レンズ。 持たせた　ポケモンの　技が 急所に　当たりやすくなる。,,○
+metal-coat,233,Metal Coat,メタルコート,Holder's Steel-type attacks have 1.2x power.,特殊な　金属の　膜。 持たせると　はがねタイプの 技の　威力が　あがる。,,○
+leftovers,234,Leftovers,たべのこし,"At the end of every turn, holder restores 1/16 of its max HP.",持たせると　ポケモンの　ＨＰが 戦闘の　あいだ　少しずつ 回復する。,,○
+dragon-scale,235,Dragon Scale,りゅうのウロコ,Evolves Seadra into Kingdra when traded.,硬くて　丈夫な　ウロコ。 ドラゴンタイプの　ポケモンが 持っていることが　ある。,,○
+light-ball,236,Light Ball,でんきだま,"If held by a Pikachu, its Attack and Sp. Atk are doubled.",ピカチュウに　持たせると 攻撃と　特攻の　威力が あがる　不思議な　玉。,,○
+soft-sand,237,Soft Sand,やわらかいすな,Holder's Ground-type attacks have 1.2x power.,さわると　サラサラする　砂。 持たせると　じめんタイプの 技の　威力が　あがる。,,○
+hard-stone,238,Hard Stone,かたいいし,Holder's Rock-type attacks have 1.2x power.,絶対に　割れない　石。 持たせると　いわタイプの 技の　威力が　あがる。,,○
+miracle-seed,239,Miracle Seed,きせきのタネ,Holder's Grass-type attacks have 1.2x power.,生命が　宿る　タネ。 持たせると　くさタイプの 技の　威力が　あがる。,,○
+black-glasses,240,Black Glasses,くろいメガネ,Holder's Dark-type attacks have 1.2x power.,怪しく　みえる　メガネ。 持たせると　あくタイプの 技の　威力が　あがる。,,○
+black-belt,241,Black Belt,くろおび,Holder's Fighting-type attacks have 1.2x power.,気が　ひきしまる　帯。 持たせると　かくとうタイプの 技の　威力が　あがる。,,○
+magnet,242,Magnet,じしゃく,Holder's Electric-type attacks have 1.2x power.,強力な　磁石。 持たせると　でんきタイプの 技の　威力が　あがる。,,○
+mystic-water,243,Mystic Water,しんぴのしずく,Holder's Water-type attacks have 1.2x power.,しずくの　形の　宝石。 持たせると　みずタイプの 技の　威力が　あがる。,,○
+sharp-beak,244,Sharp Beak,するどいくちばし,Holder's Flying-type attacks have 1.2x power.,長く　とがった　くちばし。 持たせると　ひこうタイプの 技の　威力が　あがる。,,○
+poison-barb,245,Poison Barb,どくバリ,Holder's Poison-type attacks have 1.2x power.,どくのある　ちいさな　ハリ。 持たせると　どくタイプの 技の　威力が　あがる。,,○
+never-melt-ice,246,Never-Melt Ice,とけないこおり,Holder's Ice-type attacks have 1.2x power.,熱を　よせつけない　氷。 持たせると　こおりタイプの 技の　威力が　あがる。,,○
+spell-tag,247,Spell Tag,のろいのおふだ,Holder's Ghost-type attacks have 1.2x power.,怪しくて　不気味な　お札。 持たせると　ゴーストタイプの 技の　威力が　あがる。,,○
+twisted-spoon,248,Twisted Spoon,まがったスプーン,Holder's Psychic-type attacks have 1.2x power.,念力を　こめた　スプーン。 持たせると　エスパータイプの 技の　威力が　あがる。,,○
+charcoal,249,Charcoal,もくたん,Holder's Fire-type attacks have 1.2x power.,ものを　燃やす　燃料。 持たせると　ほのおタイプの 技の　威力が　あがる。,,○
+dragon-fang,250,Dragon Fang,りゅうのキバ,Holder's Dragon-type attacks have 1.2x power.,硬くて　鋭い　キバ。 持たせると　ドラゴンタイプの 技の　威力が　あがる。,,○
+silk-scarf,251,Silk Scarf,シルクのスカーフ,Holder's Normal-type attacks have 1.2x power.,はだざわりの　よい　スカーフ。 持たせると　ノーマルタイプの 技の　威力が　あがる。,,○
+shell-bell,253,Shell Bell,かいがらのすず,"After an attack, holder gains 1/8 of the damage in HP dealt to other Pokemon.",持たせた　ポケモンが　攻撃して 相手に　ダメージを　あたえたとき ＨＰを　少し　回復できる。,,○
+sea-incense,254,Sea Incense,うしおのおこう,Holder's Water-type attacks have 1.2x power.,不思議な　香りの　御香。 持たせると　みずタイプの 技の　威力が　あがる。,,○
+lax-incense,255,Lax Incense,のんきのおこう,The accuracy of attacks against the holder is 0.9x.,持たせると　御香の　不思議な 香りが　相手を　まどわせて 技が　命中　しにくくなる。,,○
+lucky-punch,256,Lucky Punch,ラッキーパンチ,"If held by a Chansey, its critical hit ratio is raised by 2 stages.",幸運を　よぶ　グローブ。 ラッキーに　持たせると　技が 急所に　当たりやすくなる。,,○
+metal-powder,257,Metal Powder,メタルパウダー,"If held by a Ditto that hasn't Transformed, its Defense is doubled.",メタモンに　持たせると　防御が あがる　不思議な粉。 とても　こまかくて　硬い。,,○
+thick-club,258,Thick Club,ふといホネ,"If held by a Cubone or a Marowak, its Attack is doubled.",なにかの　硬い　ホネ。 カラカラ　または　ガラガラに 持たせると　攻撃が　あがる。,,○
+leek,259,Leek,ながねぎ,"If held by a Farfetch’d or Sirfetch’d, its critical hit ratio is raised by 2 stages.",『カモネギ』『カモネギ(ガラル)』『ネギガナイト』に持たせると、急所ランクが2段階上がる。,,○
+wide-lens,265,Wide Lens,こうかくレンズ,The accuracy of attacks by the holder is 1.1x.,ものが　大きく　みえる　レンズ。 持たせると　技の　命中率が 少し　あがる。,,○
+muscle-band,266,Muscle Band,ちからのハチマキ,Holder's physical attacks have 1.1x power.,ちからが　わいてくる　ハチマキ。 持たせると　物理技の 威力が　少し　あがる。,,○
+wise-glasses,267,Wise Glasses,ものしりメガネ,Holder's special attacks have 1.1x power.,ぶあつい　レンズの　ついた　メガネ。 持たせると　特殊技の 威力が　少し　あがる。,,○
+expert-belt,268,Expert Belt,たつじんのおび,Holder's attacks that are super effective against the target do 1.2x damage.,使いこまれた　黒い　帯。 持たせると　効果バツグンの　とき 技の　威力が　少し　あがる。,,○
+light-clay,269,Light Clay,ひかりのねんど,"Holder's use of Aurora Veil, Light Screen, or Reflect lasts 8 turns instead of 5.",持たせた　ポケモンが　ひかりのかべや リフレクターを　使ったとき いつもよりも　長く　残る。,,○
+life-orb,270,Life Orb,いのちのたま,"Holder's attacks do 1.3x damage, and it loses 1/10 its max HP after the attack.",持たせると　攻撃する　たびに ＨＰが　少し　減ってしまうが 技の　威力が　あがる。,,○
+power-herb,271,Power Herb,パワフルハーブ,Holder's two-turn moves complete in one turn (except Sky Drop). Single use.,持たせた　ポケモンは　１度だけ １ターン目に　ちからを　ためる技を すぐに　使うことが　できる。,,○
+toxic-orb,272,Toxic Orb,どくどくだま,"At the end of every turn, this item attempts to badly poison the holder.",触ると　毒をだす　不思議な玉。 持たせると　戦闘中に 猛毒の　状態に　なる。,,○
+flame-orb,273,Flame Orb,かえんだま,"At the end of every turn, this item attempts to burn the holder.",触ると　熱をだす　不思議な玉。 持たせると　戦闘中に やけどの　状態に　なる。,,○
+quick-powder,274,Quick Powder,スピードパウダー,"If held by a Ditto that hasn't Transformed, its Speed is doubled.",メタモンに　持たせると　素早さが あがる　不思議な粉。 とても　こまかくて　硬い。,,○
+focus-sash,275,Focus Sash,きあいのタスキ,"If holder's HP is full, will survive an attack that would KO it with 1 HP. Single use.",持たせると　ＨＰが　満タンのとき ひんしになりそうな　技を　受けても ＨＰ１で　１度だけ　耐える。,,○
+zoom-lens,276,Zoom Lens,フォーカスレンズ,The accuracy of attacks by the holder is 1.2x if it moves after its target.,持たせた　ポケモンが　相手よりも 行動するのが　遅いとき 技が　命中しやすくなる。,,○
+metronome,277,Metronome,メトロノーム,Damage of moves used on consecutive turns is increased. Max 2x after 5 turns.,持たせると　同じ技を　連続で 使ったとき　威力が　あがる。 やめると　威力は　もどる。,,○
+iron-ball,278,Iron Ball,くろいてっきゅう,"Holder is grounded, Speed halved. If Flying type, takes neutral Ground damage.",持たせると　素早さが　さがる。 ひこうタイプや　ふゆう　ポケモンは じめん技が　当たってしまう。,,○
+lagging-tail,279,Lagging Tail,こうこうのしっぽ,Holder moves last in its priority bracket.,とても　重たい　なにかの　しっぽ。 持たせると　いつもより　行動が 遅くなる。,,○
+black-sludge,281,Black Sludge,くろいヘドロ,"Each turn, if holder is a Poison type, restores 1/16 max HP; loses 1/8 if not.",持たせると　どくタイプの　ポケモンは 少しずつ　ＨＰを　回復する。 それ以外は　ＨＰが　減ってしまう。,,○
+icy-rock,282,Icy Rock,つめたいいわ,Holder's use of Snowscape lasts 8 turns instead of 5.,持たせた　ポケモンが　あられを 使うと　いつもより　あられの 時間が　長くなる。,,○
+smooth-rock,283,Smooth Rock,さらさらいわ,Holder's use of Sandstorm lasts 8 turns instead of 5.,持たせた　ポケモンが　すなあらしを 使うと　いつもより　すなあらしの 時間が　長くなる。,,○
+heat-rock,284,Heat Rock,あついいわ,Holder's use of Sunny Day lasts 8 turns instead of 5.,持たせた　ポケモンが　にほんばれを 使うと　いつもより　はれの 時間が　長くなる。,,○
+damp-rock,285,Damp Rock,しめったいわ,Holder's use of Rain Dance lasts 8 turns instead of 5.,持たせた　ポケモンが　あまごいを 使うと　いつもより　あめの 時間が　長くなる。,,○
+grip-claw,286,Grip Claw,ねばりのかぎづめ,Holder's partial-trapping moves always last 7 turns.,持たせると　しめつける　まきつくなど ダメージを　あたえつづける　技の ターン数が　増える。,,○
+choice-scarf,287,Choice Scarf,こだわりスカーフ,"Holder's Speed is 1.5x, but it can only select the first move it executes.",ちょっと　こだわった　スカーフ。 持たせると　素早さは　あがるが 同じ　技しか　だせなくなる。,,○
+sticky-barb,288,Sticky Barb,くっつきバリ,"Each turn, holder loses 1/8 max HP. An attacker making contact can receive it.",持たせると　毎ターン　ダメージを 受ける。　自分に　ふれてきた 相手に　くっつくことも　ある。,,○
+big-root,296,Big Root,おおきなねっこ,Holder gains 1.3x HP from draining/Aqua Ring/Ingrain/Leech Seed/Strength Sap.,持たせると　ＨＰを　吸いとる　技で いつもより　おおく　自分の　ＨＰを 回復できる。,,○
+choice-specs,297,Choice Specs,こだわりメガネ,"Holder's Sp. Atk is 1.5x, but it can only select the first move it executes.",ちょっと　こだわった　メガネ。 持たせると　特攻は　あがるが 同じ　技しか　だせなくなる。,,○
+flame-plate,298,Flame Plate,ひのたまプレート,Holder's Fire-type attacks have 1.2x power. Judgment is Fire type.,ほのおの　タイプの　石盤。 持たせると　ほのおタイプの 技の　威力が　強まる。,,○
+splash-plate,299,Splash Plate,しずくプレート,Holder's Water-type attacks have 1.2x power. Judgment is Water type.,みずの　タイプの　石盤。 持たせると　みずタイプの 技の　威力が　強まる。,,○
+zap-plate,300,Zap Plate,いかずちプレート,Holder's Electric-type attacks have 1.2x power. Judgment is Electric type.,でんきの　タイプの　石盤。 持たせると　でんきタイプの 技の　威力が　強まる。,,○
+meadow-plate,301,Meadow Plate,みどりのプレート,Holder's Grass-type attacks have 1.2x power. Judgment is Grass type.,くさの　タイプの　石盤。 持たせると　くさタイプの 技の　威力が　強まる。,,○
+icicle-plate,302,Icicle Plate,つららのプレート,Holder's Ice-type attacks have 1.2x power. Judgment is Ice type.,こおりの　タイプの　石盤。 持たせると　こおりタイプの 技の　威力が　強まる。,,○
+fist-plate,303,Fist Plate,こぶしのプレート,Holder's Fighting-type attacks have 1.2x power. Judgment is Fighting type.,かくとうの　タイプの　石盤。 持たせると　かくとうタイプの 技の　威力が　強まる。,,○
+toxic-plate,304,Toxic Plate,もうどくプレート,Holder's Poison-type attacks have 1.2x power. Judgment is Poison type.,どくの　タイプの　石盤。 持たせると　どくタイプの 技の　威力が　強まる。,,○
+earth-plate,305,Earth Plate,だいちのプレート,Holder's Ground-type attacks have 1.2x power. Judgment is Ground type.,じめんの　タイプの　石盤。 持たせると　じめんタイプの 技の　威力が　強まる。,,○
+sky-plate,306,Sky Plate,あおぞらプレート,Holder's Flying-type attacks have 1.2x power. Judgment is Flying type.,ひこうの　タイプの　石盤。 持たせると　ひこうタイプの 技の　威力が　強まる。,,○
+mind-plate,307,Mind Plate,ふしぎのプレート,Holder's Psychic-type attacks have 1.2x power. Judgment is Psychic type.,エスパーの　タイプの　石盤。 持たせると　エスパータイプの 技の　威力が　強まる。,,○
+insect-plate,308,Insect Plate,たまむしプレート,Holder's Bug-type attacks have 1.2x power. Judgment is Bug type.,むしの　タイプの　石盤。 持たせると　むしタイプの 技の　威力が　強まる。,,○
+stone-plate,309,Stone Plate,がんせきプレート,Holder's Rock-type attacks have 1.2x power. Judgment is Rock type.,いわの　タイプの　石盤。 持たせると　いわタイプの 技の　威力が　強まる。,,○
+spooky-plate,310,Spooky Plate,もののけプレート,Holder's Ghost-type attacks have 1.2x power. Judgment is Ghost type.,ゴーストの　タイプの　石盤。 持たせると　ゴーストタイプの 技の　威力が　強まる。,,○
+draco-plate,311,Draco Plate,りゅうのプレート,Holder's Dragon-type attacks have 1.2x power. Judgment is Dragon type.,ドラゴンの　タイプの　石盤。 持たせると　ドラゴンタイプの 技の　威力が　強まる。,,○
+dread-plate,312,Dread Plate,こわもてプレート,Holder's Dark-type attacks have 1.2x power. Judgment is Dark type.,あくの　タイプの　石盤。 持たせると　あくタイプの 技の　威力が　強まる。,,○
+iron-plate,313,Iron Plate,こうてつプレート,Holder's Steel-type attacks have 1.2x power. Judgment is Steel type.,はがねの　タイプの　石盤。 持たせると　はがねタイプの 技の　威力が　強まる。,,○
+razor-claw,326,Razor Claw,するどいツメ,Holder's critical hit ratio is raised by 1 stage.,鋭く　とがった　ツメ。 持たせると　技が　急所に 当たりやすくなる。,,○
+razor-fang,327,Razor Fang,するどいキバ,Holder's attacks without a chance to flinch gain a 10% chance to flinch.,鋭く　とがった　キバ。 持たせると　ダメージを　与えたとき ひるませることが　ある。,,○
+red-orb,534,Red Orb,べにいろのたま,"If held by a Groudon, this item triggers its Primal Reversion in battle.",ホウエン地方の　伝説と 深い　関わりが　あると　いわれる あかく　かがやく　たま。,,○
+blue-orb,535,Blue Orb,あいいろのたま,"If held by a Kyogre, this item triggers its Primal Reversion in battle.",ホウエン地方の　伝説と 深い　関わりが　あると　いわれる あおく　かがやく　たま。,,○
+eviolite,538,Eviolite,しんかのきせき,"If holder's species can evolve, its Defense and Sp. Def are 1.5x.",進化の　不思議な　かたまり。 持たせると　進化前　ポケモンの 防御と　特防が　あがる。,,○
+float-stone,539,Float Stone,かるいし,Holder's weight is halved.,とても　軽い　石。 持たせると　ポケモンの 体重が　軽くなる。,,○
+rocky-helmet,540,Rocky Helmet,ゴツゴツメット,"If holder is hit by a contact move, the attacker loses 1/6 of its max HP.",ポケモンに　持たせると 打撃技を　受けたとき 相手にも　ダメージを　与える。,,○
+air-balloon,541,Air Balloon,ふうせん,Holder is immune to Ground-type attacks. Pops when holder is hit.,ポケモンに　持たせると ポケモンが　宙に　浮く。 攻撃を　受けると　割れてしまう。,,○
+red-card,542,Red Card,レッドカード,"If holder survives a hit, attacker is forced to switch to a random ally. Single use.",不思議な　ちからのある　カード。 持たせると　技を　使ってきた　相手を 退場させることが　できる。,,○
+ring-target,543,Ring Target,ねらいのまと,The holder's type immunities granted solely by its typing are negated.,ポケモンの　タイプの　相性で 無効だった　技が 当たるように　なってしまう。,,○
+binding-band,544,Binding Band,しめつけバンド,Holder's partial-trapping moves deal 1/6 max HP per turn instead of 1/8.,締めつける技を　補助する　バンド。 持たせると　締めつける技の 威力が　強くなる。,,○
+absorb-bulb,545,Absorb Bulb,きゅうこん,Raises holder's Sp. Atk by 1 stage if hit by a Water-type attack. Single use.,使い捨ての　きゅうこん。 持たせて　みずの　技を　受けると 特攻が　あがる。,,○
+cell-battery,546,Cell Battery,じゅうでんち,Raises holder's Attack by 1 if hit by an Electric-type attack. Single use.,使い捨ての　じゅうでんち。 持たせて　でんきの　技を　受けると 攻撃が　あがる。,,○
+eject-button,547,Eject Button,だっしゅつボタン,"If holder survives a hit, it immediately switches out to a chosen ally. Single use.",持たせて　技を　受けると 戦闘から　脱出して 手持ちと　入れ替わる　ことができる。,,○
+fire-gem,548,Fire Gem,ほのおのジュエル,Holder's first successful Fire-type attack will have 1.3x power. Single use.,ほのおの　タイプの　ジュエル。 持たせると　１度だけ　ほのおの 技の　威力が　強まる。,,○
+water-gem,549,Water Gem,みずのジュエル,Holder's first successful Water-type attack will have 1.3x power. Single use.,みずの　タイプの　ジュエル。 持たせると　１度だけ　みずの 技の　威力が　強まる。,,○
+electric-gem,550,Electric Gem,でんきのジュエル,Holder's first successful Electric-type attack will have 1.3x power. Single use.,でんきの　タイプの　ジュエル。 持たせると　１度だけ　でんきの 技の　威力が　強まる。,,○
+grass-gem,551,Grass Gem,くさのジュエル,Holder's first successful Grass-type attack will have 1.3x power. Single use.,くさの　タイプの　ジュエル。 持たせると　１度だけ　くさの 技の　威力が　強まる。,,○
+ice-gem,552,Ice Gem,こおりのジュエル,Holder's first successful Ice-type attack will have 1.3x power. Single use.,こおりの　タイプの　ジュエル。 持たせると　１度だけ　こおりの 技の　威力が　強まる。,,○
+fighting-gem,553,Fighting Gem,かくとうジュエル,Holder's first successful Fighting-type attack will have 1.3x power. Single use.,かくとうの　タイプの　ジュエル。 持たせると　１度だけ　かくとうの 技の　威力が　強まる。,,○
+poison-gem,554,Poison Gem,どくのジュエル,Holder's first successful Poison-type attack will have 1.3x power. Single use.,どくの　タイプの　ジュエル。 持たせると　１度だけ　どくの 技の　威力が　強まる。,,○
+ground-gem,555,Ground Gem,じめんのジュエル,Holder's first successful Ground-type attack will have 1.3x power. Single use.,じめんの　タイプの　ジュエル。 持たせると　１度だけ　じめんの 技の　威力が　強まる。,,○
+flying-gem,556,Flying Gem,ひこうのジュエル,Holder's first successful Flying-type attack will have 1.3x power. Single use.,ひこうの　タイプの　ジュエル。 持たせると　１度だけ　ひこうの 技の　威力が　強まる。,,○
+psychic-gem,557,Psychic Gem,エスパージュエル,Holder's first successful Psychic-type attack will have 1.3x power. Single use.,エスパーの　タイプの　ジュエル。 持たせると　１度だけ　エスパーの 技の　威力が　強まる。,,○
+bug-gem,558,Bug Gem,むしのジュエル,Holder's first successful Bug-type attack will have 1.3x power. Single use.,むしの　タイプの　ジュエル。 持たせると　１度だけ　むしの 技の　威力が　強まる。,,○
+rock-gem,559,Rock Gem,いわのジュエル,Holder's first successful Rock-type attack will have 1.3x power. Single use.,いわの　タイプの　ジュエル。 持たせると　１度だけ　いわの 技の　威力が　強まる。,,○
+ghost-gem,560,Ghost Gem,ゴーストジュエル,Holder's first successful Ghost-type attack will have 1.3x power. Single use.,ゴーストの　タイプの　ジュエル。 持たせると　１度だけ　ゴーストの 技の　威力が　強まる。,,○
+dragon-gem,561,Dragon Gem,ドラゴンジュエル,Holder's first successful Dragon-type attack will have 1.3x power. Single use.,ドラゴンの　タイプの　ジュエル。 持たせると　１度だけ　ドラゴンの 技の　威力が　強まる。,,○
+dark-gem,562,Dark Gem,あくのジュエル,Holder's first successful Dark-type attack will have 1.3x power. Single use.,あくの　タイプの　ジュエル。 持たせると　１度だけ　あくの 技の　威力が　強まる。,,○
+steel-gem,563,Steel Gem,はがねのジュエル,Holder's first successful Steel-type attack will have 1.3x power. Single use.,はがねの　タイプの　ジュエル。 持たせると　１度だけ　はがねの 技の　威力が　強まる。,,○
+normal-gem,564,Normal Gem,ノーマルジュエル,Holder's first successful Normal-type attack will have 1.3x power. Single use.,ノーマルの　タイプの　ジュエル。 持たせると　１度だけ　ノーマルの 技の　威力が　強まる。,,○
+weakness-policy,639,Weakness Policy,じゃくてんほけん,"If holder is hit super effectively, raises Attack, Sp. Atk by 2 stages. Single use.",弱点を　つかれたとき 攻撃と　特攻が それぞれ　ぐーんと　あがる。,,○
+assault-vest,640,Assault Vest,とつげきチョッキ,"Holder's Sp. Def is 1.5x, but it can only select damaging moves.",攻撃的に　なる　チョッキ。 持たせると　特防が　あがるが 変化技を　だせなくなる。,,○
+pixie-plate,644,Pixie Plate,せいれいプレート,Holder's Fairy-type attacks have 1.2x power. Judgment is Fairy type.,フェアリーの　タイプの　石盤。 持たせると　フェアリータイプの 技の　威力が　強まる。,,○
+luminous-moss,648,Luminous Moss,ひかりごけ,Raises holder's Sp. Def by 1 stage if hit by a Water-type attack. Single use.,使い捨ての　ひかりごけ。 持たせて　みずの　技を　受けると 特防が　あがる。,,○
+snowball,649,Snowball,ゆきだま,Raises holder's Attack by 1 if hit by an Ice-type attack. Single use.,使い捨ての　ゆきだま。 持たせて　こおりの　技を　受けると 攻撃が　あがる。,,○
+safety-goggles,650,Safety Goggles,ぼうじんゴーグル,Holder is immune to powder moves and damage from Sandstorm or Hail.,天候の　ダメージだけでなく 粉を　だす　技の 効果も　防げる　ゴーグル。,,○
+gengarite,656,Gengarite,ゲンガナイト,"If held by a Gengar, this item allows it to Mega Evolve in battle.",ゲンガーに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+gardevoirite,657,Gardevoirite,サーナイトナイト,"If held by a Gardevoir, this item allows it to Mega Evolve in battle.",サーナイトに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+ampharosite,658,Ampharosite,デンリュウナイト,"If held by an Ampharos, this item allows it to Mega Evolve in battle.",デンリュウに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+venusaurite,659,Venusaurite,フシギバナイト,"If held by a Venusaur, this item allows it to Mega Evolve in battle.",フシギバナに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+charizardite-x,660,Charizardite X,リザードナイトＸ,"If held by a Charizard, this item allows it to Mega Evolve in battle.",リザードンに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+blastoisinite,661,Blastoisinite,カメックスナイト,"If held by a Blastoise, this item allows it to Mega Evolve in battle.",カメックスに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+mewtwonite-x,662,Mewtwonite X,ミュウツナイトＸ,"If held by a Mewtwo, this item allows it to Mega Evolve in battle.",ミュウツーに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+mewtwonite-y,663,Mewtwonite Y,ミュウツナイトＹ,"If held by a Mewtwo, this item allows it to Mega Evolve in battle.",ミュウツーに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+blazikenite,664,Blazikenite,バシャーモナイト,"If held by a Blaziken, this item allows it to Mega Evolve in battle.",バシャーモに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+medichamite,665,Medichamite,チャーレムナイト,"If held by a Medicham, this item allows it to Mega Evolve in battle.",チャーレムに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+houndoominite,666,Houndoominite,ヘルガナイト,"If held by a Houndoom, this item allows it to Mega Evolve in battle.",ヘルガーに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+aggronite,667,Aggronite,ボスゴドラナイト,"If held by an Aggron, this item allows it to Mega Evolve in battle.",ボスゴドラに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+banettite,668,Banettite,ジュペッタナイト,"If held by a Banette, this item allows it to Mega Evolve in battle.",ジュペッタに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+tyranitarite,669,Tyranitarite,バンギラスナイト,"If held by a Tyranitar, this item allows it to Mega Evolve in battle.",バンギラスに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+scizorite,670,Scizorite,ハッサムナイト,"If held by a Scizor, this item allows it to Mega Evolve in battle.",ハッサムに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+pinsirite,671,Pinsirite,カイロスナイト,"If held by a Pinsir, this item allows it to Mega Evolve in battle.",カイロスに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+aerodactylite,672,Aerodactylite,プテラナイト,"If held by an Aerodactyl, this item allows it to Mega Evolve in battle.",プテラに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+lucarionite,673,Lucarionite,ルカリオナイト,"If held by a Lucario, this item allows it to Mega Evolve in battle.",ルカリオに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+abomasite,674,Abomasite,ユキノオナイト,"If held by an Abomasnow, this item allows it to Mega Evolve in battle.",ユキノオーに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+kangaskhanite,675,Kangaskhanite,ガルーラナイト,"If held by a Kangaskhan, this item allows it to Mega Evolve in battle.",ガルーラに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+gyaradosite,676,Gyaradosite,ギャラドスナイト,"If held by a Gyarados, this item allows it to Mega Evolve in battle.",ギャラドスに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+absolite,677,Absolite,アブソルナイト,"If held by an Absol, this item allows it to Mega Evolve in battle.",アブソルに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+charizardite-y,678,Charizardite Y,リザードナイトＹ,"If held by a Charizard, this item allows it to Mega Evolve in battle.",リザードンに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+alakazite,679,Alakazite,フーディナイト,"If held by an Alakazam, this item allows it to Mega Evolve in battle.",フーディンに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+heracronite,680,Heracronite,ヘラクロスナイト,"If held by a Heracross, this item allows it to Mega Evolve in battle.",ヘラクロスに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+mawilite,681,Mawilite,クチートナイト,"If held by a Mawile, this item allows it to Mega Evolve in battle.",クチートに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+manectite,682,Manectite,ライボルトナイト,"If held by a Manectric, this item allows it to Mega Evolve in battle.",ライボルトに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+garchompite,683,Garchompite,ガブリアスナイト,"If held by a Garchomp, this item allows it to Mega Evolve in battle.",ガブリアスに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+latiasite,684,Latiasite,ラティアスナイト,"If held by a Latias, this item allows it to Mega Evolve in battle.",ラティアスに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+latiosite,685,Latiosite,ラティオスナイト,"If held by a Latios, this item allows it to Mega Evolve in battle.",ラティオスに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+roseli-berry,686,Roseli Berry,ロゼルのみ,Halves damage taken from a supereffective Fairy-type attack. Single use.,ポケモンに　持たせると 効果バツグンの　フェアリー技を 受けたとき　威力が　弱まる。,,○
+kee-berry,687,Kee Berry,アッキのみ,Raises holder's Defense by 1 stage after it is hit by a physical attack. Single use.,ポケモンに　持たせると 物理技を　受けたとき 自分の　防御が　あがる。,,○
+maranga-berry,688,Maranga Berry,タラプのみ,Raises holder's Sp. Def by 1 stage after it is hit by a special attack. Single use.,ポケモンに　持たせると 特殊技を　受けたとき 自分の　特防が　あがる。,,○
+fairy-gem,715,Fairy Gem,ようせいジュエル,Holder's first successful Fairy-type attack will have 1.3x power. Single use.,フェアリーの　タイプの　ジュエル。 持たせると　１度だけ　フェアリーの 技の　威力が　強まる。,,○
+swampertite,752,Swampertite,ラグラージナイト,"If held by a Swampert, this item allows it to Mega Evolve in battle.",ラグラージに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+sceptilite,753,Sceptilite,ジュカインナイト,"If held by a Sceptile, this item allows it to Mega Evolve in battle.",ジュカインに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+sablenite,754,Sablenite,ヤミラミナイト,"If held by a Sableye, this item allows it to Mega Evolve in battle.",ヤミラミに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+altarianite,755,Altarianite,チルタリスナイト,"If held by an Altaria, this item allows it to Mega Evolve in battle.",チルタリスに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+galladite,756,Galladite,エルレイドナイト,"If held by a Gallade, this item allows it to Mega Evolve in battle.",エルレイドに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+audinite,757,Audinite,タブンネナイト,"If held by an Audino, this item allows it to Mega Evolve in battle.",タブンネに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+metagrossite,758,Metagrossite,メタグロスナイト,"If held by a Metagross, this item allows it to Mega Evolve in battle.",メタグロスに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+sharpedonite,759,Sharpedonite,サメハダナイト,"If held by a Sharpedo, this item allows it to Mega Evolve in battle.",サメハダーに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+slowbronite,760,Slowbronite,ヤドランナイト,"If held by a Slowbro, this item allows it to Mega Evolve in battle.",ヤドランに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+steelixite,761,Steelixite,ハガネールナイト,"If held by a Steelix, this item allows it to Mega Evolve in battle.",ハガネールに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+pidgeotite,762,Pidgeotite,ピジョットナイト,"If held by a Pidgeot, this item allows it to Mega Evolve in battle.",ピジョットに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+glalitite,763,Glalitite,オニゴーリナイト,"If held by a Glalie, this item allows it to Mega Evolve in battle.",オニゴーリに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+diancite,764,Diancite,ディアンシナイト,"If held by a Diancie, this item allows it to Mega Evolve in battle.",ディアンシーに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+cameruptite,767,Cameruptite,バクーダナイト,"If held by a Camerupt, this item allows it to Mega Evolve in battle.",バクーダに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+lopunnite,768,Lopunnite,ミミロップナイト,"If held by a Lopunny, this item allows it to Mega Evolve in battle.",ミミロップに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+salamencite,769,Salamencite,ボーマンダナイト,"If held by a Salamence, this item allows it to Mega Evolve in battle.",ボーマンダに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+beedrillite,770,Beedrillite,スピアナイト,"If held by a Beedrill, this item allows it to Mega Evolve in battle.",スピアーに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○
+normalium-z,776,Normalium Z,ノーマルZ,"If holder has a Normal move, this item allows it to use a Normal Z-Move.",,,○
+firium-z,777,Firium Z,ほのおZ,"If holder has a Fire move, this item allows it to use a Fire Z-Move.",,,○
+waterium-z,778,Waterium Z,みずＺ,"If holder has a Water move, this item allows it to use a Water Z-Move.",,,○
+electrium-z,779,Electrium Z,でんきＺ,"If holder has an Electric move, this item allows it to use an Electric Z-Move.",,,○
+grassium-z,780,Grassium Z,くさＺ,"If holder has a Grass move, this item allows it to use a Grass Z-Move.",,,○
+icium-z,781,Icium Z,こおりＺ,"If holder has an Ice move, this item allows it to use an Ice Z-Move.",,,○
+fightinium-z,782,Fightinium Z,かくとうＺ,"If holder has a Fighting move, this item allows it to use a Fighting Z-Move.",,,○
+poisonium-z,783,Poisonium Z,どくＺ,"If holder has a Poison move, this item allows it to use a Poison Z-Move.",,,○
+groundium-z,784,Groundium Z,じめんＺ,"If holder has a Ground move, this item allows it to use a Ground Z-Move.",,,○
+flyinium-z,785,Flyinium Z,ひこうＺ,"If holder has a Flying move, this item allows it to use a Flying Z-Move.",,,○
+psychium-z,786,Psychium Z,エスパーＺ,"If holder has a Psychic move, this item allows it to use a Psychic Z-Move.",,,○
+buginium-z,787,Buginium Z,むしＺ,"If holder has a Bug move, this item allows it to use a Bug Z-Move.",,,○
+rockium-z,788,Rockium Z,いわＺ,"If holder has a Rock move, this item allows it to use a Rock Z-Move.",,,○
+ghostium-z,789,Ghostium Z,ゴーストＺ,"If holder has a Ghost move, this item allows it to use a Ghost Z-Move.",,,○
+dragonium-z,790,Dragonium Z,ドラゴンＺ,"If holder has a Dragon move, this item allows it to use a Dragon Z-Move.",,,○
+darkinium-z,791,Darkinium Z,あくＺ,"If holder has a Dark move, this item allows it to use a Dark Z-Move.",,,○
+steelium-z,792,Steelium Z,はがねＺ,"If holder has a Steel move, this item allows it to use a Steel Z-Move.",,,○
+fairium-z,793,Fairium Z,フェアリーＺ,"If holder has a Fairy move, this item allows it to use a Fairy Z-Move.",,,○
+pikanium-z,794,Pikanium Z,ピカニウムＺ,"If held by a Pikachu with Volt Tackle, it can use Catastropika.",,,○
+decidium-z,798,Decidium Z,ジュナイパーＺ,"If held by a Decidueye with Spirit Shackle, it can use Sinister Arrow Raid.",,,○
+incinium-z,799,Incinium Z,ガオガエンＺ,"If held by an Incineroar with Darkest Lariat, it can use Malicious Moonsault.",,,○
+primarium-z,800,Primarium Z,アシレーヌＺ,"If held by a Primarina with Sparkling Aria, it can use Oceanic Operetta.",,,○
+tapunium-z,801,Tapunium Z,カプＺ,"If held by a Tapu with Nature's Madness, it can use Guardian of Alola.",,,○
+marshadium-z,802,Marshadium Z,マーシャドーＺ,"If held by Marshadow with Spectral Thief, it can use Soul-Stealing 7-Star Strike.",,,○
+aloraichium-z,803,Aloraichium Z,アローライチウムＺ,"If held by an Alolan Raichu with Thunderbolt, it can use Stoked Sparksurfer.",,,○
+snorlium-z,804,Snorlium Z,カビゴンＺ,"If held by a Snorlax with Giga Impact, it can use Pulverizing Pancake.",,,○
+eevium-z,805,Eevium Z,イーブイＺ,"If held by an Eevee with Last Resort, it can use Extreme Evoboost.",,,○
+mewnium-z,806,Mewnium Z,ミュウＺ,"If held by a Mew with Psychic, it can use Genesis Supernova.",,,○
+pikashunium-z,836,Pikashunium Z,ピカシュニウムＺ,"If held by cap Pikachu with Thunderbolt, it can use 10,000,000 Volt Thunderbolt.",,,○
+adrenaline-orb,846,Adrenaline Orb,ビビリだま,Raises holder's Speed by 1 stage if it gets affected by Intimidate. Single use.,ポケモンに　持たせると いかくを　受けた時 すばやさが　上がる。,,○
+terrain-extender,879,Terrain Extender,グランドコート,Holder's use of Electric/Grassy/Misty/Psychic Terrain lasts 8 turns instead of 5.,持たせた　ポケモンが　技や 特性で　フィールドを　張ったとき いつもよりも　長く　残る。,,○
+protective-pads,880,Protective Pads,ぼうごパット,"Holder's moves are protected from adverse contact effects, except Pickpocket.",攻撃　する　相手に さわって　受ける　効果を 受けないように　する。,,○
+electric-seed,881,Electric Seed,エレキシード,"If the terrain is Electric Terrain, raises holder's Defense by 1 stage. Single use.",ポケモンに　持たせると エレキフィールドのときに　使って 防御が　あがる。,,○
+psychic-seed,882,Psychic Seed,サイコシード,"If the terrain is Psychic Terrain, raises holder's Sp. Def by 1 stage. Single use.",ポケモンに　持たせると サイコフィールドのときに　使って 特防が　あがる。,,○
+misty-seed,883,Misty Seed,ミストシード,"If the terrain is Misty Terrain, raises holder's Sp. Def by 1 stage. Single use.",ポケモンに　持たせると ミストフィールドのときに　使って 特防が　あがる。,,○
+grassy-seed,884,Grassy Seed,グラスシード,"If the terrain is Grassy Terrain, raises holder's Defense by 1 stage. Single use.",ポケモンに　持たせると グラスフィールドのときに　使って 防御が　あがる。,,○
+fighting-memory,904,Fighting Memory,ファイトメモリ,Holder's Multi-Attack is Fighting type.,かくとうタイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+flying-memory,905,Flying Memory,フライングメモリ,Holder's Multi-Attack is Flying type.,ひこうタイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+poison-memory,906,Poison Memory,ポイズンメモリ,Holder's Multi-Attack is Poison type.,どくタイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+ground-memory,907,Ground Memory,グラウンドメモリ,Holder's Multi-Attack is Ground type.,じめんタイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+rock-memory,908,Rock Memory,ロックメモリ,Holder's Multi-Attack is Rock type.,いわタイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+bug-memory,909,Bug Memory,バグメモリ,Holder's Multi-Attack is Bug type.,むしタイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+ghost-memory,910,Ghost Memory,ゴーストメモリ,Holder's Multi-Attack is Ghost type.,ゴーストタイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+steel-memory,911,Steel Memory,スチールメモリ,Holder's Multi-Attack is Steel type.,はがねタイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+fire-memory,912,Fire Memory,ファイヤーメモリ,Holder's Multi-Attack is Fire type.,ほのおタイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+water-memory,913,Water Memory,ウオーターメモリ,Holder's Multi-Attack is Water type.,みずタイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+grass-memory,914,Grass Memory,グラスメモリ,Holder's Multi-Attack is Grass type.,くさタイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+electric-memory,915,Electric Memory,エレクトロメモリ,Holder's Multi-Attack is Electric type.,でんきタイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+psychic-memory,916,Psychic Memory,サイキックメモリ,Holder's Multi-Attack is Psychic type.,エスパータイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+ice-memory,917,Ice Memory,アイスメモリ,Holder's Multi-Attack is Ice type.,こおりタイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+dragon-memory,918,Dragon Memory,ドラゴンメモリ,Holder's Multi-Attack is Dragon type.,ドラゴンタイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+dark-memory,919,Dark Memory,ダークメモリ,Holder's Multi-Attack is Dark type.,あくタイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+fairy-memory,920,Fairy Memory,フェアリーメモリ,Holder's Multi-Attack is Fairy type.,フェアリータイプの　データが　入った メモリ。　特定の　ポケモンが　持つと タイプが　変わる。,,○
+solganium-z,921,Solganium Z,ソルガレオＺ,Solgaleo or Dusk Mane Necrozma with Sunsteel Strike can use a special Z-Move.,,,○
+lunalium-z,922,Lunalium Z,ルナアーラＺ,Lunala or Dawn Wings Necrozma with Moongeist Beam can use a special Z-Move.,,,○
+ultranecrozium-z,923,Ultranecrozium Z,ウルトラネクロズマＺ,"Dusk Mane/Dawn Wings Necrozma: Ultra Burst, then Z-Move w/ Photon Geyser.",,,○
+mimikium-z,924,Mimikium Z,ミミッキュＺ,"If held by a Mimikyu with Play Rough, it can use Let's Snuggle Forever.",,,○
+lycanium-z,925,Lycanium Z,ルガルガンＺ,"If held by a Lycanroc forme with Stone Edge, it can use Splintered Stormshards.",,,○
+kommonium-z,926,Kommonium Z,ジャラランガＺ,"If held by a Kommo-o with Clanging Scales, it can use Clangorous Soulblaze.",,,○
+rusted-sword,1103,Rusted Sword,くちたけん,"If held by a Zacian, this item changes its forme to Crowned Sword.",大昔の　英雄が　災厄を 討ち払ったと　伝えられる　剣　だが いまは　さびて　ボロボロに　なっている。,,○
+rusted-shield,1104,Rusted Shield,くちたたて,"If held by a Zamazenta, this item changes its forme to Crowned Shield.",大昔の　英雄が　災厄を 討ち払ったと　伝えられる　盾　だが いまは　さびて　ボロボロに　なっている。,,○
+fossilized-bird,1105,Fossilized Bird,カセキのトリ,Can revive into Dracozolt with Fossilized Drake or Arctozolt with Fossilized Dino.,大昔　空を　飛んでいた 古代　ポケモンの　カセキの一部。 どんな　姿　だったのかは　謎。,,○
+fossilized-fish,1106,Fossilized Fish,カセキのサカナ,Can revive into Dracovish with Fossilized Drake or Arctovish with Fossilized Dino.,大昔　海に　すんでいた 古代　ポケモンの　カセキの一部。 どんな　姿　だったのかは　謎。,,○
+fossilized-drake,1107,Fossilized Drake,カセキのリュウ,Can revive into Dracozolt with Fossilized Bird or Dracovish with Fossilized Fish.,大昔　陸に　すんでいた 古代　ポケモンの　カセキの一部。 どんな　姿　だったのかは　謎。,,○
+fossilized-dino,1108,Fossilized Dino,カセキのクビナガ,Can revive into Arctovish with Fossilized Fish or Arctozolt with Fossilized Bird.,大昔　海に　すんでいた 古代　ポケモンの　カセキの一部。 どんな　姿　だったのかは　謎。,,○
+throat-spray,1118,Throat Spray,のどスプレー,Raises holder's Special Attack by 1 stage after it uses a sound move. Single use.,音に　関する　技を　使うと 特攻が　上がる。,,○
+eject-pack,1119,Eject Pack,だっしゅつパック,"If the holder's stat stages are lowered, it switches to a chosen ally. Single use.",持たせた　ポケモンの 能力が　下がると 手持ちと　入れ替わる。,,○
+heavy-duty-boots,1120,Heavy-Duty Boots,あつぞこブーツ,"When switching in, the holder is unaffected by hazards on its side of the field.",足場に　しかけられた 罠などの　影響を　受けなくなる。,,○
+blunder-policy,1121,Blunder Policy,からぶりほけん,"If the holder misses due to accuracy, its Speed is raised by 2 stages. Single use.",命中率に　よって 技が　はずれたとき 素早さが　ぐーんと　上がる。,,○
+room-service,1122,Room Service,ルームサービス,"If Trick Room is active, the holder's Speed is lowered by 1 stage. Single use.",ポケモンに　持たせると トリックルームのときに　使って 素早さが　下がる。,,○
+utility-umbrella,1123,Utility Umbrella,ばんのうがさ,The holder ignores rain- and sun-based effects.,持たせた　ポケモンは 雨と　日差しが強いときの 影響を　受けなくなる。,,○
+adamant-crystal,1777,Adamant Crystal,だいこんごうだま,"If held by a Dialga, its Steel- and Dragon-type attacks have 1.2x power.",,,○
+lustrous-globe,1778,Lustrous Globe,だいしらたま,"If held by a Palkia, its Water- and Dragon-type attacks have 1.2x power.",,,○
+griseous-core,1779,Griseous Core,だいはっきんだま,"If held by a Giratina, its Ghost- and Dragon-type attacks have 1.2x power.",,,○
+booster-energy,1880,Booster Energy,ブーストエナジー,Activates the Protosynthesis or Quark Drive Abilities. Single use.,,,○
+ability-shield,1881,Ability Shield,とくせいガード,"Holder's Ability cannot be changed, suppressed, or ignored by any effect.",,,○
+clear-amulet,1882,Clear Amulet,クリアチャーム,Prevents other Pokemon from lowering the holder's stat stages.,,,○
+mirror-herb,1883,Mirror Herb,ものまねハーブ,"When an opposing Pokemon raises a stat stage, the holder copies it. Single use.",,,○
+punching-glove,1884,Punching Glove,パンチグローブ,Holder's punch-based attacks have 1.1x power and do not make contact.,,,○
+covert-cloak,1885,Covert Cloak,おんみつマント,Holder is not affected by the secondary effect of another Pokemon's attack.,,,○
+loaded-dice,1886,Loaded Dice,いかさまダイス,Holder's moves that hit 2-5 times hit 4-5 times; Population Bomb hits 4-10 times.,,,○
+fairy-feather,2401,Fairy Feather,ようせいのハネ,Holder's Fairy-type attacks have 1.2x power.,,,○
+unremarkable-teacup,2403,Unremarkable Teacup,ボンサクのちゃわん,Evolves Poltchageist into Sinistcha when used.,,,○
+masterpiece-teacup,2404,Masterpiece Teacup,ボンサクのちゃわん,Evolves Poltchageist-Artisan into Sinistcha-Masterpiece when used.,,,○
+cornerstone-mask,2406,Cornerstone Mask,いしずえのめん,Ogerpon-Cornerstone: 1.2x power attacks; Terastallize to gain Embody Aspect.,,,○
+wellspring-mask,2407,Wellspring Mask,いどのめん,Ogerpon-Wellspring: 1.2x power attacks; Terastallize to gain Embody Aspect.,,,○
+hearthflame-mask,2408,Hearthflame Mask,かまどのめん,Ogerpon-Hearthflame: 1.2x power attacks; Terastallize to gain Embody Aspect.,,,○
