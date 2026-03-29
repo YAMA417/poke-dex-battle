@@ -295,12 +295,23 @@ async function seedRegulations(): Promise<number> {
     console.log(`  ${def.slug} (id=${reg.id}): ポケモン登録中...`);
 
     // includePokemonCategories に該当する最終進化ポケモンIDを取得
+    // formType は 'base'（通常フォーム）と 'variant'（地域フォーム等）のみ対象
+    // mega/primal/tera/battle_only はバトル中に変化するフォームのため除外
+    // TODO: 将来的に regulations.json の includeFormTypes で制御可能にする
     type PokemonCategory = (typeof pokemon.$inferSelect)['category'];
+    type FormType = (typeof pokemon.$inferSelect)['formType'];
     const categories = def.includePokemonCategories as PokemonCategory[];
+    const TEAM_SLOT_FORM_TYPES: FormType[] = ['base', 'variant'];
     const pkIds = await db
       .select({ id: pokemon.id })
       .from(pokemon)
-      .where(and(inArray(pokemon.category, categories), eq(pokemon.nfe, false)));
+      .where(
+        and(
+          inArray(pokemon.category, categories),
+          eq(pokemon.nfe, false),
+          inArray(pokemon.formType, TEAM_SLOT_FORM_TYPES)
+        )
+      );
 
     const rpData = pkIds.map((p) => ({ regulationId: reg.id, pokemonId: p.id }));
 
