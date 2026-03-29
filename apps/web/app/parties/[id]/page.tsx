@@ -83,7 +83,7 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-2xl font-bold text-gray-800">{party.name}</h2>
           <p className="text-sm text-gray-400">
-            {party.regulation === 'SV' ? 'スカーレット・バイオレット' : 'チャンピオンズ'}
+            チャンピオンズ
             {' · '}更新{new Date(party.updatedAt).toLocaleDateString('ja-JP')}
           </p>
           {party.memo && (

@@ -72,7 +72,7 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
 
   const { data: pokemonData } = usePokemonSearch(data.pokemonName);
 
-  const { data: allPokemon } = useAllPokemon('sv-reg-i');
+  const { data: allPokemon } = useAllPokemon('champions-season1');
   const pokemonOptions = useMemo(() => {
     return (allPokemon ?? []).map((pokemon) => ({
       label: pokemon.nameJa,

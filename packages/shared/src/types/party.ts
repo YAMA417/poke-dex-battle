@@ -8,7 +8,7 @@ export const MAX_MOVE_COUNT = 4;
 export const MAX_EV_CONTRIBUTION_TO_ACTUAL_STATS = 65;
 
 /** レギュレーション */
-export type Regulation = 'SV' | 'Champions';
+export type Regulation = 'Champions';
 
 /** パーティ */
 export interface Party {

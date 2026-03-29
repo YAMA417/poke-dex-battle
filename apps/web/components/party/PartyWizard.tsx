@@ -49,10 +49,12 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
 
   // Step 1 state
   const [partyName, setPartyName] = useState(existingParty?.name ?? '');
-  const [regulation, setRegulation] = useState<Regulation>(existingParty?.regulation ?? 'SV');
+  const [regulation, setRegulation] = useState<Regulation>(
+    existingParty?.regulation ?? 'Champions'
+  );
 
   // レギュレーション → DB regulation ID マッピング
-  const regulationDbId = regulation === 'SV' ? 'sv-reg-i' : undefined;
+  const regulationDbId = regulation === 'Champions' ? 'champions-season1' : undefined;
 
   // API経由でレギュレーション対応ポケモンを取得
   const { data: allPokemonRaw } = useAllPokemon(regulationDbId);
@@ -234,14 +236,14 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
               レギュレーション
             </label>
             <div className="flex gap-3">
-              {(['SV', 'Champions'] as Regulation[]).map((r) => (
+              {(['Champions'] as Regulation[]).map((r) => (
                 <button
                   key={r}
                   type="button"
                   onClick={() => setRegulation(r)}
                   className={`flex-1 rounded-xl border-2 py-2.5 text-sm font-semibold transition-all ${regulation === r ? 'border-pokemon-blue bg-pokemon-blue text-white shadow' : 'border-gray-200 text-gray-500 hover:border-pokemon-blue'}`}
                 >
-                  {r === 'SV' ? 'スカーレット・バイオレット' : 'チャンピオンズ'}
+                  チャンピオンズ
                 </button>
               ))}
             </div>

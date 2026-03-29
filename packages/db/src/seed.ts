@@ -10,7 +10,7 @@ import dotenv from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { abilities, items, moves, pokemon, regulations, regulationPokemon } from './schema';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 
 if (!process.env.DATABASE_URL) {
   dotenv.config({ path: resolve(__dirname, '../../../apps/web/.env.local') });
@@ -218,7 +218,36 @@ async function seedPokemon(): Promise<number> {
   });
 
   await batchInsert('pokemon pass1', data, (batch) =>
-    db.insert(pokemon).values(batch).onConflictDoNothing()
+    db
+      .insert(pokemon)
+      .values(batch)
+      .onConflictDoUpdate({
+        target: pokemon.slug,
+        set: {
+          num: sql`excluded.num`,
+          name: sql`excluded.name`,
+          nameJa: sql`excluded.name_ja`,
+          types: sql`excluded.types`,
+          hp: sql`excluded.hp`,
+          atk: sql`excluded.atk`,
+          def: sql`excluded.def`,
+          spa: sql`excluded.spa`,
+          spd: sql`excluded.spd`,
+          spe: sql`excluded.spe`,
+          ability0Id: sql`excluded.ability_0_id`,
+          ability1Id: sql`excluded.ability_1_id`,
+          abilityHId: sql`excluded.ability_h_id`,
+          weightkg: sql`excluded.weight_kg`,
+          heightm: sql`excluded.height_m`,
+          category: sql`excluded.category`,
+          spriteUrl: sql`excluded.sprite_url`,
+          fixedItemId: sql`excluded.fixed_item_id`,
+          fixedTeraType: sql`excluded.fixed_tera_type`,
+          genderRate: sql`excluded.gender_rate`,
+          formType: sql`excluded.form_type`,
+          nfe: sql`excluded.nfe`,
+        },
+      })
   );
 
   // パス2: baseFormId 更新
@@ -315,6 +344,8 @@ async function seedRegulations(): Promise<number> {
 
     const rpData = pkIds.map((p) => ({ regulationId: reg.id, pokemonId: p.id }));
 
+    // 既存レコードを削除してから再挿入（nfe等の変更を確実に反映するため）
+    await db.delete(regulationPokemon).where(eq(regulationPokemon.regulationId, reg.id));
     await batchInsert(`  ${def.slug}`, rpData, (batch) =>
       db.insert(regulationPokemon).values(batch).onConflictDoNothing()
     );

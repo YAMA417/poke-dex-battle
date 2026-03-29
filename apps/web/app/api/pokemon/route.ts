@@ -1,6 +1,12 @@
 import { cache } from 'react';
 import { db } from '@poke-dex-battle/db';
-import { pokemon, regulationPokemon, abilities, items } from '@poke-dex-battle/db/schema';
+import {
+  pokemon,
+  regulationPokemon,
+  abilities,
+  items,
+  regulations,
+} from '@poke-dex-battle/db/schema';
 import { ilike, or, asc, eq, and } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
@@ -68,9 +74,22 @@ export async function GET(request: Request) {
     return NextResponse.json(enriched[0] ?? null);
   }
 
-  // レギュレーションフィルタ付き一覧
+  // レギュレーションフィルタ付き一覧（スラッグまたは数値IDで検索）
   if (regulation) {
-    const regulationId = parseInt(regulation, 10);
+    const regulationIdNum = parseInt(regulation, 10);
+    let regulationId: number;
+    if (!isNaN(regulationIdNum)) {
+      regulationId = regulationIdNum;
+    } else {
+      // スラッグで検索
+      const [reg] = await db
+        .select({ id: regulations.id })
+        .from(regulations)
+        .where(eq(regulations.slug, regulation))
+        .limit(1);
+      if (!reg) return NextResponse.json([]);
+      regulationId = reg.id;
+    }
     const results = await db
       .select()
       .from(pokemon)
