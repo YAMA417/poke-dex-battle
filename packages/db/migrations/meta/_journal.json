@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1774747248458,
-      "tag": "0000_typical_power_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1774750111494,
-      "tag": "0001_common_the_stranger",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1774770967447,
-      "tag": "0002_naive_betty_ross",
+      "when": 1774777723483,
+      "tag": "0000_optimal_stardust",
       "breakpoints": true
     }
   ]

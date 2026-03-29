@@ -112,7 +112,7 @@ export const pokemon = pgTable('pokemon', {
   heightm: real('height_m').notNull(),
   category: pokemonCategoryEnum('category').notNull().default('normal'),
   spriteUrl: text('sprite_url'),
-  fixedItem: text('fixed_item'),
+  fixedItemId: bigint('fixed_item_id', { mode: 'number' }).references(() => items.id),
   fixedTeraType: pokemonTypeEnum('fixed_tera_type'),
   genderRate: integer('gender_rate'),
   formType: formTypeEnum('form_type').notNull().default('base'),

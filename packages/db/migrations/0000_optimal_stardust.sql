@@ -1,5 +1,6 @@
+CREATE TYPE "public"."form_type" AS ENUM('base', 'mega', 'primal', 'tera', 'variant', 'battle_only');--> statement-breakpoint
 CREATE TYPE "public"."learn_method" AS ENUM('level-up', 'machine', 'egg');--> statement-breakpoint
-CREATE TYPE "public"."pokemon_category" AS ENUM('normal', 'sub_legendary', 'restricted', 'mythical', 'mega');--> statement-breakpoint
+CREATE TYPE "public"."pokemon_category" AS ENUM('normal', 'sub_legendary', 'restricted', 'mythical');--> statement-breakpoint
 CREATE TYPE "public"."pokemon_type" AS ENUM('Normal', 'Fire', 'Water', 'Electric', 'Grass', 'Ice', 'Fighting', 'Poison', 'Ground', 'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy');--> statement-breakpoint
 CREATE TABLE "abilities" (
 	"id" bigserial PRIMARY KEY NOT NULL,
@@ -25,12 +26,11 @@ CREATE TABLE "items" (
 );
 --> statement-breakpoint
 CREATE TABLE "learnsets" (
-	"id" bigserial PRIMARY KEY NOT NULL,
 	"pokemon_id" bigint NOT NULL,
 	"move_id" bigint NOT NULL,
 	"method" "learn_method" NOT NULL,
 	"level" integer DEFAULT 0 NOT NULL,
-	CONSTRAINT "learnsets_pokemon_id_move_id_method_unique" UNIQUE("pokemon_id","move_id","method")
+	CONSTRAINT "learnsets_pokemon_id_move_id_method_pk" PRIMARY KEY("pokemon_id","move_id","method")
 );
 --> statement-breakpoint
 CREATE TABLE "moves" (
@@ -71,9 +71,12 @@ CREATE TABLE "pokemon" (
 	"height_m" real NOT NULL,
 	"category" "pokemon_category" DEFAULT 'normal' NOT NULL,
 	"sprite_url" text,
-	"fixed_item" text,
+	"fixed_item_id" bigint,
 	"fixed_tera_type" "pokemon_type",
 	"gender_rate" integer,
+	"form_type" "form_type" DEFAULT 'base' NOT NULL,
+	"base_form_id" bigint,
+	"nfe" boolean DEFAULT false NOT NULL,
 	CONSTRAINT "pokemon_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
@@ -91,8 +94,8 @@ CREATE TABLE "regulations" (
 	"battle_systems" text[] DEFAULT '{}' NOT NULL,
 	"restricted_count" integer DEFAULT 0 NOT NULL,
 	"mythical_allowed" boolean DEFAULT false NOT NULL,
-	"from_date" integer,
-	"to_date" integer,
+	"from_date" date,
+	"to_date" date,
 	"is_default" boolean DEFAULT false NOT NULL,
 	CONSTRAINT "regulations_slug_unique" UNIQUE("slug")
 );
@@ -102,5 +105,7 @@ ALTER TABLE "learnsets" ADD CONSTRAINT "learnsets_move_id_moves_id_fk" FOREIGN K
 ALTER TABLE "pokemon" ADD CONSTRAINT "pokemon_ability_0_id_abilities_id_fk" FOREIGN KEY ("ability_0_id") REFERENCES "public"."abilities"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "pokemon" ADD CONSTRAINT "pokemon_ability_1_id_abilities_id_fk" FOREIGN KEY ("ability_1_id") REFERENCES "public"."abilities"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "pokemon" ADD CONSTRAINT "pokemon_ability_h_id_abilities_id_fk" FOREIGN KEY ("ability_h_id") REFERENCES "public"."abilities"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "pokemon" ADD CONSTRAINT "pokemon_fixed_item_id_items_id_fk" FOREIGN KEY ("fixed_item_id") REFERENCES "public"."items"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "pokemon" ADD CONSTRAINT "pokemon_base_form_id_pokemon_id_fk" FOREIGN KEY ("base_form_id") REFERENCES "public"."pokemon"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "regulation_pokemon" ADD CONSTRAINT "regulation_pokemon_regulation_id_regulations_id_fk" FOREIGN KEY ("regulation_id") REFERENCES "public"."regulations"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "regulation_pokemon" ADD CONSTRAINT "regulation_pokemon_pokemon_id_pokemon_id_fk" FOREIGN KEY ("pokemon_id") REFERENCES "public"."pokemon"("id") ON DELETE no action ON UPDATE no action;

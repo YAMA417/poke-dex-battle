@@ -170,6 +170,10 @@ async function seedPokemon(): Promise<number> {
   const abilityRows = await db.select({ id: abilities.id, slug: abilities.slug }).from(abilities);
   const abilityIdMap = new Map(abilityRows.map((a) => [a.slug, a.id]));
 
+  // アイテム slug → id マップ
+  const itemRows = await db.select({ id: items.id, slug: items.slug }).from(items);
+  const itemIdMap = new Map(itemRows.map((i) => [i.slug, i.id]));
+
   type PokemonType = (typeof pokemon.$inferInsert)['types'][number];
   type PokemonCategory = (typeof pokemon.$inferInsert)['category'];
   type FormType = (typeof pokemon.$inferInsert)['formType'];
@@ -199,7 +203,12 @@ async function seedPokemon(): Promise<number> {
       heightm: parseFloat(r.height_m),
       category: (r.category || 'normal') as PokemonCategory,
       spriteUrl: r.sprite_url || null,
-      fixedItem: r.fixed_item || null,
+      fixedItemId: r.fixed_item
+        ? (itemIdMap.get(r.fixed_item) ??
+          (() => {
+            throw new Error(`item not found: "${r.fixed_item}" (pokemon: ${r.slug})`);
+          })())
+        : null,
       fixedTeraType: (r.fixed_tera_type as PokemonType) || null,
       genderRate: toIntOrNull(r.gender_rate),
       formType: r.form_type as FormType,

@@ -1,10 +1,11 @@
 import { cache } from 'react';
 import { db } from '@poke-dex-battle/db';
-import { pokemon, regulationPokemon, abilities } from '@poke-dex-battle/db/schema';
+import { pokemon, regulationPokemon, abilities, items } from '@poke-dex-battle/db/schema';
 import { ilike, or, asc, eq, and } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 type AbilityInfo = { slug: string; nameJa: string };
+type ItemInfo = { slug: string; nameJa: string };
 
 // 特性ID(number)→{slug,nameJa}マップ
 const getAbilityMap = cache(async (): Promise<Map<number, AbilityInfo>> => {
@@ -14,14 +15,24 @@ const getAbilityMap = cache(async (): Promise<Map<number, AbilityInfo>> => {
   return new Map(rows.map((r) => [r.id, { slug: r.slug, nameJa: r.nameJa }]));
 });
 
+// アイテムID(number)→{slug,nameJa}マップ
+const getItemMap = cache(async (): Promise<Map<number, ItemInfo>> => {
+  const rows = await db
+    .select({ id: items.id, slug: items.slug, nameJa: items.nameJa })
+    .from(items);
+  return new Map(rows.map((r) => [r.id, { slug: r.slug, nameJa: r.nameJa }]));
+});
+
 function enrichPokemon(
   rows: (typeof pokemon.$inferSelect)[],
-  abilityMap: Map<number, AbilityInfo>
+  abilityMap: Map<number, AbilityInfo>,
+  itemMap: Map<number, ItemInfo>
 ) {
   return rows.map((row) => {
     const ab0 = abilityMap.get(row.ability0Id);
     const ab1 = row.ability1Id ? abilityMap.get(row.ability1Id) : null;
     const abH = row.abilityHId ? abilityMap.get(row.abilityHId) : null;
+    const fixedItemInfo = row.fixedItemId ? itemMap.get(row.fixedItemId) : null;
     return {
       ...row,
       id: row.slug, // 外部IDはslug文字列で統一
@@ -31,6 +42,8 @@ function enrichPokemon(
       ability0Ja: ab0?.nameJa ?? null,
       ability1Ja: ab1?.nameJa ?? null,
       abilityHJa: abH?.nameJa ?? null,
+      fixedItem: fixedItemInfo?.slug ?? null,
+      fixedItemNameJa: fixedItemInfo?.nameJa ?? null,
     };
   });
 }
@@ -41,7 +54,7 @@ export async function GET(request: Request) {
   const name = searchParams.get('name');
   const regulation = searchParams.get('regulation');
 
-  const abilityMap = await getAbilityMap();
+  const [abilityMap, itemMap] = await Promise.all([getAbilityMap(), getItemMap()]);
 
   // 名前完全一致検索（日本語名 or 英語名 or slug）
   if (name) {
@@ -51,7 +64,7 @@ export async function GET(request: Request) {
       .from(pokemon)
       .where(or(eq(pokemon.nameJa, name), ilike(pokemon.name, name), eq(pokemon.slug, normalized)))
       .limit(1);
-    const enriched = enrichPokemon(results, abilityMap);
+    const enriched = enrichPokemon(results, abilityMap, itemMap);
     return NextResponse.json(enriched[0] ?? null);
   }
 
@@ -74,7 +87,7 @@ export async function GET(request: Request) {
 
     // innerJoin は { pokemon: ..., regulation_pokemon: ... } を返す
     const pokemonRows = results.map((r) => r.pokemon);
-    return NextResponse.json(enrichPokemon(pokemonRows, abilityMap));
+    return NextResponse.json(enrichPokemon(pokemonRows, abilityMap, itemMap));
   }
 
   // 部分一致検索
@@ -84,9 +97,9 @@ export async function GET(request: Request) {
       .from(pokemon)
       .where(or(ilike(pokemon.nameJa, `%${q}%`), ilike(pokemon.name, `%${q}%`)))
       .orderBy(asc(pokemon.num));
-    return NextResponse.json(enrichPokemon(results, abilityMap));
+    return NextResponse.json(enrichPokemon(results, abilityMap, itemMap));
   }
 
   const all = await db.select().from(pokemon).orderBy(asc(pokemon.num));
-  return NextResponse.json(enrichPokemon(all, abilityMap));
+  return NextResponse.json(enrichPokemon(all, abilityMap, itemMap));
 }

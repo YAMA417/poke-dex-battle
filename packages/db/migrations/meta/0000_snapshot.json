@@ -1,5 +1,5 @@
 {
-  "id": "18a3a9db-d128-44ee-947e-7609b8a0ebcb",
+  "id": "76d1df4e-796d-416f-bdce-3d35fad70377",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -137,12 +137,6 @@
       "name": "learnsets",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigserial",
-          "primaryKey": true,
-          "notNull": true
-        },
         "pokemon_id": {
           "name": "pokemon_id",
           "type": "bigint",
@@ -191,14 +185,13 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "learnsets_pokemon_id_move_id_method_unique": {
-          "name": "learnsets_pokemon_id_move_id_method_unique",
-          "nullsNotDistinct": false,
+      "compositePrimaryKeys": {
+        "learnsets_pokemon_id_move_id_method_pk": {
+          "name": "learnsets_pokemon_id_move_id_method_pk",
           "columns": ["pokemon_id", "move_id", "method"]
         }
       },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -429,9 +422,9 @@
           "primaryKey": false,
           "notNull": false
         },
-        "fixed_item": {
-          "name": "fixed_item",
-          "type": "text",
+        "fixed_item_id": {
+          "name": "fixed_item_id",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": false
         },
@@ -447,6 +440,27 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false
+        },
+        "form_type": {
+          "name": "form_type",
+          "type": "form_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'base'"
+        },
+        "base_form_id": {
+          "name": "base_form_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nfe": {
+          "name": "nfe",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         }
       },
       "indexes": {},
@@ -474,6 +488,24 @@
           "tableFrom": "pokemon",
           "tableTo": "abilities",
           "columnsFrom": ["ability_h_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pokemon_fixed_item_id_items_id_fk": {
+          "name": "pokemon_fixed_item_id_items_id_fk",
+          "tableFrom": "pokemon",
+          "tableTo": "items",
+          "columnsFrom": ["fixed_item_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pokemon_base_form_id_pokemon_id_fk": {
+          "name": "pokemon_base_form_id_pokemon_id_fk",
+          "tableFrom": "pokemon",
+          "tableTo": "pokemon",
+          "columnsFrom": ["base_form_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -592,13 +624,13 @@
         },
         "from_date": {
           "name": "from_date",
-          "type": "integer",
+          "type": "date",
           "primaryKey": false,
           "notNull": false
         },
         "to_date": {
           "name": "to_date",
-          "type": "integer",
+          "type": "date",
           "primaryKey": false,
           "notNull": false
         },
@@ -626,6 +658,11 @@
     }
   },
   "enums": {
+    "public.form_type": {
+      "name": "form_type",
+      "schema": "public",
+      "values": ["base", "mega", "primal", "tera", "variant", "battle_only"]
+    },
     "public.learn_method": {
       "name": "learn_method",
       "schema": "public",
@@ -634,7 +671,7 @@
     "public.pokemon_category": {
       "name": "pokemon_category",
       "schema": "public",
-      "values": ["normal", "sub_legendary", "restricted", "mythical", "mega"]
+      "values": ["normal", "sub_legendary", "restricted", "mythical"]
     },
     "public.pokemon_type": {
       "name": "pokemon_type",

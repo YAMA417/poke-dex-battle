@@ -10,7 +10,10 @@ const client = postgres(process.env.DATABASE_URL!, { prepare: false });
 const db = drizzle(client);
 
 async function main() {
-  const nullRows = await db.select({ slug: pokemon.slug }).from(pokemon).where(isNull(pokemon.spriteUrl));
+  const nullRows = await db
+    .select({ slug: pokemon.slug })
+    .from(pokemon)
+    .where(isNull(pokemon.spriteUrl));
   console.log('sprite_url = null:', nullRows.length, '件');
 
   const samples = await db
@@ -18,8 +21,15 @@ async function main() {
     .from(pokemon)
     .where(
       inArray(pokemon.slug, [
-        'bulbasaur', 'venusaur-mega', 'urshifu', 'urshifu-rapid-strike',
-        'calyrex-ice', 'ogerpon-hearthflame', 'terapagos-terastal', 'arceus-fire', 'palafin',
+        'bulbasaur',
+        'venusaur-mega',
+        'urshifu',
+        'urshifu-rapid-strike',
+        'calyrex-ice',
+        'ogerpon-hearthflame',
+        'terapagos-terastal',
+        'arceus-fire',
+        'palafin',
       ])
     );
   for (const r of samples) console.log(r.slug!.padEnd(25), r.spriteUrl);

@@ -34,6 +34,7 @@ export interface PokemonRow {
   category: string;
   spriteUrl: string | null;
   fixedItem: string | null;
+  fixedItemNameJa: string | null;
   fixedTeraType: string | null;
   genderRate?: number | null;
 }
@@ -74,19 +75,6 @@ export interface ItemRow {
 }
 
 // ---------------------------------------------------------------------------
-// 固定アイテムの日本語名マッピング（itemsテーブルに無い特殊アイテム含む）
-// ---------------------------------------------------------------------------
-
-const FIXED_ITEM_NAME_JA: Record<string, string> = {
-  'wellspring-mask': 'いどのめん',
-  'hearthflame-mask': 'かまどのめん',
-  'cornerstone-mask': 'いしずえのめん',
-  'rusted-sword': 'くちたけん',
-  'rusted-shield': 'くちたたて',
-  'griseous-orb': 'はっきんだま',
-};
-
-// ---------------------------------------------------------------------------
 // 変換関数
 // ---------------------------------------------------------------------------
 
@@ -122,7 +110,7 @@ export function toSpeciesData(row: PokemonRow | null | undefined): PokemonSpecie
     weight: row.weightkg,
     category: row.category,
     fixedItem: row.fixedItem ?? null,
-    fixedItemNameJa: row.fixedItem ? (FIXED_ITEM_NAME_JA[row.fixedItem] ?? row.fixedItem) : null,
+    fixedItemNameJa: row.fixedItemNameJa ?? null,
     fixedTeraType: row.fixedTeraType ?? null,
     genderRate: row.genderRate ?? null,
   };
