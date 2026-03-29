@@ -9,9 +9,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@hono/node-server": "^1.19.6",
+    "@hono/node-server": "^1.19.11",
     "@poke-dex-battle/shared": "*",
-    "hono": "^4.10.6"
+    "hono": "^4.12.9"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",

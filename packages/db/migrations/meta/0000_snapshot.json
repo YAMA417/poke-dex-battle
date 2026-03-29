@@ -1,0 +1,711 @@
+{
+  "id": "76d1df4e-796d-416f-bdce-3d35fad70377",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.abilities": {
+      "name": "abilities",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "num": {
+          "name": "num",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name_ja": {
+          "name": "name_ja",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "short_desc": {
+          "name": "short_desc",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "short_desc_ja": {
+          "name": "short_desc_ja",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "abilities_slug_unique": {
+          "name": "abilities_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": ["slug"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.items": {
+      "name": "items",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "num": {
+          "name": "num",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name_ja": {
+          "name": "name_ja",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "short_desc": {
+          "name": "short_desc",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "short_desc_ja": {
+          "name": "short_desc_ja",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_competitive": {
+          "name": "is_competitive",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "items_slug_unique": {
+          "name": "items_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": ["slug"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.learnsets": {
+      "name": "learnsets",
+      "schema": "",
+      "columns": {
+        "pokemon_id": {
+          "name": "pokemon_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "move_id": {
+          "name": "move_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "method": {
+          "name": "method",
+          "type": "learn_method",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "level": {
+          "name": "level",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "learnsets_pokemon_id_pokemon_id_fk": {
+          "name": "learnsets_pokemon_id_pokemon_id_fk",
+          "tableFrom": "learnsets",
+          "tableTo": "pokemon",
+          "columnsFrom": ["pokemon_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "learnsets_move_id_moves_id_fk": {
+          "name": "learnsets_move_id_moves_id_fk",
+          "tableFrom": "learnsets",
+          "tableTo": "moves",
+          "columnsFrom": ["move_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "learnsets_pokemon_id_move_id_method_pk": {
+          "name": "learnsets_pokemon_id_move_id_method_pk",
+          "columns": ["pokemon_id", "move_id", "method"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.moves": {
+      "name": "moves",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "num": {
+          "name": "num",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name_ja": {
+          "name": "name_ja",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "pokemon_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "power": {
+          "name": "power",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accuracy": {
+          "name": "accuracy",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pp": {
+          "name": "pp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "priority": {
+          "name": "priority",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "target": {
+          "name": "target",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "short_desc": {
+          "name": "short_desc",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "short_desc_ja": {
+          "name": "short_desc_ja",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "moves_slug_unique": {
+          "name": "moves_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": ["slug"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pokemon": {
+      "name": "pokemon",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "num": {
+          "name": "num",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name_ja": {
+          "name": "name_ja",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "types": {
+          "name": "types",
+          "type": "pokemon_type[]",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hp": {
+          "name": "hp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "atk": {
+          "name": "atk",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "def": {
+          "name": "def",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spa": {
+          "name": "spa",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spd": {
+          "name": "spd",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spe": {
+          "name": "spe",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ability_0_id": {
+          "name": "ability_0_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ability_1_id": {
+          "name": "ability_1_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ability_h_id": {
+          "name": "ability_h_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weight_kg": {
+          "name": "weight_kg",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "height_m": {
+          "name": "height_m",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "pokemon_category",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'normal'"
+        },
+        "sprite_url": {
+          "name": "sprite_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fixed_item_id": {
+          "name": "fixed_item_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fixed_tera_type": {
+          "name": "fixed_tera_type",
+          "type": "pokemon_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gender_rate": {
+          "name": "gender_rate",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "form_type": {
+          "name": "form_type",
+          "type": "form_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'base'"
+        },
+        "base_form_id": {
+          "name": "base_form_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nfe": {
+          "name": "nfe",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pokemon_ability_0_id_abilities_id_fk": {
+          "name": "pokemon_ability_0_id_abilities_id_fk",
+          "tableFrom": "pokemon",
+          "tableTo": "abilities",
+          "columnsFrom": ["ability_0_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pokemon_ability_1_id_abilities_id_fk": {
+          "name": "pokemon_ability_1_id_abilities_id_fk",
+          "tableFrom": "pokemon",
+          "tableTo": "abilities",
+          "columnsFrom": ["ability_1_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pokemon_ability_h_id_abilities_id_fk": {
+          "name": "pokemon_ability_h_id_abilities_id_fk",
+          "tableFrom": "pokemon",
+          "tableTo": "abilities",
+          "columnsFrom": ["ability_h_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pokemon_fixed_item_id_items_id_fk": {
+          "name": "pokemon_fixed_item_id_items_id_fk",
+          "tableFrom": "pokemon",
+          "tableTo": "items",
+          "columnsFrom": ["fixed_item_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pokemon_base_form_id_pokemon_id_fk": {
+          "name": "pokemon_base_form_id_pokemon_id_fk",
+          "tableFrom": "pokemon",
+          "tableTo": "pokemon",
+          "columnsFrom": ["base_form_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "pokemon_slug_unique": {
+          "name": "pokemon_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": ["slug"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.regulation_pokemon": {
+      "name": "regulation_pokemon",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "regulation_id": {
+          "name": "regulation_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pokemon_id": {
+          "name": "pokemon_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "regulation_pokemon_regulation_id_regulations_id_fk": {
+          "name": "regulation_pokemon_regulation_id_regulations_id_fk",
+          "tableFrom": "regulation_pokemon",
+          "tableTo": "regulations",
+          "columnsFrom": ["regulation_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "regulation_pokemon_pokemon_id_pokemon_id_fk": {
+          "name": "regulation_pokemon_pokemon_id_pokemon_id_fk",
+          "tableFrom": "regulation_pokemon",
+          "tableTo": "pokemon",
+          "columnsFrom": ["pokemon_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "regulation_pokemon_regulation_id_pokemon_id_unique": {
+          "name": "regulation_pokemon_regulation_id_pokemon_id_unique",
+          "nullsNotDistinct": false,
+          "columns": ["regulation_id", "pokemon_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.regulations": {
+      "name": "regulations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "battle_systems": {
+          "name": "battle_systems",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "restricted_count": {
+          "name": "restricted_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "mythical_allowed": {
+          "name": "mythical_allowed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "from_date": {
+          "name": "from_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "to_date": {
+          "name": "to_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_default": {
+          "name": "is_default",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "regulations_slug_unique": {
+          "name": "regulations_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": ["slug"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.form_type": {
+      "name": "form_type",
+      "schema": "public",
+      "values": ["base", "mega", "primal", "tera", "variant", "battle_only"]
+    },
+    "public.learn_method": {
+      "name": "learn_method",
+      "schema": "public",
+      "values": ["level-up", "machine", "egg"]
+    },
+    "public.pokemon_category": {
+      "name": "pokemon_category",
+      "schema": "public",
+      "values": ["normal", "sub_legendary", "restricted", "mythical"]
+    },
+    "public.pokemon_type": {
+      "name": "pokemon_type",
+      "schema": "public",
+      "values": [
+        "Normal",
+        "Fire",
+        "Water",
+        "Electric",
+        "Grass",
+        "Ice",
+        "Fighting",
+        "Poison",
+        "Ground",
+        "Flying",
+        "Psychic",
+        "Bug",
+        "Rock",
+        "Ghost",
+        "Dragon",
+        "Dark",
+        "Steel",
+        "Fairy"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

@@ -58,6 +58,8 @@ export function PartyCard({ party, onDuplicate, onDelete }: PartyCardProps) {
           {/* メニュー */}
           <div className="relative shrink-0">
             <button
+              type="button"
+              aria-label="メニューを開く"
               onClick={() => setMenuOpen((v) => !v)}
               className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100"
             >
@@ -75,6 +77,7 @@ export function PartyCard({ party, onDuplicate, onDelete }: PartyCardProps) {
                     <Edit size={14} /> 編集
                   </Link>
                   <button
+                    type="button"
                     onClick={() => {
                       onDuplicate(party.id);
                       setMenuOpen(false);
@@ -84,6 +87,7 @@ export function PartyCard({ party, onDuplicate, onDelete }: PartyCardProps) {
                     <Copy size={14} /> 複製
                   </button>
                   <button
+                    type="button"
                     onClick={() => {
                       setDeleteDialogOpen(true);
                       setMenuOpen(false);
@@ -159,6 +163,7 @@ export function PartyCard({ party, onDuplicate, onDelete }: PartyCardProps) {
               キャンセル
             </DialogClose>
             <button
+              type="button"
               onClick={() => {
                 onDelete(party.id);
                 setDeleteDialogOpen(false);

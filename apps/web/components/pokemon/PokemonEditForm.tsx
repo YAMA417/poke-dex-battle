@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import type { Pokemon, PokemonSpeciesData, PokemonType, Stats } from '@poke-dex-battle/shared';
 import {
   findClosestRealizableEv,
@@ -69,13 +69,19 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
     return [{ label: 'なし', value: '', id: 'none' }, ...competitive];
   }, [items]);
 
+  // onChange は毎レンダーで新しい参照になるため ref で最新版を保持する
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
   // 性別固定ポケモンの場合、既存データの gender 値を正しい値に修正する（編集モード対応）
   useEffect(() => {
     const { genderRate } = species;
-    if (genderRate === 0 && pokemon.gender !== 'male') onChange({ gender: 'male' });
-    else if (genderRate === 8 && pokemon.gender !== 'female') onChange({ gender: 'female' });
-    else if (genderRate === -1 && pokemon.gender !== 'unknown') onChange({ gender: 'unknown' });
-  }, [species.genderRate]);
+    if (genderRate === 0 && pokemon.gender !== 'male') onChangeRef.current({ gender: 'male' });
+    else if (genderRate === 8 && pokemon.gender !== 'female')
+      onChangeRef.current({ gender: 'female' });
+    else if (genderRate === -1 && pokemon.gender !== 'unknown')
+      onChangeRef.current({ gender: 'unknown' });
+  }, [species.genderRate, pokemon.gender]);
 
   const natureEffect = NATURE_EFFECTS_MAP[pokemon.nature] ?? [];
   const natureUp = natureEffect[0] as keyof Stats | undefined;

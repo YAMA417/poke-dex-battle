@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const results = await db
       .select()
       .from(moves)
-      .where(or(eq(moves.nameJa, name), ilike(moves.name, name), eq(moves.id, normalized)))
+      .where(or(eq(moves.nameJa, name), ilike(moves.name, name), eq(moves.slug, normalized)))
       .limit(1);
     return NextResponse.json(results[0] ?? null);
   }

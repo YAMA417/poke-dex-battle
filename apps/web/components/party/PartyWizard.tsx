@@ -49,10 +49,12 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
 
   // Step 1 state
   const [partyName, setPartyName] = useState(existingParty?.name ?? '');
-  const [regulation, setRegulation] = useState<Regulation>(existingParty?.regulation ?? 'SV');
+  const [regulation, setRegulation] = useState<Regulation>(
+    existingParty?.regulation ?? 'Champions'
+  );
 
   // レギュレーション → DB regulation ID マッピング
-  const regulationDbId = regulation === 'SV' ? 'sv-reg-i' : undefined;
+  const regulationDbId = regulation === 'Champions' ? 'champions-season1' : undefined;
 
   // API経由でレギュレーション対応ポケモンを取得
   const { data: allPokemonRaw } = useAllPokemon(regulationDbId);
@@ -218,10 +220,11 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
             <p className="text-sm text-gray-400">{STEPS[0].desc}</p>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">
+            <label htmlFor="party-name" className="mb-1 block text-xs font-semibold text-gray-600">
               パーティ名 <span className="text-red-400">*</span>
             </label>
             <input
+              id="party-name"
               type="text"
               value={partyName}
               onChange={(e) => setPartyName(e.target.value)}
@@ -234,21 +237,24 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
               レギュレーション
             </label>
             <div className="flex gap-3">
-              {(['SV', 'Champions'] as Regulation[]).map((r) => (
+              {(['Champions'] as Regulation[]).map((r) => (
                 <button
                   key={r}
                   type="button"
                   onClick={() => setRegulation(r)}
                   className={`flex-1 rounded-xl border-2 py-2.5 text-sm font-semibold transition-all ${regulation === r ? 'border-pokemon-blue bg-pokemon-blue text-white shadow' : 'border-gray-200 text-gray-500 hover:border-pokemon-blue'}`}
                 >
-                  {r === 'SV' ? 'スカーレット・バイオレット' : 'チャンピオンズ'}
+                  チャンピオンズ
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">メモ（任意）</label>
+            <label htmlFor="party-memo" className="mb-1 block text-xs font-semibold text-gray-600">
+              メモ（任意）
+            </label>
             <textarea
+              id="party-memo"
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
               rows={2}
@@ -258,6 +264,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
           </div>
           <div className="flex justify-end pt-2">
             <button
+              type="button"
               disabled={!step1Valid}
               onClick={() => setStep(2)}
               className={`flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold transition-all ${step1Valid ? 'bg-pokemon-blue text-white shadow hover:bg-blue-700 hover:shadow-lg' : 'cursor-not-allowed bg-gray-100 text-gray-300'}`}
@@ -278,7 +285,9 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
             {pokemons.map(({ species }, i) => (
               <div key={i} className="group relative flex flex-col items-center gap-1">
-                <div
+                <button
+                  type="button"
+                  aria-label={`${species.nameJa}を編集`}
                   className="flex aspect-square w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-gray-100 bg-gray-50 transition-all hover:border-pokemon-blue"
                   onClick={() => {
                     setEditingIdx(i);
@@ -298,11 +307,13 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                       {species.nameJa.charAt(0)}
                     </span>
                   )}
-                </div>
+                </button>
                 <span className="w-full truncate text-center text-[10px] font-medium text-gray-600">
                   {species.nameJa}
                 </span>
                 <button
+                  type="button"
+                  aria-label={`${species.nameJa}を削除`}
                   onClick={() => handleRemovePokemon(i)}
                   className="absolute -right-1.5 -top-1.5 hidden h-5 w-5 items-center justify-center rounded-full bg-red-400 text-white group-hover:flex"
                 >
@@ -312,6 +323,8 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
             ))}
             {pokemons.length < 6 && (
               <button
+                type="button"
+                aria-label="ポケモンを追加"
                 onClick={() => setSearchOpen(true)}
                 className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition-all hover:border-pokemon-blue hover:bg-blue-50"
               >
@@ -322,6 +335,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
           </div>
           <div className="flex justify-between pt-2">
             <button
+              type="button"
               onClick={() => setStep(1)}
               className="flex items-center gap-1 text-sm text-gray-400 transition-colors hover:text-gray-600"
             >
@@ -329,6 +343,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
             </button>
             <div className="flex gap-2">
               <button
+                type="button"
                 disabled={!step2Valid}
                 onClick={handleSave}
                 className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${step2Valid ? 'border border-green-400 text-green-600 hover:bg-green-50' : 'cursor-not-allowed text-gray-300'}`}
@@ -336,6 +351,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                 <Check size={16} /> このまま保存
               </button>
               <button
+                type="button"
                 disabled={!step2Valid}
                 onClick={() => setStep(3)}
                 className={`flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold transition-all ${step2Valid ? 'bg-pokemon-blue text-white shadow hover:bg-blue-700' : 'cursor-not-allowed bg-gray-100 text-gray-300'}`}
@@ -355,6 +371,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
             {pokemons.map(({ species }, i) => (
               <button
                 key={i}
+                type="button"
                 onClick={() => setEditingIdx(i)}
                 className={`flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-semibold transition-all ${editingIdx === i ? 'border-pokemon-blue bg-white text-pokemon-blue' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
               >
@@ -376,6 +393,8 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
             ))}
             {pokemons.length < 6 && (
               <button
+                type="button"
+                aria-label="ポケモンを追加"
                 onClick={() => setSearchOpen(true)}
                 className="flex shrink-0 items-center gap-1 border-b-2 border-transparent px-3 py-2 text-xs text-gray-300 transition-all hover:text-pokemon-blue"
               >
@@ -396,12 +415,14 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
           </div>
           <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50/50 px-6 py-4">
             <button
+              type="button"
               onClick={() => setStep(2)}
               className="flex items-center gap-1 text-sm text-gray-400 transition-colors hover:text-gray-600"
             >
               <ChevronLeft size={16} /> ポケモン一覧
             </button>
             <button
+              type="button"
               onClick={handleSave}
               className="flex items-center gap-2 rounded-xl bg-green-500 px-6 py-2.5 text-sm font-bold text-white shadow transition-all hover:bg-green-600 hover:shadow-lg"
             >

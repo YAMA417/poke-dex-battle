@@ -1,3 +1,5 @@
+@package.json
+
 # CLAUDE.md
 
 ## IMPORTANT: 必須ルール
@@ -32,6 +34,14 @@ npm run typecheck -w @poke-dex-battle/shared       # 型チェック
 npm run db:push                                    # DB スキーマ反映（開発用）
 npm run db:seed                                    # シードデータ投入
 ```
+
+## TDD ワークフロー
+
+機能実装時は以下の順序を守る:
+
+1. 失敗するテストを書く（Red）→ `npm test -w @poke-dex-battle/shared` で確認
+2. 最小限の実装（Green）→ `npm test -w @poke-dex-battle/shared` で確認
+3. リファクタリング
 
 ## スキル
 

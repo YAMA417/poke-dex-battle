@@ -83,7 +83,7 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-2xl font-bold text-gray-800">{party.name}</h2>
           <p className="text-sm text-gray-400">
-            {party.regulation === 'SV' ? 'スカーレット・バイオレット' : 'チャンピオンズ'}
+            チャンピオンズ
             {' · '}更新{new Date(party.updatedAt).toLocaleDateString('ja-JP')}
           </p>
           {party.memo && (
@@ -94,6 +94,8 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <button
+            type="button"
+            aria-label="パーティを複製"
             onClick={handleDuplicate}
             className="rounded-xl p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
             title="複製"
@@ -108,6 +110,8 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
             <Edit size={18} />
           </Link>
           <button
+            type="button"
+            aria-label="パーティを削除"
             onClick={handleDelete}
             className="rounded-xl p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
             title="削除"

@@ -14,7 +14,7 @@ export async function GET(request: Request) {
       .select()
       .from(abilities)
       .where(
-        or(eq(abilities.nameJa, name), ilike(abilities.name, name), eq(abilities.id, normalized))
+        or(eq(abilities.nameJa, name), ilike(abilities.name, name), eq(abilities.slug, normalized))
       )
       .limit(1);
     return NextResponse.json(results[0] ?? null);
