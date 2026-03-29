@@ -1,10 +1,13 @@
 import {
+  AnyPgColumn,
   bigint,
   bigserial,
   boolean,
+  date,
   integer,
   pgEnum,
   pgTable,
+  primaryKey,
   real,
   text,
   unique,
@@ -39,7 +42,15 @@ export const pokemonCategoryEnum = pgEnum('pokemon_category', [
   'sub_legendary',
   'restricted',
   'mythical',
+]);
+
+export const formTypeEnum = pgEnum('form_type', [
+  'base',
   'mega',
+  'primal',
+  'tera',
+  'variant',
+  'battle_only',
 ]);
 
 // レギュレーション（gamesテーブルを廃止・統合）
@@ -50,8 +61,8 @@ export const regulations = pgTable('regulations', {
   battleSystems: text('battle_systems').array().notNull().default([]),
   restrictedCount: integer('restricted_count').notNull().default(0),
   mythicalAllowed: boolean('mythical_allowed').notNull().default(false),
-  fromDate: integer('from_date'),
-  toDate: integer('to_date'),
+  fromDate: date('from_date'),
+  toDate: date('to_date'),
   isDefault: boolean('is_default').notNull().default(false),
 });
 
@@ -104,6 +115,8 @@ export const pokemon = pgTable('pokemon', {
   fixedItem: text('fixed_item'),
   fixedTeraType: pokemonTypeEnum('fixed_tera_type'),
   genderRate: integer('gender_rate'),
+  formType: formTypeEnum('form_type').notNull().default('base'),
+  baseFormId: bigint('base_form_id', { mode: 'number' }).references((): AnyPgColumn => pokemon.id),
 });
 
 // 技マスターデータ
@@ -128,7 +141,6 @@ export const moves = pgTable('moves', {
 export const learnsets = pgTable(
   'learnsets',
   {
-    id: bigserial('id', { mode: 'number' }).primaryKey(),
     pokemonId: bigint('pokemon_id', { mode: 'number' })
       .notNull()
       .references(() => pokemon.id),
@@ -138,7 +150,7 @@ export const learnsets = pgTable(
     method: learnMethodEnum('method').notNull(),
     level: integer('level').notNull().default(0),
   },
-  (table) => [unique().on(table.pokemonId, table.moveId, table.method)]
+  (table) => [primaryKey({ columns: [table.pokemonId, table.moveId, table.method] })]
 );
 
 // レギュレーション別使用可否

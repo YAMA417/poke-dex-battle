@@ -26,6 +26,7 @@ async function reset() {
   await sql`DROP TYPE IF EXISTS pokemon_type CASCADE`;
   await sql`DROP TYPE IF EXISTS learn_method CASCADE`;
   await sql`DROP TYPE IF EXISTS pokemon_category CASCADE`;
+  await sql`DROP TYPE IF EXISTS form_type CASCADE`;
   await sql.end();
   console.log('Reset complete. Run db:migrate and db:seed to reinitialize.');
 }
