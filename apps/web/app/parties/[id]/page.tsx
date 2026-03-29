@@ -94,6 +94,8 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <button
+            type="button"
+            aria-label="パーティを複製"
             onClick={handleDuplicate}
             className="rounded-xl p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
             title="複製"
@@ -108,6 +110,8 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
             <Edit size={18} />
           </Link>
           <button
+            type="button"
+            aria-label="パーティを削除"
             onClick={handleDelete}
             className="rounded-xl p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
             title="削除"
