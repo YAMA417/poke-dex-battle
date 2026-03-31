@@ -257,5 +257,5 @@ export function calculateFieldModifier(moveType: PokemonType, field: Field): num
   }
 }
 
-// 旧API互換のための re-export
-export { calculateDamage } from './damage-calc-legacy';
+// V2 API re-export
+export { calculateDamageV2 } from './damage-calc/index';

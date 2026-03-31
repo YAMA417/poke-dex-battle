@@ -1,353 +1,206 @@
 import { describe, expect, it } from 'vitest';
-import type { DamageCalculationInput } from '../../../types/damage';
-import { calculateDamage } from '../../damage-calc';
+import type { BattleContext, CalcMove, CalcPokemon } from '../../../types/damage';
 import { calculateDamageV2 } from '../../damage-calc/index';
-import { convertLegacyInput } from '../../damage-calc/legacy-adapter';
 
 /**
- * 旧API（calculateDamage）と新API（calculateDamageV2）の統合テスト
- * 同一入力で両者が同一結果を返すことを確認する
+ * ダメージ計算エンジン V2 統合テスト
  */
 describe('ダメージ計算エンジン統合テスト', () => {
-  /**
-   * ヘルパー関数: 旧APIと新APIの結果を比較
-   */
-  function compareResults(legacyInput: DamageCalculationInput, testName: string): void {
-    // 旧API実行
-    const legacyResult = calculateDamage(legacyInput);
-
-    // 新APIの入力に変換
-    const { attacker, defender, move, context } = convertLegacyInput(legacyInput);
-
-    // 新API実行
-    const v2Result = calculateDamageV2(attacker, defender, move, context);
-
-    console.log(`\n${testName}`);
-    console.log(`旧API - min: ${legacyResult.minDamage}, max: ${legacyResult.maxDamage}`);
-    console.log(`新API - min: ${v2Result.minDamage}, max: ${v2Result.maxDamage}`);
-
-    // 結果が一致することを確認
-    expect(v2Result.minDamage, `${testName}: minDamage が一致しない`).toBe(legacyResult.minDamage);
-    expect(v2Result.maxDamage, `${testName}: maxDamage が一致しない`).toBe(legacyResult.maxDamage);
-
-    // percent も確認
-    expect(v2Result.minPercent).toBe(legacyResult.minPercent);
-    expect(v2Result.maxPercent).toBe(legacyResult.maxPercent);
-
-    // guaranteed/possible も確認
-    expect(v2Result.guaranteed).toBe(legacyResult.guaranteed);
-    expect(v2Result.possible).toBe(legacyResult.possible);
-  }
-
   it('①カイリューのげきりん → ガブリアス (min: 240, max: 284)', () => {
-    const input: DamageCalculationInput = {
-      movePower: 120,
-      moveType: 'Dragon',
-      moveCategory: 'Physical',
-      attackerLevel: 50,
-      attackerAttack: 204,
-      attackerTypes: ['Dragon', 'Flying'],
-      defenderDefense: 115,
-      defenderTypes: ['Dragon', 'Ground'],
-      condition: {
-        weather: 'none',
-        field: 'none',
-        attackerStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-        defenderStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-      },
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Dragon', 'Flying'],
+      stats: { hp: 0, atk: 204, def: 0, spa: 0, spd: 0, spe: 0 },
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Dragon', 'Ground'],
+      stats: { hp: 100, atk: 0, def: 115, spa: 0, spd: 0, spe: 0 },
+      maxHp: 100,
+    };
+    const move: CalcMove = {
+      name: 'Outrage',
+      power: 120,
+      type: 'Dragon',
+      category: 'Physical',
     };
 
-    compareResults(input, '①カイリューのげきりん → ガブリアス');
-
-    // 期待値の確認
-    const result = calculateDamage(input);
+    const result = calculateDamageV2(attacker, defender, move, {});
     expect(result.minDamage).toBe(240);
     expect(result.maxDamage).toBe(284);
   });
 
   it('②ガブリアスの逆鱗 → ガブリアス (min: 236, max: 278)', () => {
-    const input: DamageCalculationInput = {
-      movePower: 120,
-      moveType: 'Dragon',
-      moveCategory: 'Physical',
-      attackerLevel: 50,
-      attackerAttack: 200,
-      attackerTypes: ['Dragon', 'Ground'],
-      defenderDefense: 115,
-      defenderTypes: ['Dragon', 'Ground'],
-      condition: {
-        weather: 'none',
-        field: 'none',
-        attackerStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-        defenderStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-      },
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Dragon', 'Ground'],
+      stats: { hp: 0, atk: 200, def: 0, spa: 0, spd: 0, spe: 0 },
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Dragon', 'Ground'],
+      stats: { hp: 100, atk: 0, def: 115, spa: 0, spd: 0, spe: 0 },
+      maxHp: 100,
+    };
+    const move: CalcMove = {
+      name: 'Outrage',
+      power: 120,
+      type: 'Dragon',
+      category: 'Physical',
     };
 
-    compareResults(input, '②ガブリアスの逆鱗 → ガブリアス');
-
-    // 期待値の確認
-    const result = calculateDamage(input);
+    const result = calculateDamageV2(attacker, defender, move, {});
     expect(result.minDamage).toBe(236);
     expect(result.maxDamage).toBe(278);
   });
 
   it('③通常攻撃 + てだすけ (min: 102, max: 121)', () => {
-    const input: DamageCalculationInput = {
-      movePower: 80,
-      moveType: 'Normal',
-      moveCategory: 'Physical',
-      attackerLevel: 50,
-      attackerAttack: 150,
-      attackerTypes: ['Normal'],
-      defenderDefense: 100,
-      defenderTypes: ['Normal'],
-      condition: {
-        weather: 'none',
-        field: 'none',
-        attackerStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-        defenderStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-        isHelpingHand: true,
-      },
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 0, atk: 150, def: 0, spa: 0, spd: 0, spe: 0 },
     };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 100, atk: 0, def: 100, spa: 0, spd: 0, spe: 0 },
+      maxHp: 100,
+    };
+    const move: CalcMove = {
+      name: '',
+      power: 80,
+      type: 'Normal',
+      category: 'Physical',
+    };
+    const context: BattleContext = { isHelpingHand: true };
 
-    compareResults(input, '③通常攻撃 + てだすけ');
-
-    // 期待値の確認
-    const result = calculateDamage(input);
+    const result = calculateDamageV2(attacker, defender, move, context);
     expect(result.minDamage).toBe(102);
     expect(result.maxDamage).toBe(121);
   });
 
   it('④ダブル全体技 (min: 51, max: 60)', () => {
-    const input: DamageCalculationInput = {
-      movePower: 80,
-      moveType: 'Normal',
-      moveCategory: 'Physical',
-      attackerLevel: 50,
-      attackerAttack: 150,
-      attackerTypes: ['Normal'],
-      defenderDefense: 100,
-      defenderTypes: ['Normal'],
-      condition: {
-        weather: 'none',
-        field: 'none',
-        attackerStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-        defenderStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-        isDoubleBattle: true,
-        isSpreadMove: true,
-      },
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 0, atk: 150, def: 0, spa: 0, spd: 0, spe: 0 },
     };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 100, atk: 0, def: 100, spa: 0, spd: 0, spe: 0 },
+      maxHp: 100,
+    };
+    const move: CalcMove = {
+      name: '',
+      power: 80,
+      type: 'Normal',
+      category: 'Physical',
+    };
+    const context: BattleContext = { isDoubleBattle: true, isSpreadMove: true };
 
-    compareResults(input, '④ダブル全体技');
-
-    // 期待値の確認
-    const result = calculateDamage(input);
+    const result = calculateDamageV2(attacker, defender, move, context);
     expect(result.minDamage).toBe(51);
     expect(result.maxDamage).toBe(60);
   });
 
   it('⑤テクニシャン (min: 76, max: 91)', () => {
-    const input: DamageCalculationInput = {
-      movePower: 60,
-      moveType: 'Normal',
-      moveCategory: 'Physical',
-      attackerLevel: 50,
-      attackerAttack: 150,
-      attackerTypes: ['Normal'],
-      defenderDefense: 100,
-      defenderTypes: ['Normal'],
-      condition: {
-        weather: 'none',
-        field: 'none',
-        attackerStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-        defenderStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-        attackerAbility: 'Technician',
-      },
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 0, atk: 150, def: 0, spa: 0, spd: 0, spe: 0 },
+      ability: 'Technician',
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 100, atk: 0, def: 100, spa: 0, spd: 0, spe: 0 },
+      maxHp: 100,
+    };
+    const move: CalcMove = {
+      name: '',
+      power: 60,
+      type: 'Normal',
+      category: 'Physical',
     };
 
-    compareResults(input, '④テクニシャン適用');
-
-    // 期待値の確認
-    const result = calculateDamage(input);
+    const result = calculateDamageV2(attacker, defender, move, {});
     expect(result.minDamage).toBe(76);
     expect(result.maxDamage).toBe(91);
   });
 
   it('⑤こだわりハチマキ (min: 68, max: 81)', () => {
-    const input: DamageCalculationInput = {
-      movePower: 80,
-      moveType: 'Normal',
-      moveCategory: 'Physical',
-      attackerLevel: 50,
-      attackerAttack: 150,
-      attackerTypes: ['Dragon', 'Flying'],
-      defenderDefense: 100,
-      defenderTypes: ['Normal'],
-      condition: {
-        weather: 'none',
-        field: 'none',
-        attackerStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-        defenderStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-        attackerItem: 'Choice Band',
-      },
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Dragon', 'Flying'],
+      stats: { hp: 0, atk: 150, def: 0, spa: 0, spd: 0, spe: 0 },
+      item: 'Choice Band',
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 100, atk: 0, def: 100, spa: 0, spd: 0, spe: 0 },
+      maxHp: 100,
+    };
+    const move: CalcMove = {
+      name: '',
+      power: 80,
+      type: 'Normal',
+      category: 'Physical',
     };
 
-    compareResults(input, '⑤こだわりハチマキ適用');
-
-    // 期待値の確認
-    const result = calculateDamage(input);
+    const result = calculateDamageV2(attacker, defender, move, {});
     expect(result.minDamage).toBe(68);
     expect(result.maxDamage).toBe(81);
   });
 
   it('⑥いのちのたま (min: 58, max: 70)', () => {
-    const input: DamageCalculationInput = {
-      movePower: 80,
-      moveType: 'Normal',
-      moveCategory: 'Physical',
-      attackerLevel: 50,
-      attackerAttack: 150,
-      attackerTypes: ['Dragon', 'Flying'],
-      defenderDefense: 100,
-      defenderTypes: ['Normal'],
-      condition: {
-        weather: 'none',
-        field: 'none',
-        attackerStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-        defenderStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-        attackerItem: 'Life Orb',
-      },
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Dragon', 'Flying'],
+      stats: { hp: 0, atk: 150, def: 0, spa: 0, spd: 0, spe: 0 },
+      item: 'Life Orb',
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 100, atk: 0, def: 100, spa: 0, spd: 0, spe: 0 },
+      maxHp: 100,
+    };
+    const move: CalcMove = {
+      name: '',
+      power: 80,
+      type: 'Normal',
+      category: 'Physical',
     };
 
-    compareResults(input, '⑥いのちのたま適用');
-
-    // 期待値の確認
-    const result = calculateDamage(input);
+    const result = calculateDamageV2(attacker, defender, move, {});
     expect(result.minDamage).toBe(58);
     expect(result.maxDamage).toBe(70);
   });
 
   it('⑦マルチスケイル (min: 22, max: 27)', () => {
-    const input: DamageCalculationInput = {
-      movePower: 80,
-      moveType: 'Normal',
-      moveCategory: 'Physical',
-      attackerLevel: 50,
-      attackerAttack: 150,
-      attackerTypes: ['Dragon', 'Flying'],
-      defenderDefense: 100,
-      defenderTypes: ['Dragon', 'Flying'],
-      defenderCurrentHp: 183,
-      defenderMaxHp: 183,
-      condition: {
-        weather: 'none',
-        field: 'none',
-        attackerStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-        defenderStatStages: {
-          attack: 0,
-          defense: 0,
-          specialAttack: 0,
-          specialDefense: 0,
-          speed: 0,
-        },
-        defenderAbility: 'Multiscale',
-      },
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Dragon', 'Flying'],
+      stats: { hp: 0, atk: 150, def: 0, spa: 0, spd: 0, spe: 0 },
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Dragon', 'Flying'],
+      stats: { hp: 183, atk: 0, def: 100, spa: 0, spd: 0, spe: 0 },
+      ability: 'Multiscale',
+      currentHp: 183,
+      maxHp: 183,
+    };
+    const move: CalcMove = {
+      name: '',
+      power: 80,
+      type: 'Normal',
+      category: 'Physical',
     };
 
-    compareResults(input, '⑦マルチスケイル');
-
-    // 期待値の確認
-    const result = calculateDamage(input);
+    const result = calculateDamageV2(attacker, defender, move, {});
     expect(result.minDamage).toBe(22);
     expect(result.maxDamage).toBe(27);
   });
@@ -359,7 +212,6 @@ describe('ダメージ計算エンジン統合テスト', () => {
  */
 describe('Issue #16: スラッグ形式名での補正適用テスト', () => {
   it('⑧ミライドン/イナズマドライブ/ハドロンエンジン → オーガポン-かまど (78-93)', () => {
-    // Issue #16 の再現ケース
     const result = calculateDamageV2(
       {
         level: 50,
@@ -377,8 +229,6 @@ describe('Issue #16: スラッグ形式名での補正適用テスト', () => {
       { field: 'electric', isDoubleBattle: true }
     );
 
-    // ハドロンエンジン(特攻5461/4096) + エレキフィールド(1.3倍) + STAB(1.5倍) + 半減(0.5倍)
-    // + イナズマドライブ効果なし（等倍以下なので）
     expect(result.minDamage).toBe(78);
     expect(result.maxDamage).toBe(93);
   });
@@ -407,7 +257,6 @@ describe('Issue #16: スラッグ形式名での補正適用テスト', () => {
       { isDoubleBattle: true }
     );
 
-    // テクニシャン1.5倍が適用されていること
     expect(result.minDamage).toBeGreaterThan(0);
     expect(result.details?.stab).toBe(1.0);
   });
@@ -446,7 +295,6 @@ describe('Issue #16: スラッグ形式名での補正適用テスト', () => {
       { isDoubleBattle: true }
     );
 
-    // こだわりメガネ(1.5倍)が適用されていること
     expect(withSpecs.maxDamage).toBeGreaterThan(withoutSpecs.maxDamage);
   });
 
@@ -484,7 +332,6 @@ describe('Issue #16: スラッグ形式名での補正適用テスト', () => {
       { isDoubleBattle: true }
     );
 
-    // 持ち物あり(1.5倍) > 持ち物なし
     expect(withItem.maxDamage).toBeGreaterThan(withoutItem.maxDamage);
   });
 
@@ -526,7 +373,6 @@ describe('Issue #16: スラッグ形式名での補正適用テスト', () => {
       { isDoubleBattle: true }
     );
 
-    // かたやぶりはマルチスケイルを無視 → ダメージが大きい
     expect(moldBreaker.maxDamage).toBeGreaterThan(noMoldBreaker.maxDamage);
   });
 
@@ -564,15 +410,12 @@ describe('Issue #16: スラッグ形式名での補正適用テスト', () => {
       { isDoubleBattle: true }
     );
 
-    // ヤチェのみ(氷半減) → ダメージ約半分
     expect(withBerry.maxDamage).toBeLessThan(withoutBerry.maxDamage);
-    // 概算: 半減実なしの約半分になるはず
     expect(withBerry.maxDamage).toBeCloseTo(Math.floor(withoutBerry.maxDamage * 0.5), -1);
   });
 
   it('⑭こだいかっせい + 晴れ: 最高ステータスが攻撃の場合のみ補正', () => {
     // ハバタクカミ想定: C(187) > S(172) > D(155) > B(100) > A(75)
-    // → 特攻が最高なので特殊技に補正がかかる
     const withProto = calculateDamageV2(
       {
         level: 50,
@@ -606,13 +449,11 @@ describe('Issue #16: スラッグ形式名での補正適用テスト', () => {
       { weather: 'sun', isDoubleBattle: true }
     );
 
-    // こだいかっせい(C最高 → 5325/4096倍)が適用
     expect(withProto.maxDamage).toBeGreaterThan(withoutProto.maxDamage);
   });
 
   it('⑮こだいかっせい + 晴れ: 最高ステータスが素早さの場合は攻撃に補正なし', () => {
     // テツノツツミ想定: S(188) > C(176) > B(100) > D(80) > A(60)
-    // → 素早さが最高なので特攻に補正がかからない
     const withProtoSFastest = calculateDamageV2(
       {
         level: 50,
@@ -646,7 +487,6 @@ describe('Issue #16: スラッグ形式名での補正適用テスト', () => {
       { field: 'electric', isDoubleBattle: true }
     );
 
-    // 素早さが最高 → 特攻に補正なし → ダメージ同じ
     expect(withProtoSFastest.maxDamage).toBe(withoutProto.maxDamage);
   });
 
@@ -684,12 +524,10 @@ describe('Issue #16: スラッグ形式名での補正適用テスト', () => {
       { isDoubleBattle: true }
     );
 
-    // もくたん(1.2倍)が適用
     expect(withCharcoal.maxDamage).toBeGreaterThan(withoutItem.maxDamage);
   });
 
   it('⑰ワイドフォース: サイコフィールド + isSpreadMove=true → 威力1.5倍 + 全体技補正(0.75x)', () => {
-    // フロントエンドが isSpreadMove=true を設定してエンジンに渡す（フロント側で bothDefendersPresent を判定済み）
     const expandingForceOnPsychicSpread = calculateDamageV2(
       {
         level: 50,
@@ -706,7 +544,6 @@ describe('Issue #16: スラッグ形式名での補正適用テスト', () => {
       { field: 'psychic', isDoubleBattle: true, isSpreadMove: true }
     );
 
-    // サイコフィールドなし・単体（isSpreadMove=false）
     const expandingForceNoField = calculateDamageV2(
       {
         level: 50,

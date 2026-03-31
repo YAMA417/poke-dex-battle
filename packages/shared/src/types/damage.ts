@@ -9,41 +9,6 @@ export type Field = 'none' | 'electric' | 'grassy' | 'misty' | 'psychic';
 /** 能力ランク（-6〜+6） */
 export type StatStage = -6 | -5 | -4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
-/** 能力ランクの状態 */
-export interface StatStages {
-  attack: StatStage;
-  defense: StatStage;
-  specialAttack: StatStage;
-  specialDefense: StatStage;
-  speed: StatStage;
-}
-
-/** バトル状況 */
-export interface BattleCondition {
-  weather: Weather;
-  field: Field;
-  attackerStatStages: StatStages;
-  defenderStatStages: StatStages;
-  // ダブルバトル用
-  isDoubleBattle?: boolean;
-  isSpreadMove?: boolean; // 全体技かどうか
-  isHelpingHand?: boolean; // てだすけ使用中か
-  // その他の状態
-  isCriticalHit?: boolean;
-  attackerTerastallized?: boolean; // テラスタル使用中か
-  attackerAbility?: string;
-  defenderAbility?: string;
-  attackerItem?: string;
-  defenderItem?: string;
-  attackerBurned?: boolean; // やけど状態（物理攻撃0.5倍）
-  // 壁
-  reflect?: boolean; // リフレクター（物理ダメージ0.5倍）
-  lightScreen?: boolean; // ひかりのかべ（特殊ダメージ0.5倍）
-  // 場の全特性（わざわいシリーズ等、味方を含む全ポケモンの特性）
-  allAttackerSideAbilities?: string[];
-  allDefenderSideAbilities?: string[];
-}
-
 /** 特性の種類（Phase 1: 基本10個） */
 export type Ability =
   // 攻撃側
@@ -143,32 +108,6 @@ export interface MoveFlags {
   usesDefenseAsAttack?: boolean; // 攻撃側の防御で計算（ボディプレス）
   targetsPhysicalDefense?: boolean; // 特殊技だが防御側の物理防御で計算（サイコショック等）
   usesTargetAttack?: boolean; // 防御側の攻撃で計算（イカサマ）
-}
-
-/** ダメージ計算の入力 */
-export interface DamageCalculationInput {
-  // 技情報
-  moveName?: string; // 技の英語名（天候依存の威力変動判定用）
-  movePower: number;
-  moveType: PokemonType;
-  moveCategory: 'Physical' | 'Special';
-
-  // 攻撃側
-  attackerLevel: number;
-  attackerAttack: number; // 物理攻撃 or 特殊攻撃の実数値
-  attackerTypes: PokemonType[]; // タイプ一致判定用
-  attackerTeraType?: PokemonType; // テラスタイプ
-  // 技の分類
-  moveFlags?: MoveFlags;
-
-  // 防御側
-  defenderCurrentHp?: number;
-  defenderMaxHp?: number;
-  defenderDefense: number; // 物理防御 or 特殊防御の実数値
-  defenderTypes: PokemonType[]; // タイプ相性判定用
-
-  // バトル状況
-  condition: BattleCondition;
 }
 
 /** ダメージ計算結果 */

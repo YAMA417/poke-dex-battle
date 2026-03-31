@@ -21,9 +21,6 @@ export { calculateModifier } from './calculate-modifier';
 export { resolveBasePower } from './resolve-base-power';
 export { resolveEffectiveAttack, resolveEffectiveDefense } from './resolve-effective-stat';
 
-// Adapter
-export { convertLegacyInput } from './legacy-adapter';
-
 // 既存のdamage-calc.tsから再エクスポート
 export {
   calculateAttackerAbilityModifier,
