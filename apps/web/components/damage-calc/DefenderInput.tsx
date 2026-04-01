@@ -2,7 +2,6 @@
 
 import { Autocomplete } from '@/components/ui/autocomplete';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -22,7 +21,13 @@ import {
   reverseCalcOtherEv,
 } from '@poke-dex-battle/shared';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { NatureModifierCompact, EvPreset, TypeBadges } from './SharedFormComponents';
+import {
+  MegaEvolutionControl,
+  NatureModifierCompact,
+  EvPreset,
+  TypeBadges,
+} from './SharedFormComponents';
+import { useMegaEvolution } from '@/hooks/useMegaEvolution';
 import { generateIdPrefix } from '@/utils/id';
 
 const STAT_STAGES: StatStage[] = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6];
@@ -75,18 +80,13 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
 
   const { data: pokemonData, megaForms } = usePokemonSearch(data.pokemonName);
 
-  // メガフォームデータ解決
-  const currentMegaForm: PokemonSpeciesData | null = useMemo(() => {
-    if (!data.isMegaEvolved || !data.megaFormSlug) return null;
-    return megaForms.find((f) => f.name === data.megaFormSlug) ?? null;
-  }, [data.isMegaEvolved, data.megaFormSlug, megaForms]);
-
-  // メガシンカラベル
-  const megaLabel = useMemo((): string => {
-    if (megaForms.length === 0) return '';
-    const hasPrimal = megaForms.some((f) => f.formType === 'primal');
-    return hasPrimal ? 'ゲンシカイキ' : 'メガシンカ';
-  }, [megaForms]);
+  // メガシンカ共通ロジック
+  const { currentMegaForm, megaLabel, spriteUrl } = useMegaEvolution({
+    isMegaEvolved: data.isMegaEvolved,
+    megaFormSlug: data.megaFormSlug,
+    megaForms,
+    baseSpriteUrl: pokemonData?.spriteUrl,
+  });
 
   const { data: allPokemon } = useAllPokemon('champions-season1');
   const pokemonOptions = useMemo(() => {
@@ -108,9 +108,6 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
     }
     return [];
   }, [pokemonData]);
-
-  // スプライトURL（メガ時はメガフォームのスプライトを使用）
-  const spriteUrl = currentMegaForm?.spriteUrl ?? pokemonData?.spriteUrl;
 
   // 持ち物オプション（競技用のみ）
   const { data: allItems } = useAllItems();
@@ -287,35 +284,15 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
           />
 
           {/* メガシンカ / ゲンシカイキ */}
-          {megaForms.length > 0 && (
-            <div className="space-y-1">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id={`${idPrefix}-mega`}
-                  checked={data.isMegaEvolved}
-                  onCheckedChange={(checked: boolean) => handleMegaToggle(checked === true)}
-                />
-                <Label htmlFor={`${idPrefix}-mega`} className="cursor-pointer text-xs font-normal">
-                  {megaLabel}
-                </Label>
-              </div>
-              {/* バリアント選択（2種以上の場合のみ） */}
-              {data.isMegaEvolved && megaForms.length >= 2 && (
-                <Select value={data.megaFormSlug ?? ''} onValueChange={handleMegaVariantChange}>
-                  <SelectTrigger className="h-8 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {megaForms.map((f) => (
-                      <SelectItem key={f.name} value={f.name}>
-                        {f.nameJa}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-          )}
+          <MegaEvolutionControl
+            idPrefix={idPrefix}
+            isMegaEvolved={data.isMegaEvolved}
+            megaFormSlug={data.megaFormSlug}
+            megaForms={megaForms}
+            megaLabel={megaLabel}
+            onToggle={handleMegaToggle}
+            onVariantChange={handleMegaVariantChange}
+          />
 
           {/* HP */}
           <div className="space-y-1">

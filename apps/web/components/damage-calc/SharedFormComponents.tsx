@@ -1,8 +1,17 @@
 'use client';
 
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
-import type { PokemonType } from '@poke-dex-battle/shared';
+import type { PokemonType, PokemonSpeciesData } from '@poke-dex-battle/shared';
 import { getTypeDisplayName } from '@poke-dex-battle/shared';
 import { POKEMON_TYPE_COLORS } from '@/lib/constants';
 
@@ -123,6 +132,61 @@ export function EvPreset({
         onChange={(e) => onChange(Math.max(0, Math.min(252, parseInt(e.target.value) || 0)))}
         className="h-7 w-16 text-xs"
       />
+    </div>
+  );
+}
+
+// --- メガシンカ / ゲンシカイキ コントロール ---
+
+interface MegaEvolutionControlProps {
+  idPrefix: string;
+  isMegaEvolved: boolean;
+  megaFormSlug: string | null;
+  megaForms: PokemonSpeciesData[];
+  megaLabel: string;
+  onToggle: (checked: boolean) => void;
+  onVariantChange: (slug: string) => void;
+}
+
+export function MegaEvolutionControl({
+  idPrefix,
+  isMegaEvolved,
+  megaFormSlug,
+  megaForms,
+  megaLabel,
+  onToggle,
+  onVariantChange,
+}: MegaEvolutionControlProps) {
+  if (megaForms.length === 0) return null;
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id={`${idPrefix}-mega`}
+          checked={isMegaEvolved}
+          onCheckedChange={(checked: boolean) => onToggle(checked === true)}
+          aria-label={`${megaLabel}を切り替え`}
+        />
+        <Label htmlFor={`${idPrefix}-mega`} className="cursor-pointer text-xs font-normal">
+          {megaLabel}
+        </Label>
+      </div>
+      {/* バリアント選択（2種以上の場合のみ） */}
+      {isMegaEvolved && megaForms.length >= 2 && (
+        <Select value={megaFormSlug ?? ''} onValueChange={onVariantChange}>
+          <SelectTrigger className="h-8 text-sm" aria-label={`${megaLabel}フォーム選択`}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {megaForms.map((f) => (
+              <SelectItem key={f.name} value={f.name}>
+                {f.nameJa}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
     </div>
   );
 }
