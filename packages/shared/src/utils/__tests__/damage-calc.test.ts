@@ -38,6 +38,44 @@ describe('damage-calc', () => {
     it('テラスタル使用時、元タイプと不一致なら1.5倍', () => {
       expect(calculateStab('Water', ['Fire', 'Flying'], 'Water', true)).toBe(1.5);
     });
+
+    it('テラタイプ≠技タイプ、元タイプ=技タイプ → 1.5倍', () => {
+      // 炎テラス中に飛行技（元タイプ一致）を使う
+      expect(calculateStab('Flying', ['Fire', 'Flying'], 'Fire', true)).toBe(1.5);
+    });
+
+    it('テラタイプ≠技タイプ、元タイプ=技タイプ、適応力 → 1.5倍（適応力不発）', () => {
+      expect(calculateStab('Flying', ['Fire', 'Flying'], 'Fire', true, 'Adaptability')).toBe(1.5);
+    });
+
+    it('ステラ未使用+元タイプ一致 → 2.0倍', () => {
+      expect(calculateStab('Fire', ['Fire', 'Flying'], 'Stellar', true, undefined, false)).toBe(
+        2.0
+      );
+    });
+
+    it('ステラ未使用+元タイプ不一致 → 1.2倍', () => {
+      expect(calculateStab('Water', ['Fire', 'Flying'], 'Stellar', true, undefined, false)).toBe(
+        1.2
+      );
+    });
+
+    it('ステラ使用済+元タイプ一致 → 1.5倍', () => {
+      expect(calculateStab('Fire', ['Fire', 'Flying'], 'Stellar', true, undefined, true)).toBe(1.5);
+    });
+
+    it('ステラ使用済+元タイプ不一致 → 1.0倍', () => {
+      expect(calculateStab('Water', ['Fire', 'Flying'], 'Stellar', true, undefined, true)).toBe(
+        1.0
+      );
+    });
+
+    it('ステラ+適応力 → 適応力不発確認', () => {
+      // ステラ時は適応力が効かない
+      expect(
+        calculateStab('Fire', ['Fire', 'Flying'], 'Stellar', true, 'Adaptability', false)
+      ).toBe(2.0);
+    });
   });
 
   describe('calculateWeatherModifier', () => {

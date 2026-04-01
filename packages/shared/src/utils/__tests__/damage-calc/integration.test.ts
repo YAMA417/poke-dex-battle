@@ -588,3 +588,481 @@ describe('Issue #16: スラッグ形式名での補正適用テスト', () => {
     );
   });
 });
+
+/**
+ * 防御側テラスタル対応テスト
+ */
+describe('防御側テラスタル対応', () => {
+  it('防御側テラスタル時、テラタイプで相性判定される', () => {
+    // 水テラスのドラゴン → 電気技が等倍から抜群に変わる
+    const defenderTerastallized = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Electric'],
+        stats: { hp: 100, atk: 100, def: 100, spa: 150, spd: 100, spe: 100 },
+      },
+      {
+        level: 50,
+        types: ['Dragon', 'Ground'], // 元タイプ: 電気無効
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        teraType: 'Water',
+        isTerastallized: true,
+        maxHp: 175,
+      },
+      { name: 'thunderbolt', power: 90, type: 'Electric', category: 'Special' },
+      {}
+    );
+
+    const defenderNormal = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Electric'],
+        stats: { hp: 100, atk: 100, def: 100, spa: 150, spd: 100, spe: 100 },
+      },
+      {
+        level: 50,
+        types: ['Dragon', 'Ground'], // 元タイプ: 電気無効
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      { name: 'thunderbolt', power: 90, type: 'Electric', category: 'Special' },
+      {}
+    );
+
+    // テラスタル（水）で電気抜群 → ダメージ大
+    expect(defenderTerastallized.maxDamage).toBeGreaterThan(0);
+    // 元タイプ（地面含む）で電気無効 → ダメージ0
+    expect(defenderNormal.maxDamage).toBe(0);
+  });
+
+  it('防御側テラスタル時、テラタイプ一致技で等倍になる', () => {
+    // 鋼テラスの炎/飛行 → 氷技が抜群(2x: 元タイプ) から等倍(1x: 鋼) に変わる
+    const defenderTerastallized = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Ice'],
+        stats: { hp: 100, atk: 100, def: 100, spa: 150, spd: 100, spe: 100 },
+      },
+      {
+        level: 50,
+        types: ['Fire', 'Flying'], // 元タイプ: 氷2倍
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        teraType: 'Steel', // 鋼: 氷0.5倍
+        isTerastallized: true,
+        maxHp: 175,
+      },
+      { name: 'ice-beam', power: 90, type: 'Ice', category: 'Special' },
+      {}
+    );
+
+    const defenderNormal = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Ice'],
+        stats: { hp: 100, atk: 100, def: 100, spa: 150, spd: 100, spe: 100 },
+      },
+      {
+        level: 50,
+        types: ['Fire', 'Flying'], // 元タイプ: 氷2倍
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      { name: 'ice-beam', power: 90, type: 'Ice', category: 'Special' },
+      {}
+    );
+
+    // テラスタル時のダメージが小さい（半減）
+    expect(defenderTerastallized.maxDamage).toBeLessThan(defenderNormal.maxDamage);
+  });
+
+  it('防御側ステラテラスタル時、元タイプ維持', () => {
+    // ステラテラスのドラゴン/地面 → 電気技は無効のまま
+    const defenderStellar = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Electric'],
+        stats: { hp: 100, atk: 100, def: 100, spa: 150, spd: 100, spe: 100 },
+      },
+      {
+        level: 50,
+        types: ['Dragon', 'Ground'],
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        teraType: 'Stellar',
+        isTerastallized: true,
+        maxHp: 175,
+      },
+      { name: 'thunderbolt', power: 90, type: 'Electric', category: 'Special' },
+      {}
+    );
+
+    expect(defenderStellar.maxDamage).toBe(0);
+  });
+});
+
+/**
+ * テラバースト対応テスト
+ */
+describe('テラバースト対応', () => {
+  it('通常テラスタル時、テラバーストはテラタイプに変更', () => {
+    // 炎テラスでテラバースト → 炎技として計算
+    const result = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 100, atk: 100, def: 100, spa: 150, spd: 100, spe: 100 },
+        teraType: 'Fire',
+        isTerastallized: true,
+      },
+      {
+        level: 50,
+        types: ['Grass'], // 炎に弱い
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      { name: 'Tera Blast', power: 80, type: 'Normal', category: 'Special' },
+      {}
+    );
+
+    // 炎技としてタイプ相性が抜群 → details.typeEffectiveness が 2.0
+    expect(result.details?.typeEffectiveness).toBe(2.0);
+  });
+
+  it('テラバースト: A > Cなら物理技として計算', () => {
+    const result = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 100, atk: 200, def: 100, spa: 100, spd: 100, spe: 100 },
+        teraType: 'Fire',
+        isTerastallized: true,
+      },
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      { name: 'Tera Blast', power: 80, type: 'Normal', category: 'Special' },
+      {}
+    );
+
+    // A(200)で計算 → C(100)で計算する場合よりダメージが大きい
+    const resultWithLowAtk = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 100, atk: 100, def: 100, spa: 200, spd: 100, spe: 100 },
+        teraType: 'Fire',
+        isTerastallized: true,
+      },
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      { name: 'Tera Blast', power: 80, type: 'Normal', category: 'Special' },
+      {}
+    );
+
+    // 両方とも最高攻撃力200で物理 or 特殊、防御同じなので同ダメージ
+    expect(result.maxDamage).toBe(resultWithLowAtk.maxDamage);
+  });
+
+  it('ステラテラバースト: 威力100、全タイプに等倍', () => {
+    // ステラテラバースト → 威力100、相性等倍
+    const result = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 100, atk: 100, def: 100, spa: 150, spd: 100, spe: 100 },
+        teraType: 'Stellar',
+        isTerastallized: true,
+      },
+      {
+        level: 50,
+        types: ['Ghost'], // ノーマル無効だが、ステラテラバーストは等倍
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      { name: 'Tera Blast', power: 80, type: 'Normal', category: 'Special' },
+      {}
+    );
+
+    // ゴーストにノーマルは無効だが、ステラテラバーストは等倍で通る
+    expect(result.maxDamage).toBeGreaterThan(0);
+    expect(result.details?.typeEffectiveness).toBe(1.0);
+  });
+});
+
+/**
+ * テラスタル威力底上げテスト
+ */
+describe('テラスタル威力底上げ', () => {
+  it('テラタイプ一致技で威力60未満 → 60に底上げ', () => {
+    // 威力40の炎テラスタイプ一致技 → 60に底上げ
+    const withTera = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Fire'],
+        stats: { hp: 100, atk: 150, def: 100, spa: 100, spd: 100, spe: 100 },
+        teraType: 'Fire',
+        isTerastallized: true,
+      },
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      { name: 'ember', power: 40, type: 'Fire', category: 'Physical' },
+      {}
+    );
+
+    // 威力60の非テラスタル時と比較
+    const withoutTera60 = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Fire'],
+        stats: { hp: 100, atk: 150, def: 100, spa: 100, spd: 100, spe: 100 },
+      },
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      { name: 'ember', power: 60, type: 'Fire', category: 'Physical' },
+      {}
+    );
+
+    // テラスタルSTABは2.0倍、非テラスタルSTABは1.5倍
+    // 威力60*STAB2.0 > 威力60*STAB1.5 → テラスタル時の方が大きいはず
+    expect(withTera.maxDamage).toBeGreaterThan(withoutTera60.maxDamage);
+  });
+
+  it('先制技はテラスタル威力底上げ対象外', () => {
+    const withTeraPriority = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 100, atk: 150, def: 100, spa: 100, spd: 100, spe: 100 },
+        teraType: 'Normal',
+        isTerastallized: true,
+      },
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      {
+        name: 'quick-attack',
+        power: 40,
+        type: 'Normal',
+        category: 'Physical',
+        flags: { isPriorityMove: true },
+      },
+      {}
+    );
+
+    const withoutTeraPriority = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 100, atk: 150, def: 100, spa: 100, spd: 100, spe: 100 },
+      },
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      {
+        name: 'quick-attack',
+        power: 40,
+        type: 'Normal',
+        category: 'Physical',
+        flags: { isPriorityMove: true },
+      },
+      {}
+    );
+
+    // 先制技は底上げされないので威力40のまま
+    // テラスタルSTABの差のみ (2.0 vs 1.5)
+    // 底上げなし: withTera.maxDamage / withoutTera.maxDamage ≒ 2.0/1.5 = 1.33
+    const ratio = withTeraPriority.maxDamage / withoutTeraPriority.maxDamage;
+    // 底上げがあれば 60/40 * 2.0/1.5 = 2.0 の差、底上げなしなら 2.0/1.5 = 1.33 の差
+    expect(ratio).toBeLessThan(1.5);
+  });
+
+  it('威力60以上はテラスタル威力底上げ対象外', () => {
+    const withTera = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Fire'],
+        stats: { hp: 100, atk: 150, def: 100, spa: 100, spd: 100, spe: 100 },
+        teraType: 'Fire',
+        isTerastallized: true,
+      },
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      { name: 'flamethrower', power: 90, type: 'Fire', category: 'Physical' },
+      {}
+    );
+
+    const withoutTera = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Fire'],
+        stats: { hp: 100, atk: 150, def: 100, spa: 100, spd: 100, spe: 100 },
+      },
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      { name: 'flamethrower', power: 90, type: 'Fire', category: 'Physical' },
+      {}
+    );
+
+    // 威力は変わらないのでSTABの差のみ: 2.0/1.5 ≒ 1.33
+    const ratio = withTera.maxDamage / withoutTera.maxDamage;
+    expect(ratio).toBeLessThan(1.5);
+  });
+});
+
+/**
+ * Z技統合テスト
+ */
+describe('Z技統合', () => {
+  it('Z技: 威力80の技 → Z技威力140に変換される', () => {
+    const zMove = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Fire'],
+        stats: { hp: 100, atk: 150, def: 100, spa: 100, spd: 100, spe: 100 },
+      },
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      { name: 'flare-blitz', power: 80, type: 'Fire', category: 'Physical', isZMove: true },
+      {}
+    );
+
+    const normalMove = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Fire'],
+        stats: { hp: 100, atk: 150, def: 100, spa: 100, spd: 100, spe: 100 },
+      },
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      { name: 'flare-blitz', power: 80, type: 'Fire', category: 'Physical' },
+      {}
+    );
+
+    // Z技(威力140)は通常技(威力80)より強い
+    expect(zMove.maxDamage).toBeGreaterThan(normalMove.maxDamage);
+  });
+});
+
+/**
+ * ダイマックス統合テスト
+ */
+describe('ダイマックス統合', () => {
+  it('ダイマックス技: 威力80の技 → ダイマックス威力130に変換', () => {
+    const dynamaxMove = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Fire'],
+        stats: { hp: 100, atk: 150, def: 100, spa: 100, spd: 100, spe: 100 },
+      },
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      {
+        name: 'flare-blitz',
+        power: 80,
+        type: 'Fire',
+        category: 'Physical',
+        isDynamaxMove: true,
+      },
+      {}
+    );
+
+    const normalMove = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Fire'],
+        stats: { hp: 100, atk: 150, def: 100, spa: 100, spd: 100, spe: 100 },
+      },
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      { name: 'flare-blitz', power: 80, type: 'Fire', category: 'Physical' },
+      {}
+    );
+
+    // ダイマックス技(威力130)は通常技(威力80)より強い
+    expect(dynamaxMove.maxDamage).toBeGreaterThan(normalMove.maxDamage);
+  });
+
+  it('防御側ダイマックス: HP2倍', () => {
+    const vsDynamaxed = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Fire'],
+        stats: { hp: 100, atk: 150, def: 100, spa: 100, spd: 100, spe: 100 },
+      },
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+        isDynamaxed: true,
+      },
+      { name: 'flare-blitz', power: 80, type: 'Fire', category: 'Physical' },
+      {}
+    );
+
+    const vsNormal = calculateDamageV2(
+      {
+        level: 50,
+        types: ['Fire'],
+        stats: { hp: 100, atk: 150, def: 100, spa: 100, spd: 100, spe: 100 },
+      },
+      {
+        level: 50,
+        types: ['Normal'],
+        stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+        maxHp: 175,
+      },
+      { name: 'flare-blitz', power: 80, type: 'Fire', category: 'Physical' },
+      {}
+    );
+
+    // ダメージ自体は同じだがHP割合が半分
+    expect(vsDynamaxed.minDamage).toBe(vsNormal.minDamage);
+    expect(vsDynamaxed.maxDamage).toBe(vsNormal.maxDamage);
+    expect(vsDynamaxed.maxPercent).toBeCloseTo(vsNormal.maxPercent / 2, 0);
+  });
+});

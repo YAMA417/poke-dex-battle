@@ -13,12 +13,13 @@ import {
 } from '@/components/ui/select';
 import { useAllPokemon, useAllItems } from '@/hooks/useApiData';
 import { usePokemonSearch } from '@/hooks/usePokemonSearch';
-import type { PokemonType, PokemonSpeciesData, StatStage } from '@poke-dex-battle/shared';
+import type { PokemonType, PokemonSpeciesData, StatStage, TeraType } from '@poke-dex-battle/shared';
 import {
   calcHpStat,
   calcOtherStat,
   reverseCalcHpEv,
   reverseCalcOtherEv,
+  isTeraType,
 } from '@poke-dex-battle/shared';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -26,6 +27,8 @@ import {
   NatureModifierCompact,
   EvPreset,
   TypeBadges,
+  TerastalControl,
+  DynamaxControl,
 } from './SharedFormComponents';
 import { useMegaEvolution } from '@/hooks/useMegaEvolution';
 import { generateIdPrefix } from '@/utils/id';
@@ -49,6 +52,9 @@ export interface DefenderData {
   itemName: string;
   isMegaEvolved: boolean;
   megaFormSlug: string | null;
+  isTerastallized: boolean;
+  teraType: TeraType | null;
+  isDynamaxed: boolean;
 }
 
 interface DefenderInputProps {
@@ -56,9 +62,22 @@ interface DefenderInputProps {
   onDataChange: (data: DefenderData) => void;
   idKey: string;
   displayMode: 'compact' | 'full';
+  showMega?: boolean;
+  showTerastal?: boolean;
+  showDynamax?: boolean;
+  regulationSlug?: string;
 }
 
-export function DefenderInput({ data, onDataChange, idKey, displayMode }: DefenderInputProps) {
+export function DefenderInput({
+  data,
+  onDataChange,
+  idKey,
+  displayMode,
+  showMega,
+  showTerastal,
+  showDynamax,
+  regulationSlug,
+}: DefenderInputProps) {
   const idPrefix = useMemo(
     () => generateIdPrefix(data.pokemonName || 'defender', idKey),
     [data.pokemonName, idKey]
@@ -88,7 +107,7 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
     baseSpriteUrl: pokemonData?.spriteUrl,
   });
 
-  const { data: allPokemon } = useAllPokemon('champions-season1');
+  const { data: allPokemon } = useAllPokemon(regulationSlug);
   const pokemonOptions = useMemo(() => {
     return (allPokemon ?? []).map((pokemon) => ({
       label: pokemon.nameJa,
@@ -235,6 +254,35 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
 
   // rerender-derived-state-no-effect: ステータスはイベントハンドラで直接計算
 
+  // テラスタルのハンドラ
+  const handleTerastalToggle = useCallback(
+    (checked: boolean): void => {
+      if (checked) {
+        const fixed = pokemonData?.fixedTeraType;
+        const defaultTeraType = fixed && isTeraType(fixed) ? fixed : null;
+        onDataChange({ ...data, isTerastallized: true, teraType: defaultTeraType });
+      } else {
+        onDataChange({ ...data, isTerastallized: false, teraType: null });
+      }
+    },
+    [data, onDataChange, pokemonData]
+  );
+
+  const handleTeraTypeChange = useCallback(
+    (type: TeraType): void => {
+      onDataChange({ ...data, teraType: type });
+    },
+    [data, onDataChange]
+  );
+
+  // ダイマックスハンドラ
+  const handleDynamaxToggle = useCallback(
+    (checked: boolean): void => {
+      onDataChange({ ...data, isDynamaxed: checked });
+    },
+    [data, onDataChange]
+  );
+
   if (displayMode === 'compact') {
     return (
       <Card className="border-t-2 border-t-primary/60">
@@ -284,15 +332,29 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
           />
 
           {/* メガシンカ / ゲンシカイキ */}
-          <MegaEvolutionControl
-            idPrefix={idPrefix}
-            isMegaEvolved={data.isMegaEvolved}
-            megaFormSlug={data.megaFormSlug}
-            megaForms={megaForms}
-            megaLabel={megaLabel}
-            onToggle={handleMegaToggle}
-            onVariantChange={handleMegaVariantChange}
-          />
+          {showMega && megaForms.length > 0 && (
+            <MegaEvolutionControl
+              idPrefix={idPrefix}
+              isMegaEvolved={data.isMegaEvolved}
+              megaFormSlug={data.megaFormSlug}
+              megaForms={megaForms}
+              megaLabel={megaLabel}
+              onToggle={handleMegaToggle}
+              onVariantChange={handleMegaVariantChange}
+            />
+          )}
+
+          {/* テラスタル */}
+          {showTerastal && (
+            <TerastalControl
+              idPrefix={idPrefix}
+              isTerastallized={data.isTerastallized}
+              teraType={data.teraType}
+              fixedTeraType={pokemonData?.fixedTeraType ?? null}
+              onToggle={handleTerastalToggle}
+              onTeraTypeChange={handleTeraTypeChange}
+            />
+          )}
 
           {/* HP */}
           <div className="space-y-1">
@@ -473,6 +535,16 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
               />
             </div>
           </div>
+
+          {/* ダイマックス */}
+          {showDynamax && (
+            <DynamaxControl
+              idPrefix={idPrefix}
+              isDynamaxed={data.isDynamaxed}
+              hpStat={data.hpStat}
+              onToggle={handleDynamaxToggle}
+            />
+          )}
 
           {/* 能力ランク */}
           <div className="grid grid-cols-2 gap-2">

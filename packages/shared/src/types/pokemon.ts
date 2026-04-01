@@ -19,6 +19,41 @@ export type PokemonType =
   | 'Steel'
   | 'Fairy';
 
+/** テラスタイプ（ステラを含む） */
+export type TeraType = PokemonType | 'Stellar';
+
+/** PokemonType の全値セット（型ガード用） */
+const POKEMON_TYPE_SET: ReadonlySet<string> = new Set<string>([
+  'Normal',
+  'Fire',
+  'Water',
+  'Electric',
+  'Grass',
+  'Ice',
+  'Fighting',
+  'Poison',
+  'Ground',
+  'Flying',
+  'Psychic',
+  'Bug',
+  'Rock',
+  'Ghost',
+  'Dragon',
+  'Dark',
+  'Steel',
+  'Fairy',
+]);
+
+/** 文字列が PokemonType か判定する型ガード */
+export function isPokemonType(value: string): value is PokemonType {
+  return POKEMON_TYPE_SET.has(value);
+}
+
+/** 文字列が TeraType か判定する型ガード */
+export function isTeraType(value: string): value is TeraType {
+  return value === 'Stellar' || POKEMON_TYPE_SET.has(value);
+}
+
 /** 性格 */
 export type Nature =
   | 'Hardy'

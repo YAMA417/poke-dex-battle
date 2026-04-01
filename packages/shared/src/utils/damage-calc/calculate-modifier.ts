@@ -1,6 +1,7 @@
 import { getTypeResistBerryType } from '../../constants/item-type-map';
 import { calcTypeEffectiveness } from '../../constants/types';
 import type { BattleContext, CalcMove, CalcPokemon } from '../../types/damage';
+import { isPokemonType } from '../../types/pokemon';
 import {
   calculateDefenderAbilityModifier,
   calculateDefenderItemModifier,
@@ -77,13 +78,28 @@ export function calculateModifier(
     attacker.types,
     attacker.teraType,
     attacker.isTerastallized,
-    attacker.ability
+    attacker.ability,
+    attacker.isStellarBoostUsed
   );
   minDamage = Math.floor(minDamage * stab);
   maxDamage = Math.floor(maxDamage * stab);
 
   // 6. Type (タイプ相性) - AFTER random
-  const typeEffectiveness = calcTypeEffectiveness(move.type, defender.types);
+  // 防御側テラスタル: テラタイプで単タイプ判定（ステラは元タイプ維持）
+  const defenderEffectiveTypes =
+    defender.isTerastallized && defender.teraType && isPokemonType(defender.teraType)
+      ? [defender.teraType]
+      : defender.types;
+  let typeEffectiveness = calcTypeEffectiveness(move.type, defenderEffectiveTypes);
+
+  // ステラテラバースト: 全タイプに等倍
+  if (
+    moveIs(move.name, 'Tera Blast') &&
+    attacker.isTerastallized &&
+    attacker.teraType === 'Stellar'
+  ) {
+    typeEffectiveness = 1.0;
+  }
 
   // 色眼鏡 (Tinted Lens): 効果いまひとつの技が2倍
   const effectiveTypeMultiplier =

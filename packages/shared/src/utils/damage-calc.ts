@@ -1,5 +1,5 @@
 import type { Field, MoveFlags, StatStage, Weather } from '../types/damage';
-import type { PokemonType } from '../types/pokemon';
+import type { PokemonType, TeraType } from '../types/pokemon';
 import { abilityIs, itemIs } from './normalize-id';
 
 /**
@@ -27,33 +27,44 @@ export function getStatStageMultiplier(stage: StatStage): number {
 
 /**
  * タイプ一致補正 (STAB) を計算
- * 第9世代: テラスタル考慮
+ * 第9世代: テラスタル考慮（ステラ対応含む）
  */
 export function calculateStab(
   moveType: PokemonType,
   attackerTypes: PokemonType[],
-  attackerTeraType?: PokemonType,
+  attackerTeraType?: TeraType,
   isTerastallized?: boolean,
-  attackerAbility?: string
+  attackerAbility?: string,
+  isStellarBoostUsed?: boolean
 ): number {
   const isAdaptability = abilityIs(attackerAbility, 'Adaptability');
 
-  // テラスタル使用時
   if (isTerastallized && attackerTeraType) {
-    // テラスタイプと技タイプが一致
+    // ステラテラスタル
+    if (attackerTeraType === 'Stellar') {
+      if (isStellarBoostUsed) {
+        // ブースト使用済み: 元タイプ一致なら通常STAB、不一致は1.0
+        return attackerTypes.includes(moveType) ? 1.5 : 1.0;
+      }
+      // ブースト未使用: 元タイプ一致2.0、不一致1.2（適応力不発）
+      return attackerTypes.includes(moveType) ? 2.0 : 1.2;
+    }
+
+    // 通常テラスタル
     if (attackerTeraType === moveType) {
-      // 元のタイプにも含まれていた場合: 通常2.0倍、適応力2.25倍
       if (attackerTypes.includes(moveType)) {
         return isAdaptability ? 2.25 : 2.0;
       }
-      // 元のタイプと不一致: 通常1.5倍、適応力2.0倍
       return isAdaptability ? 2.0 : 1.5;
     }
-    // テラスタイプと不一致の場合は補正なし
+    // テラタイプ不一致だが元タイプ一致 → 通常STAB（適応力不発）
+    if (attackerTypes.includes(moveType)) {
+      return 1.5;
+    }
     return 1.0;
   }
 
-  // 通常時: 元のタイプと一致すれば 通常1.5倍、適応力2.0倍
+  // 非テラスタル時
   if (attackerTypes.includes(moveType)) {
     return isAdaptability ? 2.0 : 1.5;
   }

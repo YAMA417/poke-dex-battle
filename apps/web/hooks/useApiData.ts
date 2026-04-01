@@ -70,6 +70,18 @@ export function useMegaForms(baseSlug: string | null) {
   );
 }
 
+/** レギュレーション型 */
+interface RegulationData {
+  slug: string;
+  name: string;
+  battleSystems: string[];
+}
+
+/** デフォルトレギュレーションを取得 */
+export function useDefaultRegulation() {
+  return useSWR<RegulationData | null>('/api/regulations', fetcher<RegulationData | null>);
+}
+
 /** 習得技を取得 */
 export function useLearnset(pokemonId: string | null) {
   return useSWR<{ pokemonId: string; level: string[]; machine: string[]; egg: string[] }>(

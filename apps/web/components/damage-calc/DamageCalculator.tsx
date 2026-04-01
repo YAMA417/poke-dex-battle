@@ -17,7 +17,12 @@ import {
   isSpreadMoveTarget,
   moveIs,
 } from '@poke-dex-battle/shared';
-import { useAllMoves, useAllAbilities, useAllItems } from '@/hooks/useApiData';
+import {
+  useAllMoves,
+  useAllAbilities,
+  useAllItems,
+  useDefaultRegulation,
+} from '@/hooks/useApiData';
 import { toMoveData, toAbilityData, toItemData } from '@/lib/api-adapters';
 import type { DoubleBattleResult } from '@/types/damage';
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
@@ -54,6 +59,11 @@ const DEFAULT_ATTACKER_DATA: AttackerData = {
   isBurned: false,
   isMegaEvolved: false,
   megaFormSlug: null,
+  isTerastallized: false,
+  teraType: null,
+  isStellarBoostUsed: false,
+  isZMove: false,
+  isDynamaxed: false,
 };
 
 const DEFAULT_DEFENDER_DATA: DefenderData = {
@@ -73,6 +83,9 @@ const DEFAULT_DEFENDER_DATA: DefenderData = {
   itemName: '',
   isMegaEvolved: false,
   megaFormSlug: null,
+  isTerastallized: false,
+  teraType: null,
+  isDynamaxed: false,
 };
 
 function combineDamage(
@@ -95,6 +108,15 @@ function combineDamage(
 
 export function DamageCalculator() {
   const isMounted = useHydrationSafe();
+
+  // レギュレーション取得 → バトルシステムフラグ算出
+  const { data: regulation } = useDefaultRegulation();
+  const battleSystems = regulation?.battleSystems ?? [];
+  const showMega = battleSystems.includes('mega');
+  const showTerastal = battleSystems.includes('terastal');
+  const showZMove = battleSystems.includes('zmove');
+  const showDynamax = battleSystems.includes('dynamax');
+  const regulationSlug = regulation?.slug;
 
   // API経由で全データを取得し、名前→データのMapを構築
   const { data: allMovesRaw } = useAllMoves();
@@ -277,6 +299,9 @@ export function DamageCalculator() {
           ? itemByNameJa.get(attacker.itemName)?.name || attacker.itemName
           : undefined,
         status: attacker.isBurned ? 'burn' : 'none',
+        teraType: attacker.isTerastallized ? (attacker.teraType ?? undefined) : undefined,
+        isTerastallized: attacker.isTerastallized,
+        isStellarBoostUsed: attacker.isStellarBoostUsed,
       };
 
       // 防御側ポケモン構築
@@ -302,6 +327,9 @@ export function DamageCalculator() {
           ? itemByNameJa.get(defender.itemName)?.name || defender.itemName
           : undefined,
         maxHp: defender.hpStat,
+        teraType: defender.isTerastallized ? (defender.teraType ?? undefined) : undefined,
+        isTerastallized: defender.isTerastallized,
+        isDynamaxed: defender.isDynamaxed,
       };
 
       // 技構築
@@ -311,6 +339,8 @@ export function DamageCalculator() {
         type: attacker.moveType,
         category: attacker.moveCategory,
         isCritical: isCriticalHit,
+        isZMove: attacker.isZMove,
+        isDynamaxMove: attacker.isDynamaxed,
         flags: moveFlags,
       };
 
@@ -461,12 +491,22 @@ export function DamageCalculator() {
             onDataChange={setAttackerAData}
             idKey="attacker-a"
             displayMode="compact"
+            showMega={showMega}
+            showTerastal={showTerastal}
+            showZMove={showZMove}
+            showDynamax={showDynamax}
+            regulationSlug={regulationSlug}
           />
           <AttackerInput
             data={attackerBData}
             onDataChange={setAttackerBData}
             idKey="attacker-b"
             displayMode="compact"
+            showMega={showMega}
+            showTerastal={showTerastal}
+            showZMove={showZMove}
+            showDynamax={showDynamax}
+            regulationSlug={regulationSlug}
           />
         </div>
 
@@ -501,12 +541,20 @@ export function DamageCalculator() {
             onDataChange={setDefenderData1}
             idKey="target-1"
             displayMode="compact"
+            showMega={showMega}
+            showTerastal={showTerastal}
+            showDynamax={showDynamax}
+            regulationSlug={regulationSlug}
           />
           <DefenderInput
             data={defenderData2}
             onDataChange={setDefenderData2}
             idKey="target-2"
             displayMode="compact"
+            showMega={showMega}
+            showTerastal={showTerastal}
+            showDynamax={showDynamax}
+            regulationSlug={regulationSlug}
           />
         </div>
       </div>

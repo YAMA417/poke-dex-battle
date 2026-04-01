@@ -14,8 +14,15 @@ import {
 } from '@/components/ui/select';
 import { useAllPokemon, useAllItems, useMoveByName } from '@/hooks/useApiData';
 import { usePokemonSearch } from '@/hooks/usePokemonSearch';
-import type { PokemonType, PokemonSpeciesData, StatStage } from '@poke-dex-battle/shared';
-import { calcOtherStat, reverseCalcOtherEv, getMoveFlags } from '@poke-dex-battle/shared';
+import type { PokemonType, PokemonSpeciesData, StatStage, TeraType } from '@poke-dex-battle/shared';
+import {
+  calcOtherStat,
+  reverseCalcOtherEv,
+  getMoveFlags,
+  getZMovePower,
+  getDynamaxMovePower,
+  isTeraType,
+} from '@poke-dex-battle/shared';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MoveInput } from './MoveInput';
 import {
@@ -23,6 +30,9 @@ import {
   NatureModifierCompact,
   EvPreset,
   TypeBadges,
+  TerastalControl,
+  ZMoveControl,
+  DynamaxControl,
 } from './SharedFormComponents';
 import { useMegaEvolution } from '@/hooks/useMegaEvolution';
 import { generateIdPrefix } from '@/utils/id';
@@ -56,6 +66,11 @@ export interface AttackerData {
   isBurned: boolean;
   isMegaEvolved: boolean;
   megaFormSlug: string | null;
+  isTerastallized: boolean;
+  teraType: TeraType | null;
+  isStellarBoostUsed: boolean;
+  isZMove: boolean;
+  isDynamaxed: boolean;
 }
 
 interface AttackerInputProps {
@@ -63,11 +78,26 @@ interface AttackerInputProps {
   onDataChange: (data: AttackerData) => void;
   idKey: string;
   displayMode: 'compact' | 'full';
+  showMega?: boolean;
+  showTerastal?: boolean;
+  showZMove?: boolean;
+  showDynamax?: boolean;
+  regulationSlug?: string;
 }
 
 // --- メインコンポーネント ---
 
-export function AttackerInput({ data, onDataChange, idKey, displayMode }: AttackerInputProps) {
+export function AttackerInput({
+  data,
+  onDataChange,
+  idKey,
+  displayMode,
+  showMega,
+  showTerastal,
+  showZMove,
+  showDynamax,
+  regulationSlug,
+}: AttackerInputProps) {
   const idPrefix = useMemo(
     () => generateIdPrefix(data.pokemonName || 'attacker', idKey),
     [data.pokemonName, idKey]
@@ -89,7 +119,7 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
 
   const { data: pokemonData, megaForms } = usePokemonSearch(data.pokemonName);
 
-  const { data: allPokemon } = useAllPokemon('champions-season1');
+  const { data: allPokemon } = useAllPokemon(regulationSlug);
   const pokemonOptions = useMemo(() => {
     return (allPokemon ?? []).map((pokemon) => ({
       label: pokemon.nameJa,
@@ -257,6 +287,59 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
       : data.specialAttackStat;
   const statLabel = usesDefenseAsAttack ? '防御→攻撃' : isPhysical ? '攻撃' : '特攻';
 
+  // テラスタルのハンドラ
+  const handleTerastalToggle = useCallback(
+    (checked: boolean): void => {
+      if (checked) {
+        const fixed = pokemonData?.fixedTeraType;
+        const defaultTeraType = fixed && isTeraType(fixed) ? fixed : null;
+        onDataChange({ ...data, isTerastallized: true, teraType: defaultTeraType });
+      } else {
+        onDataChange({
+          ...data,
+          isTerastallized: false,
+          teraType: null,
+          isStellarBoostUsed: false,
+        });
+      }
+    },
+    [data, onDataChange, pokemonData]
+  );
+
+  const handleTeraTypeChange = useCallback(
+    (type: TeraType): void => {
+      onDataChange({ ...data, teraType: type, isStellarBoostUsed: false });
+    },
+    [data, onDataChange]
+  );
+
+  const handleStellarBoostChange = useCallback(
+    (used: boolean): void => {
+      onDataChange({ ...data, isStellarBoostUsed: used });
+    },
+    [data, onDataChange]
+  );
+
+  // Z技ハンドラ
+  const handleZMoveToggle = useCallback(
+    (checked: boolean): void => {
+      onDataChange({ ...data, isZMove: checked });
+    },
+    [data, onDataChange]
+  );
+
+  // ダイマックスハンドラ
+  const handleDynamaxToggle = useCallback(
+    (checked: boolean): void => {
+      onDataChange({ ...data, isDynamaxed: checked });
+    },
+    [data, onDataChange]
+  );
+
+  // Z技/ダイマックス威力の算出
+  const zMovePower = getZMovePower(data.movePower);
+  const dynamaxMovePower = getDynamaxMovePower(data.movePower);
+
   if (displayMode === 'compact') {
     return (
       <Card className="border-t-2 border-t-primary/60">
@@ -306,15 +389,32 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
           />
 
           {/* メガシンカ / ゲンシカイキ */}
-          <MegaEvolutionControl
-            idPrefix={idPrefix}
-            isMegaEvolved={data.isMegaEvolved}
-            megaFormSlug={data.megaFormSlug}
-            megaForms={megaForms}
-            megaLabel={megaLabel}
-            onToggle={handleMegaToggle}
-            onVariantChange={handleMegaVariantChange}
-          />
+          {showMega && megaForms.length > 0 && (
+            <MegaEvolutionControl
+              idPrefix={idPrefix}
+              isMegaEvolved={data.isMegaEvolved}
+              megaFormSlug={data.megaFormSlug}
+              megaForms={megaForms}
+              megaLabel={megaLabel}
+              onToggle={handleMegaToggle}
+              onVariantChange={handleMegaVariantChange}
+            />
+          )}
+
+          {/* テラスタル */}
+          {showTerastal && (
+            <TerastalControl
+              idPrefix={idPrefix}
+              isTerastallized={data.isTerastallized}
+              teraType={data.teraType}
+              fixedTeraType={pokemonData?.fixedTeraType ?? null}
+              isStellarBoostUsed={data.isStellarBoostUsed}
+              showStellarBoost
+              onToggle={handleTerastalToggle}
+              onTeraTypeChange={handleTeraTypeChange}
+              onStellarBoostChange={handleStellarBoostChange}
+            />
+          )}
 
           {/* 技名 */}
           <MoveInput
@@ -338,6 +438,26 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
             onMoveCategoryChange={(cat) => onDataChange({ ...data, moveCategory: cat })}
             compact
           />
+
+          {/* Z技 */}
+          {showZMove && (
+            <ZMoveControl
+              idPrefix={idPrefix}
+              isZMove={data.isZMove}
+              zMovePower={zMovePower}
+              onToggle={handleZMoveToggle}
+            />
+          )}
+
+          {/* ダイマックス */}
+          {showDynamax && (
+            <DynamaxControl
+              idPrefix={idPrefix}
+              isDynamaxed={data.isDynamaxed}
+              dynamaxMovePower={dynamaxMovePower}
+              onToggle={handleDynamaxToggle}
+            />
+          )}
 
           {/* 性格補正 + EV + 実数値 */}
           <div className="space-y-1">

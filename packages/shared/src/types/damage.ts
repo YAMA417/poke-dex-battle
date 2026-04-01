@@ -1,4 +1,4 @@
-import type { PokemonType } from './pokemon';
+import type { PokemonType, TeraType } from './pokemon';
 
 /** 天候 */
 export type Weather = 'none' | 'sun' | 'rain' | 'sandstorm' | 'snow';
@@ -51,9 +51,11 @@ export interface CalcPokemon {
   status?: 'burn' | 'none';
   currentHp?: number;
   maxHp?: number;
-  teraType?: PokemonType;
+  teraType?: TeraType;
   isTerastallized?: boolean;
   isMegaEvolved?: boolean;
+  isDynamaxed?: boolean;
+  isStellarBoostUsed?: boolean;
 }
 
 /**
@@ -65,6 +67,8 @@ export interface CalcMove {
   type: PokemonType;
   category: 'Physical' | 'Special';
   isCritical?: boolean;
+  isZMove?: boolean;
+  isDynamaxMove?: boolean;
   flags?: MoveFlags;
 }
 
@@ -109,6 +113,9 @@ export interface MoveFlags {
   usesDefenseAsAttack?: boolean; // 攻撃側の防御で計算（ボディプレス）
   targetsPhysicalDefense?: boolean; // 特殊技だが防御側の物理防御で計算（サイコショック等）
   usesTargetAttack?: boolean; // 防御側の攻撃で計算（イカサマ）
+  isPriorityMove?: boolean; // 先制技か
+  isMultiHitMove?: boolean; // 連続技か
+  isVariablePowerMove?: boolean; // 可変威力技か
 }
 
 /** ダメージ計算結果 */
