@@ -14,9 +14,9 @@ import {
 } from '@/components/ui/select';
 import { useAllPokemon, useAllItems, useMoveByName } from '@/hooks/useApiData';
 import { usePokemonSearch } from '@/hooks/usePokemonSearch';
-import type { PokemonType, StatStage } from '@poke-dex-battle/shared';
+import type { PokemonType, PokemonSpeciesData, StatStage } from '@poke-dex-battle/shared';
 import { calcOtherStat, reverseCalcOtherEv, getMoveFlags } from '@poke-dex-battle/shared';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MoveInput } from './MoveInput';
 import { NatureModifierCompact, EvPreset, TypeBadges } from './SharedFormComponents';
 import { generateIdPrefix } from '@/utils/id';
@@ -48,6 +48,8 @@ export interface AttackerData {
   abilityName: string;
   itemName: string;
   isBurned: boolean;
+  isMegaEvolved: boolean;
+  megaFormSlug: string | null;
 }
 
 interface AttackerInputProps {
@@ -79,7 +81,7 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
   const [defEv, setDefEv] = useState(0);
   const [defIv, setDefIv] = useState(31);
 
-  const { data: pokemonData } = usePokemonSearch(data.pokemonName);
+  const { data: pokemonData, megaForms } = usePokemonSearch(data.pokemonName);
 
   const { data: allPokemon } = useAllPokemon('champions-season1');
   const pokemonOptions = useMemo(() => {
@@ -102,8 +104,21 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
     return [];
   }, [pokemonData]);
 
-  // スプライトURL
-  const spriteUrl = pokemonData?.spriteUrl;
+  // メガフォームデータ解決
+  const currentMegaForm: PokemonSpeciesData | null = useMemo(() => {
+    if (!data.isMegaEvolved || !data.megaFormSlug) return null;
+    return megaForms.find((f) => f.name === data.megaFormSlug) ?? null;
+  }, [data.isMegaEvolved, data.megaFormSlug, megaForms]);
+
+  // メガシンカラベル（formTypeで判定）
+  const megaLabel = useMemo((): string => {
+    if (megaForms.length === 0) return '';
+    const hasPrimal = megaForms.some((f) => f.formType === 'primal');
+    return hasPrimal ? 'ゲンシカイキ' : 'メガシンカ';
+  }, [megaForms]);
+
+  // スプライトURL（メガ時はメガフォームのスプライトを使用）
+  const spriteUrl = currentMegaForm?.spriteUrl ?? pokemonData?.spriteUrl;
 
   // 持ち物オプション（競技用のみ）
   const { data: allItems } = useAllItems();
@@ -115,27 +130,112 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
     }));
   }, [allItems]);
 
-  // ポケモンデータ取得時に種族値・タイプ・第1特性を自動反映
-  useEffect(() => {
-    if (pokemonData?.baseStats) {
-      const d = dataRef.current;
-      const atkBase = pokemonData.baseStats.attack;
-      const spAtkBase = pokemonData.baseStats.specialAttack;
-      const defBase = pokemonData.baseStats.defense;
-      const firstAbility = pokemonData.abilities[0];
+  // メガフォームのデータを適用したAttackerDataを構築する（単一のonDataChange呼び出しに統合）
+  const buildMegaData = useCallback(
+    (d: AttackerData, megaForm: PokemonSpeciesData): AttackerData => {
+      const atkBase = megaForm.baseStats.attack;
+      const spAtkBase = megaForm.baseStats.specialAttack;
+      const defBase = megaForm.baseStats.defense;
+      const firstAbility = megaForm.abilities[0];
+      const fixedItemName = megaForm.fixedItemNameJa ?? null;
 
-      onDataChangeRef.current({
+      return {
         ...d,
+        isMegaEvolved: true,
+        megaFormSlug: megaForm.name,
         attackBaseStat: atkBase,
         specialAttackBaseStat: spAtkBase,
         defenseBaseStat: defBase,
-        pokemonTypes: pokemonData.types,
-        abilityName: firstAbility?.nameJa ?? '',
+        pokemonTypes: megaForm.types,
+        abilityName: firstAbility?.nameJa ?? d.abilityName,
         attackStat: calcOtherStat(atkBase, attackIv, attackEv, 50, d.attackModifier),
         specialAttackStat: calcOtherStat(spAtkBase, spAtkIv, spAtkEv, 50, d.specialAttackModifier),
         defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
-      });
-    }
+        ...(fixedItemName ? { itemName: fixedItemName } : {}),
+      };
+    },
+    [attackIv, attackEv, spAtkIv, spAtkEv, defIv, defEv]
+  );
+
+  const handleMegaToggle = useCallback(
+    (checked: boolean): void => {
+      const d = dataRef.current;
+      if (checked && megaForms.length > 0) {
+        const firstMega = megaForms[0];
+        onDataChangeRef.current(buildMegaData(d, firstMega));
+      } else if (pokemonData) {
+        // メガシンカ解除 → ベースフォームのデータを直接復元
+        const atkBase = pokemonData.baseStats.attack;
+        const spAtkBase = pokemonData.baseStats.specialAttack;
+        const defBase = pokemonData.baseStats.defense;
+        const firstAbility = pokemonData.abilities[0];
+        onDataChangeRef.current({
+          ...d,
+          isMegaEvolved: false,
+          megaFormSlug: null,
+          attackBaseStat: atkBase,
+          specialAttackBaseStat: spAtkBase,
+          defenseBaseStat: defBase,
+          pokemonTypes: pokemonData.types,
+          abilityName: firstAbility?.nameJa ?? '',
+          attackStat: calcOtherStat(atkBase, attackIv, attackEv, 50, d.attackModifier),
+          specialAttackStat: calcOtherStat(
+            spAtkBase,
+            spAtkIv,
+            spAtkEv,
+            50,
+            d.specialAttackModifier
+          ),
+          defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
+          itemName: '',
+        });
+      } else {
+        onDataChangeRef.current({
+          ...d,
+          isMegaEvolved: false,
+          megaFormSlug: null,
+        });
+      }
+    },
+    [megaForms, buildMegaData, pokemonData, attackIv, attackEv, spAtkIv, spAtkEv, defIv, defEv]
+  );
+
+  const handleMegaVariantChange = useCallback(
+    (slug: string): void => {
+      const d = dataRef.current;
+      const selectedForm = megaForms.find((f) => f.name === slug);
+      if (selectedForm) {
+        onDataChangeRef.current(buildMegaData(d, selectedForm));
+      }
+    },
+    [megaForms, buildMegaData]
+  );
+
+  // ポケモンデータ取得時に種族値・タイプ・第1特性を自動反映
+  // メガシンカ中はメガフォームのデータを使用するためスキップ
+  useEffect(() => {
+    if (!pokemonData?.baseStats) return;
+    const d = dataRef.current;
+
+    // メガシンカ中はベースフォームのデータ適用をスキップ
+    if (d.isMegaEvolved && d.megaFormSlug) return;
+
+    const atkBase = pokemonData.baseStats.attack;
+    const spAtkBase = pokemonData.baseStats.specialAttack;
+    const defBase = pokemonData.baseStats.defense;
+    const firstAbility = pokemonData.abilities[0];
+
+    onDataChangeRef.current({
+      ...d,
+      attackBaseStat: atkBase,
+      specialAttackBaseStat: spAtkBase,
+      defenseBaseStat: defBase,
+      pokemonTypes: pokemonData.types,
+      abilityName: firstAbility?.nameJa ?? '',
+      attackStat: calcOtherStat(atkBase, attackIv, attackEv, 50, d.attackModifier),
+      specialAttackStat: calcOtherStat(spAtkBase, spAtkIv, spAtkEv, 50, d.specialAttackModifier),
+      defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
+    });
   }, [pokemonData, attackIv, attackEv, spAtkIv, spAtkEv, defIv, defEv]);
 
   // rerender-derived-state-no-effect: ステータスはイベントハンドラで直接計算
@@ -185,13 +285,58 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
           <Autocomplete
             id={`${idPrefix}-pokemon-name`}
             options={pokemonOptions}
-            onSelect={(name) => onDataChange({ ...data, pokemonName: name })}
+            onSelect={(name) =>
+              onDataChange({
+                ...data,
+                pokemonName: name,
+                isMegaEvolved: false,
+                megaFormSlug: null,
+              })
+            }
             onClear={() =>
-              onDataChange({ ...data, pokemonName: '', pokemonTypes: [], abilityName: '' })
+              onDataChange({
+                ...data,
+                pokemonName: '',
+                pokemonTypes: [],
+                abilityName: '',
+                isMegaEvolved: false,
+                megaFormSlug: null,
+              })
             }
             placeholder="ポケモン名"
             value={data.pokemonName}
           />
+
+          {/* メガシンカ / ゲンシカイキ */}
+          {megaForms.length > 0 && (
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`${idPrefix}-mega`}
+                  checked={data.isMegaEvolved}
+                  onCheckedChange={(checked: boolean) => handleMegaToggle(checked === true)}
+                />
+                <Label htmlFor={`${idPrefix}-mega`} className="cursor-pointer text-xs font-normal">
+                  {megaLabel}
+                </Label>
+              </div>
+              {/* バリアント選択（2種以上の場合のみ） */}
+              {data.isMegaEvolved && megaForms.length >= 2 && (
+                <Select value={data.megaFormSlug ?? ''} onValueChange={handleMegaVariantChange}>
+                  <SelectTrigger className="h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {megaForms.map((f) => (
+                      <SelectItem key={f.name} value={f.name}>
+                        {f.nameJa}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          )}
 
           {/* 技名 */}
           <MoveInput
@@ -403,28 +548,38 @@ export function AttackerInput({ data, onDataChange, idKey, displayMode }: Attack
             </Label>
           </div>
 
-          {/* 特性 */}
+          {/* 特性（メガシンカ中はロック） */}
           <div className="space-y-1">
             <Label className="text-xs">特性</Label>
-            <Autocomplete
-              id={`${idPrefix}-ability`}
-              options={abilityOptions}
-              onSelect={(name) => onDataChange({ ...data, abilityName: name })}
-              placeholder="特性"
-              value={data.abilityName}
-            />
+            <div className={data.isMegaEvolved ? 'pointer-events-none opacity-50' : ''}>
+              <Autocomplete
+                id={`${idPrefix}-ability`}
+                options={abilityOptions}
+                onSelect={(name) => onDataChange({ ...data, abilityName: name })}
+                placeholder="特性"
+                value={data.abilityName}
+              />
+            </div>
           </div>
 
-          {/* 持ち物 */}
+          {/* 持ち物（メガシンカ中かつfixedItemありの場合はロック） */}
           <div className="space-y-1">
             <Label className="text-xs">持ち物</Label>
-            <Autocomplete
-              id={`${idPrefix}-item`}
-              options={itemOptions}
-              onSelect={(name) => onDataChange({ ...data, itemName: name })}
-              placeholder="持ち物"
-              value={data.itemName}
-            />
+            <div
+              className={
+                data.isMegaEvolved && currentMegaForm?.fixedItemNameJa
+                  ? 'pointer-events-none opacity-50'
+                  : ''
+              }
+            >
+              <Autocomplete
+                id={`${idPrefix}-item`}
+                options={itemOptions}
+                onSelect={(name) => onDataChange({ ...data, itemName: name })}
+                placeholder="持ち物"
+                value={data.itemName}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

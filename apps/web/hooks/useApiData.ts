@@ -62,6 +62,14 @@ export function useItemByName(name: string | null) {
   );
 }
 
+/** メガフォーム一覧を取得（baseフォームのslug指定） */
+export function useMegaForms(baseSlug: string | null) {
+  return useSWR<PokemonRow[]>(
+    baseSlug ? `/api/pokemon?megaForms=${encodeURIComponent(baseSlug)}` : null,
+    fetcher<PokemonRow[]>
+  );
+}
+
 /** 習得技を取得 */
 export function useLearnset(pokemonId: string | null) {
   return useSWR<{ pokemonId: string; level: string[]; machine: string[]; egg: string[] }>(

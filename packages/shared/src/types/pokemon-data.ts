@@ -22,6 +22,7 @@ export interface PokemonSpeciesData {
   fixedItemNameJa?: string | null;
   fixedTeraType?: string | null;
   genderRate?: number | null;
+  formType?: string;
 }
 
 /**

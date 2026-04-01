@@ -52,6 +52,8 @@ const DEFAULT_ATTACKER_DATA: AttackerData = {
   abilityName: '',
   itemName: '',
   isBurned: false,
+  isMegaEvolved: false,
+  megaFormSlug: null,
 };
 
 const DEFAULT_DEFENDER_DATA: DefenderData = {
@@ -69,6 +71,8 @@ const DEFAULT_DEFENDER_DATA: DefenderData = {
   specialDefenseRank: 0,
   abilityName: '',
   itemName: '',
+  isMegaEvolved: false,
+  megaFormSlug: null,
 };
 
 function combineDamage(

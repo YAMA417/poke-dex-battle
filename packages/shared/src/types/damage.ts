@@ -53,6 +53,7 @@ export interface CalcPokemon {
   maxHp?: number;
   teraType?: PokemonType;
   isTerastallized?: boolean;
+  isMegaEvolved?: boolean;
 }
 
 /**

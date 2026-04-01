@@ -37,6 +37,8 @@ export interface PokemonRow {
   fixedItemNameJa: string | null;
   fixedTeraType: string | null;
   genderRate?: number | null;
+  formType: string;
+  baseFormSlug: string | null;
 }
 
 /** /api/moves が返す行 */
@@ -113,6 +115,7 @@ export function toSpeciesData(row: PokemonRow | null | undefined): PokemonSpecie
     fixedItemNameJa: row.fixedItemNameJa ?? null,
     fixedTeraType: row.fixedTeraType ?? null,
     genderRate: row.genderRate ?? null,
+    formType: row.formType ?? 'base',
   };
 }
 
