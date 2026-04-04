@@ -32,18 +32,23 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
     const containerRef = React.useRef<HTMLDivElement>(null);
     const listboxId = React.useId();
     const [open, setOpen] = React.useState(false);
-    const [inputValue, setInputValue] = React.useState<string>(
-      typeof props.value === 'string' ? props.value : ''
-    );
+    const [inputValue, setInputValue] = React.useState<string>(() => {
+      if (typeof props.value === 'string') {
+        const matched = options.find((o) => o.value === props.value);
+        return matched ? matched.label : props.value;
+      }
+      return '';
+    });
     const [highlightedIndex, setHighlightedIndex] = React.useState<number>(-1);
     const [previousValue, setPreviousValue] = React.useState<string>('');
 
-    // props.valueの変更を監視して inputValue を同期
+    // props.valueの変更を監視して inputValue を同期（valueに対応するlabelを表示）
     React.useEffect(() => {
       if (typeof props.value === 'string') {
-        setInputValue(props.value);
+        const matched = options.find((o) => o.value === props.value);
+        setInputValue(matched ? matched.label : props.value);
       }
-    }, [props.value]);
+    }, [props.value, options]);
 
     const filteredOptions = React.useMemo(() => {
       if (!inputValue) return options;

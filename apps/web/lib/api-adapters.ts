@@ -93,6 +93,7 @@ export interface ItemRow {
   shortDesc: string | null;
   isCompetitive: boolean;
   damageEffect?: DamageEffect;
+  category: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -200,5 +201,6 @@ export function toItemData(row: ItemRow | null | undefined): ItemData | null {
     shortDesc: row.shortDesc ?? undefined,
     damageEffect: row.damageEffect ?? undefined,
     isCompetitive: row.isCompetitive,
+    category: row.category ?? undefined,
   };
 }

@@ -40,7 +40,10 @@ const EXPORT_DIR = resolve(__dirname, '../export');
 // ---------------------------------------------------------------------------
 
 function parseCsv(filePath: string): Record<string, string>[] {
-  const content = readFileSync(filePath, 'utf-8').replace(/^\uFEFF/, '');
+  const content = readFileSync(filePath, 'utf-8')
+    .replace(/^\uFEFF/, '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
   const lines = content.split('\n');
 
   function parseRow(line: string): string[] {
@@ -150,6 +153,7 @@ async function seedItems(): Promise<number> {
     shortDescJa: r.short_desc_ja || null,
     isCompetitive: toBool(r.is_competitive),
     damageEffect: damageEffects[r.name_en] ?? null,
+    category: r.category || null,
   }));
 
   await batchInsert('items', data, (batch) => db.insert(items).values(batch).onConflictDoNothing());

@@ -6,7 +6,11 @@ import {
   findClosestRealizableEv,
   getNatureModifier,
   POKEMON_TYPE_LABELS_JA,
+  ALWAYS_VISIBLE_CATEGORIES,
+  BATTLE_SYSTEM_CATEGORIES,
+  POKEMON_SPECIFIC_CATEGORIES,
 } from '@poke-dex-battle/shared';
+import type { ItemCategory } from '@poke-dex-battle/shared';
 import { NATURE_EFFECTS_MAP } from '@/lib/constants';
 import { EVSlider } from './EVSlider';
 import { IVInputGrid } from './IVInputGrid';
@@ -50,9 +54,20 @@ interface PokemonEditFormProps {
   species: PokemonSpeciesData;
   items: ItemRow[];
   onChange: (updated: Partial<Pokemon>) => void;
+  /** 有効なバトルシステム（'mega', 'zmove', 'terastal', 'dynamax' など） */
+  battleSystems?: string[];
+  /** 全ポケモンの fixedItem（英語名）セット（ポケモン専用アイテムのフィルタ用） */
+  allPokemonFixedItems?: Set<string>;
 }
 
-export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEditFormProps) {
+export function PokemonEditForm({
+  pokemon,
+  species,
+  items,
+  onChange,
+  battleSystems = [],
+  allPokemonFixedItems,
+}: PokemonEditFormProps) {
   const [actualStatInputs, setActualStatInputs] = useState<Partial<Record<keyof Stats, string>>>(
     {}
   );
@@ -61,13 +76,61 @@ export function PokemonEditForm({ pokemon, species, items, onChange }: PokemonEd
   );
   const [isEVsOpen, setIsEVsOpen] = useState<boolean>(false);
 
-  // 対戦用アイテムの Autocomplete options（先頭に「なし」）
+  // 選択中ポケモンの fixedItem（英語名）を収集（メガ・専用アイテム判定用）
+  const pokemonFixedItems = useMemo(() => {
+    const names = new Set<string>();
+    if (species.fixedItem) names.add(species.fixedItem);
+    // allPokemonFixedItems が渡されていればそれも合算（フォームバリエーション対応）
+    if (allPokemonFixedItems) {
+      for (const name of allPokemonFixedItems) names.add(name);
+    }
+    return names;
+  }, [species.fixedItem, allPokemonFixedItems]);
+
+  // カテゴリベースの動的フィルタでアイテム候補を生成
   const itemOptions = useMemo<AutocompleteOption[]>(() => {
-    const competitive = items
-      .filter((item) => item.isCompetitive)
-      .map((item) => ({ label: item.nameJa, value: item.name, id: item.id }));
-    return [{ label: 'なし', value: '', id: 'none' }, ...competitive];
-  }, [items]);
+    const filtered = items.filter((item) => {
+      const cat = item.category as ItemCategory | null;
+      if (!cat) return false;
+
+      // 常に表示するカテゴリ
+      if ((ALWAYS_VISIBLE_CATEGORIES as readonly string[]).includes(cat)) return true;
+
+      // battleSystemsに応じて表示するカテゴリ
+      for (const [system, categories] of Object.entries(BATTLE_SYSTEM_CATEGORIES)) {
+        if (battleSystems.includes(system) && (categories as readonly string[]).includes(cat)) {
+          // ポケモン専用カテゴリの場合は対応ポケモンかチェック
+          if ((POKEMON_SPECIFIC_CATEGORIES as readonly string[]).includes(cat)) {
+            return pokemonFixedItems.has(item.name);
+          }
+          return true;
+        }
+      }
+
+      // battleSystems不問のポケモン専用カテゴリ（mask, drive, memory）
+      if ((POKEMON_SPECIFIC_CATEGORIES as readonly string[]).includes(cat)) {
+        if (['mask', 'drive', 'memory'].includes(cat)) {
+          return pokemonFixedItems.has(item.name);
+        }
+      }
+
+      return false;
+    });
+
+    // ソート: ポケモン専用アイテムを先頭に
+    const sorted = [...filtered].sort((a, b) => {
+      const aFixed = pokemonFixedItems.has(a.name) ? 0 : 1;
+      const bFixed = pokemonFixedItems.has(b.name) ? 0 : 1;
+      return aFixed - bFixed;
+    });
+
+    const options = sorted.map((item) => ({
+      label: item.nameJa,
+      value: item.name,
+      id: item.id,
+    }));
+    return [{ label: 'なし', value: '', id: 'none' }, ...options];
+  }, [items, battleSystems, pokemonFixedItems]);
 
   // onChange は毎レンダーで新しい参照になるため ref で最新版を保持する
   const onChangeRef = useRef(onChange);

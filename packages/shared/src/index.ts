@@ -12,4 +12,5 @@ export * from './utils/party-io';
 // Constants
 export * from './constants/ability-condition-map';
 export * from './constants/battle-conditions';
+export * from './constants/item-categories';
 export * from './constants/types';

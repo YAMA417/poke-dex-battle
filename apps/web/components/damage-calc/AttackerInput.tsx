@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAllPokemon, useAllItems, useMoveByName } from '@/hooks/useApiData';
+import { useAllPokemon, useMoveByName } from '@/hooks/useApiData';
 import { usePokemonSearch } from '@/hooks/usePokemonSearch';
 import type {
   PokemonType,
@@ -28,6 +28,7 @@ import {
   getDynamaxMovePower,
   isTeraType,
   resolveHitCountRange,
+  DAMAGE_CALC_ATTACKER_ITEMS,
 } from '@poke-dex-battle/shared';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HitCountSelector } from './HitCountSelector';
@@ -159,16 +160,6 @@ export function AttackerInput({
     baseSpriteUrl: pokemonData?.spriteUrl,
   });
 
-  // 持ち物オプション（競技用のみ）
-  const { data: allItems } = useAllItems();
-  const itemOptions = useMemo(() => {
-    return (allItems ?? []).map((item) => ({
-      label: item.nameJa,
-      value: item.nameJa,
-      id: `item-${item.id}`,
-    }));
-  }, [allItems]);
-
   // 日本語名 → 英語名の解決（resolveHitCountRange 用）
   const abilityEnglishName = useMemo(() => {
     if (!data.abilityName || !pokemonData?.abilities) return undefined;
@@ -176,9 +167,11 @@ export function AttackerInput({
   }, [data.abilityName, pokemonData?.abilities]);
 
   const itemEnglishName = useMemo(() => {
-    if (!data.itemName || !allItems) return undefined;
-    return allItems.find((item) => item.nameJa === data.itemName)?.name;
-  }, [data.itemName, allItems]);
+    if (!data.itemName) return undefined;
+    // グループプレースホルダーの場合はそのまま返す（resolveHitCountRangeでは使われない）
+    if (data.itemName.startsWith('__')) return undefined;
+    return data.itemName;
+  }, [data.itemName]);
 
   // メガフォームのデータを適用したAttackerDataを構築する（単一のonDataChange呼び出しに統合）
   const buildMegaData = useCallback(
@@ -722,13 +715,28 @@ export function AttackerInput({
                   : ''
               }
             >
-              <Autocomplete
-                id={`${idPrefix}-item`}
-                options={itemOptions}
-                onSelect={(name) => onDataChange({ ...data, itemName: name })}
-                placeholder="持ち物"
-                value={data.itemName}
-              />
+              <Select
+                value={data.itemName || '__none__'}
+                onValueChange={(v) =>
+                  onDataChange({ ...data, itemName: v === '__none__' ? '' : v })
+                }
+              >
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue placeholder="持ち物" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DAMAGE_CALC_ATTACKER_ITEMS.map((item) => (
+                    <SelectItem key={item.name || '__none__'} value={item.name || '__none__'}>
+                      <div className="flex flex-col">
+                        <span>{item.nameJa}</span>
+                        {item.label && (
+                          <span className="text-xs text-muted-foreground">{item.label}</span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>

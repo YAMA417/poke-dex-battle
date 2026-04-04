@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAllPokemon, useAllItems } from '@/hooks/useApiData';
+import { useAllPokemon } from '@/hooks/useApiData';
 import { usePokemonSearch } from '@/hooks/usePokemonSearch';
 import type { PokemonType, PokemonSpeciesData, StatStage, TeraType } from '@poke-dex-battle/shared';
 import {
@@ -20,6 +20,7 @@ import {
   reverseCalcHpEv,
   reverseCalcOtherEv,
   isTeraType,
+  DAMAGE_CALC_DEFENDER_ITEMS,
 } from '@poke-dex-battle/shared';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -127,16 +128,6 @@ export function DefenderInput({
     }
     return [];
   }, [pokemonData]);
-
-  // 持ち物オプション（競技用のみ）
-  const { data: allItems } = useAllItems();
-  const itemOptions = useMemo(() => {
-    return (allItems ?? []).map((item) => ({
-      label: item.nameJa,
-      value: item.nameJa,
-      id: `item-${item.id}`,
-    }));
-  }, [allItems]);
 
   // メガフォームのデータを適用したDefenderDataを構築する（単一のonDataChange呼び出しに統合）
   const buildMegaData = useCallback(
@@ -614,13 +605,28 @@ export function DefenderInput({
                   : ''
               }
             >
-              <Autocomplete
-                id={`${idPrefix}-item`}
-                options={itemOptions}
-                onSelect={(name) => onDataChange({ ...data, itemName: name })}
-                placeholder="持ち物"
-                value={data.itemName}
-              />
+              <Select
+                value={data.itemName || '__none__'}
+                onValueChange={(v) =>
+                  onDataChange({ ...data, itemName: v === '__none__' ? '' : v })
+                }
+              >
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue placeholder="持ち物" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DAMAGE_CALC_DEFENDER_ITEMS.map((item) => (
+                    <SelectItem key={item.name || '__none__'} value={item.name || '__none__'}>
+                      <div className="flex flex-col">
+                        <span>{item.nameJa}</span>
+                        {item.label && (
+                          <span className="text-xs text-muted-foreground">{item.label}</span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>

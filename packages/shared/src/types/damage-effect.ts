@@ -72,4 +72,10 @@ export interface DamageEffect {
   defenderModifiers?: ModifierRule[];
   /** 連続技情報（技専用） */
   multiHit?: MultiHitInfo;
+  /** ダメージ計算UIでの表示ロール */
+  role?: 'attacker' | 'defender';
+  /** グルーピング表示用（同一groupは1行にまとめ） */
+  group?: string | null;
+  /** UIに表示するサブテキスト（例: "攻撃 x1.5"） */
+  label?: string;
 }

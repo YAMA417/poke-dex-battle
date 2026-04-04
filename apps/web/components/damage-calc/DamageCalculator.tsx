@@ -15,6 +15,7 @@ import {
   getAbilityConditionEffect,
   isSpreadMoveTarget,
   moveIs,
+  resolveGroupItem,
 } from '@poke-dex-battle/shared';
 import {
   useAllMoves,
@@ -154,6 +155,17 @@ export function DamageCalculator() {
     return map;
   }, [allItemsRaw]);
 
+  // 英語名→ItemData マップ
+  const itemByName = useMemo(() => {
+    if (!allItemsRaw) return new Map<string, ReturnType<typeof toItemData>>();
+    const map = new Map<string, ReturnType<typeof toItemData>>();
+    for (const row of allItemsRaw) {
+      const id = toItemData(row);
+      if (id) map.set(id.name, id);
+    }
+    return map;
+  }, [allItemsRaw]);
+
   const [attackerAData, setAttackerAData] = useState<AttackerData>(DEFAULT_ATTACKER_DATA);
   const [attackerBData, setAttackerBData] = useState<AttackerData>(DEFAULT_ATTACKER_DATA);
   const [defenderData1, setDefenderData1] = useState<DefenderData>(DEFAULT_DEFENDER_DATA);
@@ -284,7 +296,14 @@ export function DamageCalculator() {
       const attackerAbilityData = attacker.abilityName
         ? abilityByNameJa.get(attacker.abilityName)
         : null;
-      const attackerItemData = attacker.itemName ? itemByNameJa.get(attacker.itemName) : null;
+      // 攻撃側アイテム解決（グループプレースホルダー対応）
+      let resolvedAttackerItemName = attacker.itemName || '';
+      if (resolvedAttackerItemName === '__type_boost__') {
+        resolvedAttackerItemName = resolveGroupItem('type_boost', attacker.moveType) ?? '';
+      }
+      const attackerItemData = resolvedAttackerItemName
+        ? (itemByName.get(resolvedAttackerItemName) ?? itemByNameJa.get(resolvedAttackerItemName))
+        : null;
 
       // 攻撃側ポケモン構築
       const attackerPokemon: CalcPokemon = {
@@ -324,7 +343,16 @@ export function DamageCalculator() {
       const defenderAbilityData = defender.abilityName
         ? abilityByNameJa.get(defender.abilityName)
         : null;
-      const defenderItemData = defender.itemName ? itemByNameJa.get(defender.itemName) : null;
+      // 防御側アイテム解決（グループプレースホルダー対応）
+      let resolvedDefenderItemName = defender.itemName || '';
+      if (resolvedDefenderItemName === '__type_resist_berry__') {
+        resolvedDefenderItemName = resolveGroupItem('type_resist_berry', attacker.moveType) ?? '';
+      } else if (resolvedDefenderItemName === '__confusion_berry__') {
+        resolvedDefenderItemName = resolveGroupItem('confusion_berry', '') ?? '';
+      }
+      const defenderItemData = resolvedDefenderItemName
+        ? (itemByName.get(resolvedDefenderItemName) ?? itemByNameJa.get(resolvedDefenderItemName))
+        : null;
 
       // 防御側ポケモン構築
       const defenderPokemon: CalcPokemon = {
@@ -457,6 +485,7 @@ export function DamageCalculator() {
     moveByNameJa,
     abilityByNameJa,
     itemByNameJa,
+    itemByName,
   ]);
 
   // 攻撃側 ↔ 防御側 入れ替え
@@ -466,36 +495,37 @@ export function DamageCalculator() {
     const oldDefender1 = defenderData1;
     const oldDefender2 = defenderData2;
 
-    // 防御側 → 攻撃側（ポケモン名・特性・持ち物を移し、技はリセット）
+    // 防御側 → 攻撃側（ポケモン名・特性を移し、技・持ち物はリセット）
+    // 攻撃側/防御側でアイテムリストが異なるためitemNameはクリア
     setAttackerAData({
       ...DEFAULT_ATTACKER_DATA,
       pokemonName: oldDefender1.pokemonName,
       pokemonTypes: oldDefender1.pokemonTypes,
       abilityName: oldDefender1.abilityName,
-      itemName: oldDefender1.itemName,
+      itemName: '',
     });
     setAttackerBData({
       ...DEFAULT_ATTACKER_DATA,
       pokemonName: oldDefender2.pokemonName,
       pokemonTypes: oldDefender2.pokemonTypes,
       abilityName: oldDefender2.abilityName,
-      itemName: oldDefender2.itemName,
+      itemName: '',
     });
 
-    // 攻撃側 → 防御側（ポケモン名・特性・持ち物を移す）
+    // 攻撃側 → 防御側（ポケモン名・特性を移し、持ち物はクリア）
     setDefenderData1({
       ...DEFAULT_DEFENDER_DATA,
       pokemonName: oldAttackerA.pokemonName,
       pokemonTypes: oldAttackerA.pokemonTypes,
       abilityName: oldAttackerA.abilityName,
-      itemName: oldAttackerA.itemName,
+      itemName: '',
     });
     setDefenderData2({
       ...DEFAULT_DEFENDER_DATA,
       pokemonName: oldAttackerB.pokemonName,
       pokemonTypes: oldAttackerB.pokemonTypes,
       abilityName: oldAttackerB.abilityName,
-      itemName: oldAttackerB.itemName,
+      itemName: '',
     });
   }, [attackerAData, attackerBData, defenderData1, defenderData2]);
 

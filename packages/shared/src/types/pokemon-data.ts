@@ -68,6 +68,7 @@ export interface ItemData {
   desc?: string;
   damageEffect?: DamageEffect;
   isCompetitive?: boolean;
+  category?: string;
 }
 
 /**

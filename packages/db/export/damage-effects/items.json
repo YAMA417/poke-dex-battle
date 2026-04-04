@@ -1,167 +1,298 @@
 {
   "Choice Band": {
-    "attackerModifier": { "condition": "move_category", "category": "Physical", "multiplier": 1.5 }
+    "attackerModifier": { "condition": "move_category", "category": "Physical", "multiplier": 1.5 },
+    "role": "attacker",
+    "label": "攻撃 x1.5"
   },
   "Choice Specs": {
-    "attackerModifier": { "condition": "move_category", "category": "Special", "multiplier": 1.5 }
+    "attackerModifier": { "condition": "move_category", "category": "Special", "multiplier": 1.5 },
+    "role": "attacker",
+    "label": "特攻 x1.5"
   },
-  "Life Orb": { "attackerModifier": { "condition": "unconditional", "multiplier": 1.3 } },
-  "Expert Belt": { "attackerModifier": { "condition": "super_effective", "multiplier": 1.2 } },
+  "Life Orb": {
+    "attackerModifier": { "condition": "unconditional", "multiplier": 1.3 },
+    "role": "attacker",
+    "label": "ダメージ x1.3"
+  },
+  "Expert Belt": {
+    "attackerModifier": { "condition": "super_effective", "multiplier": 1.2 },
+    "role": "attacker",
+    "label": "抜群時 x1.2"
+  },
   "Muscle Band": {
-    "attackerModifier": { "condition": "move_category", "category": "Physical", "multiplier": 1.1 }
+    "attackerModifier": { "condition": "move_category", "category": "Physical", "multiplier": 1.1 },
+    "role": "attacker",
+    "label": "物理技威力 x1.1"
   },
   "Wise Glasses": {
-    "attackerModifier": { "condition": "move_category", "category": "Special", "multiplier": 1.1 }
+    "attackerModifier": { "condition": "move_category", "category": "Special", "multiplier": 1.1 },
+    "role": "attacker",
+    "label": "特殊技威力 x1.1"
   },
   "Normal Gem": {
-    "attackerModifier": { "condition": "move_type", "type": "Normal", "multiplier": 1.3 }
+    "attackerModifier": { "condition": "move_type", "type": "Normal", "multiplier": 1.3 },
+    "role": "attacker",
+    "label": "ノーマル技 x1.3"
   },
   "Punching Glove": {
-    "attackerModifier": { "condition": "move_flag", "flag": "isPunch", "multiplier": 1.1 }
+    "attackerModifier": { "condition": "move_flag", "flag": "isPunch", "multiplier": 1.1 },
+    "role": "attacker",
+    "label": "パンチ技 x1.1 + 接触なし"
   },
   "Silk Scarf": {
-    "attackerModifier": { "condition": "move_type", "type": "Normal", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Normal", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Charcoal": {
-    "attackerModifier": { "condition": "move_type", "type": "Fire", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Fire", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Mystic Water": {
-    "attackerModifier": { "condition": "move_type", "type": "Water", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Water", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Magnet": {
-    "attackerModifier": { "condition": "move_type", "type": "Electric", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Electric", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Miracle Seed": {
-    "attackerModifier": { "condition": "move_type", "type": "Grass", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Grass", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Never-Melt Ice": {
-    "attackerModifier": { "condition": "move_type", "type": "Ice", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Ice", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Black Belt": {
-    "attackerModifier": { "condition": "move_type", "type": "Fighting", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Fighting", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Poison Barb": {
-    "attackerModifier": { "condition": "move_type", "type": "Poison", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Poison", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Soft Sand": {
-    "attackerModifier": { "condition": "move_type", "type": "Ground", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Ground", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Sharp Beak": {
-    "attackerModifier": { "condition": "move_type", "type": "Flying", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Flying", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Twisted Spoon": {
-    "attackerModifier": { "condition": "move_type", "type": "Psychic", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Psychic", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Silver Powder": {
-    "attackerModifier": { "condition": "move_type", "type": "Bug", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Bug", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Hard Stone": {
-    "attackerModifier": { "condition": "move_type", "type": "Rock", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Rock", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Spell Tag": {
-    "attackerModifier": { "condition": "move_type", "type": "Ghost", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Ghost", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Dragon Fang": {
-    "attackerModifier": { "condition": "move_type", "type": "Dragon", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Dragon", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Black Glasses": {
-    "attackerModifier": { "condition": "move_type", "type": "Dark", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Dark", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Metal Coat": {
-    "attackerModifier": { "condition": "move_type", "type": "Steel", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Steel", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Fairy Feather": {
-    "attackerModifier": { "condition": "move_type", "type": "Fairy", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_type", "type": "Fairy", "multiplier": 1.2 },
+    "role": "attacker",
+    "group": "type_boost",
+    "label": "技威力 x1.2"
   },
   "Occa Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Fire", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Passho Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Water", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Wacan Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Electric", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Rindo Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Grass", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Yache Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Ice", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Chople Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Fighting", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Kebia Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Poison", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Shuca Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Ground", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Coba Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Flying", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Payapa Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Psychic", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Tanga Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Bug", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Charti Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Rock", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Kasib Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Ghost", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Haban Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Dragon", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Colbur Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Dark", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Roseli Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Fairy", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
   "Chilan Berry": {
     "defenderModifiers": [
       { "condition": "move_type_super_effective", "type": "Normal", "multiplier": 0.5 }
-    ]
+    ],
+    "role": "defender",
+    "group": "type_resist_berry",
+    "label": "弱点ダメージ x0.5"
   },
-  "Eviolite": { "defenderModifiers": [{ "condition": "unconditional", "multiplier": 1.5 }] },
+  "Eviolite": {
+    "defenderModifiers": [{ "condition": "unconditional", "multiplier": 1.5 }],
+    "role": "defender",
+    "label": "防御・特防 x1.5"
+  },
   "Assault Vest": {
     "defenderModifiers": [
       { "condition": "move_category", "category": "Special", "multiplier": 1.5 }
-    ]
+    ],
+    "role": "defender",
+    "label": "特防 x1.5"
   }
 }

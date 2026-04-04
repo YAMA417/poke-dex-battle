@@ -103,6 +103,31 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [editingIdx, setEditingIdx] = useState<number>(0);
+
+  // フォームバリエーション逆引き用に全ポケモン（レギュレーション制限なし）を取得
+  const { data: allPokemonUnfiltered } = useAllPokemon();
+
+  // 選択中ポケモンのフォームバリエーション（メガ等）の fixedItem を収集
+  const editingPokemonFixedItems = useMemo(() => {
+    if (!allPokemonUnfiltered || pokemons.length === 0) return new Set<string>();
+    const editingSpecies = pokemons[editingIdx]?.species;
+    if (!editingSpecies) return new Set<string>();
+
+    const names = new Set<string>();
+    // ベースフォームの fixedItem
+    if (editingSpecies.fixedItem) names.add(editingSpecies.fixedItem);
+
+    // 全ポケモンからベースフォームIDが一致するフォームの fixedItem を収集
+    const baseRow = allPokemonUnfiltered.find((r) => r.name === editingSpecies.name);
+    if (baseRow) {
+      for (const row of allPokemonUnfiltered) {
+        if (row.baseFormId === baseRow.id && row.fixedItem) {
+          names.add(row.fixedItem);
+        }
+      }
+    }
+    return names;
+  }, [allPokemonUnfiltered, pokemons, editingIdx]);
   const [step, setStep] = useState<Step>(1);
 
   const [partyId, setPartyId] = useState<string | undefined>(initialPartyId);
@@ -411,6 +436,8 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                 species={pokemons[editingIdx].species}
                 items={allItemsRaw ?? []}
                 onChange={(data) => handlePokemonChange(editingIdx, data)}
+                battleSystems={defaultRegulation?.battleSystems ?? []}
+                allPokemonFixedItems={editingPokemonFixedItems}
               />
             )}
           </div>

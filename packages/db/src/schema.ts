@@ -87,6 +87,7 @@ export const items = pgTable('items', {
   shortDescJa: text('short_desc_ja'),
   isCompetitive: boolean('is_competitive').notNull().default(false),
   damageEffect: jsonb('damage_effect'),
+  category: text('category'),
 });
 
 // ポケモンマスターデータ
