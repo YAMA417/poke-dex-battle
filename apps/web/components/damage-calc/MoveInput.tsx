@@ -13,7 +13,7 @@ import {
 import { MoveFilteredSelect } from '@/components/move/MoveFilteredSelect';
 import { useAllMoves, useLearnset, usePokemonByName } from '@/hooks/useApiData';
 import type { MoveRow } from '@/lib/api-adapters';
-import type { PokemonType } from '@poke-dex-battle/shared';
+import type { PokemonType, MultiHitInfo } from '@poke-dex-battle/shared';
 import { POKEMON_TYPE_OPTIONS } from '@poke-dex-battle/shared';
 import { useMemo, useCallback } from 'react';
 
@@ -23,6 +23,8 @@ export interface MoveSelectData {
   type: PokemonType;
   category: 'Physical' | 'Special';
   target: string;
+  /** 連続技情報（damageEffect.multiHitから取得） */
+  multiHit?: MultiHitInfo;
 }
 
 interface MoveInputProps {
@@ -81,6 +83,7 @@ export function MoveInput({
               ? moveData.category
               : moveCategory,
           target: moveData.target ?? '',
+          multiHit: moveData.damageEffect?.multiHit ?? undefined,
         });
       }
     },

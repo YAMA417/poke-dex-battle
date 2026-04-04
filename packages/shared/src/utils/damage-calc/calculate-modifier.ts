@@ -1,3 +1,11 @@
+import {
+  ABILITY_MOLD_BREAKER,
+  ABILITY_SNIPER,
+  ABILITY_TERAVOLT,
+  ABILITY_TINTED_LENS,
+  ABILITY_TURBOBLAZE,
+  ITEM_LIFE_ORB,
+} from '../../constants/damage-calc-names';
 import { getTypeResistBerryType } from '../../constants/item-type-map';
 import { calcTypeEffectiveness } from '../../constants/types';
 import type { BattleContext, CalcMove, CalcPokemon } from '../../types/damage';
@@ -60,7 +68,7 @@ export function calculateModifier(
   if (move.isCritical) {
     const sniperEffect = attacker.abilityDamageEffect?.attackerModifier;
     const isSniperByEffect = sniperEffect?.condition === 'critical_boost';
-    const isSniperByName = !isSniperByEffect && abilityIs(attacker.ability, 'Sniper');
+    const isSniperByName = !isSniperByEffect && abilityIs(attacker.ability, ABILITY_SNIPER);
     criticalModifier = isSniperByEffect || isSniperByName ? 2.25 : 1.5;
   }
   minDamage = Math.floor(minDamage * criticalModifier);
@@ -105,7 +113,7 @@ export function calculateModifier(
   // 色眼鏡 (Tinted Lens)
   const tintedEffect = attacker.abilityDamageEffect?.attackerModifier;
   const isTintedByEffect = tintedEffect?.condition === 'not_very_effective_boost';
-  const isTintedByName = !isTintedByEffect && abilityIs(attacker.ability, 'Tinted Lens');
+  const isTintedByName = !isTintedByEffect && abilityIs(attacker.ability, ABILITY_TINTED_LENS);
   const effectiveTypeMultiplier =
     (isTintedByEffect || isTintedByName) && typeEffectiveness < 1
       ? typeEffectiveness * 2
@@ -177,15 +185,15 @@ export function calculateModifier(
     if (mod.condition === 'unconditional') {
       otherModifiers.push(mod.multiplier);
     }
-  } else if (itemIs(attacker.item, 'Life Orb')) {
+  } else if (itemIs(attacker.item, ITEM_LIFE_ORB)) {
     otherModifiers.push(1.3);
   }
 
   // かたやぶり系
   const isMoldBreaker =
-    abilityIs(attacker.ability, 'Mold Breaker') ||
-    abilityIs(attacker.ability, 'Turboblaze') ||
-    abilityIs(attacker.ability, 'Teravolt');
+    abilityIs(attacker.ability, ABILITY_MOLD_BREAKER) ||
+    abilityIs(attacker.ability, ABILITY_TURBOBLAZE) ||
+    abilityIs(attacker.ability, ABILITY_TERAVOLT);
 
   // 防御側特性によるダメージ補正
   if (!isMoldBreaker) {

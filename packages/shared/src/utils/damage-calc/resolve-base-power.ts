@@ -1,3 +1,16 @@
+import {
+  ABILITY_IRON_FIST,
+  ABILITY_MEGA_LAUNCHER,
+  ABILITY_RECKLESS,
+  ABILITY_SAND_FORCE,
+  ABILITY_SHEER_FORCE,
+  ABILITY_STEELWORKER,
+  ABILITY_STRONG_JAW,
+  ABILITY_TECHNICIAN,
+  ITEM_EXPERT_BELT,
+  ITEM_NORMAL_GEM,
+  ITEM_PUNCHING_GLOVE,
+} from '../../constants/damage-calc-names';
 import { getTypeBoostingItemType } from '../../constants/item-type-map';
 import { calcTypeEffectiveness } from '../../constants/types';
 import type { BattleContext, CalcMove, CalcPokemon } from '../../types/damage';
@@ -82,29 +95,29 @@ export function resolveBasePower(
     }
   } else if (attacker.ability) {
     // フォールバック: 文字列比較
-    if (abilityIs(attacker.ability, 'Technician') && move.power <= 60) {
+    if (abilityIs(attacker.ability, ABILITY_TECHNICIAN) && move.power <= 60) {
       power = Math.floor(power * 1.5);
     }
-    if (abilityIs(attacker.ability, 'Iron Fist') && move.flags?.isPunchMove) {
+    if (abilityIs(attacker.ability, ABILITY_IRON_FIST) && move.flags?.isPunchMove) {
       power = Math.floor(power * 1.2);
     }
-    if (abilityIs(attacker.ability, 'Reckless') && move.flags?.isRecoilMove) {
+    if (abilityIs(attacker.ability, ABILITY_RECKLESS) && move.flags?.isRecoilMove) {
       power = Math.floor(power * 1.2);
     }
-    if (abilityIs(attacker.ability, 'Strong Jaw') && move.flags?.isBiteMove) {
+    if (abilityIs(attacker.ability, ABILITY_STRONG_JAW) && move.flags?.isBiteMove) {
       power = Math.floor(power * 1.5);
     }
-    if (abilityIs(attacker.ability, 'Mega Launcher') && move.flags?.isAuraMove) {
+    if (abilityIs(attacker.ability, ABILITY_MEGA_LAUNCHER) && move.flags?.isAuraMove) {
       power = Math.floor(power * 1.5);
     }
-    if (abilityIs(attacker.ability, 'Sheer Force') && move.flags?.hasSecondaryEffect) {
+    if (abilityIs(attacker.ability, ABILITY_SHEER_FORCE) && move.flags?.hasSecondaryEffect) {
       power = Math.floor(power * 1.3);
     }
-    if (abilityIs(attacker.ability, 'Steelworker') && move.type === 'Steel') {
+    if (abilityIs(attacker.ability, ABILITY_STEELWORKER) && move.type === 'Steel') {
       power = Math.floor(power * 1.5);
     }
     if (
-      abilityIs(attacker.ability, 'Sand Force') &&
+      abilityIs(attacker.ability, ABILITY_SAND_FORCE) &&
       context.weather === 'sandstorm' &&
       (move.type === 'Rock' || move.type === 'Ground' || move.type === 'Steel')
     ) {
@@ -127,13 +140,13 @@ export function resolveBasePower(
   } else if (attacker.item) {
     // フォールバック: 文字列比較
     const typeEffectiveness = calcTypeEffectiveness(move.type, defender.types);
-    if (itemIs(attacker.item, 'Expert Belt') && typeEffectiveness > 1) {
+    if (itemIs(attacker.item, ITEM_EXPERT_BELT) && typeEffectiveness > 1) {
       power = Math.floor(power * 1.2);
     }
-    if (itemIs(attacker.item, 'Normal Gem') && move.type === 'Normal') {
+    if (itemIs(attacker.item, ITEM_NORMAL_GEM) && move.type === 'Normal') {
       power = Math.floor(power * 1.3);
     }
-    if (itemIs(attacker.item, 'Punching Glove') && move.flags?.isPunchMove) {
+    if (itemIs(attacker.item, ITEM_PUNCHING_GLOVE) && move.flags?.isPunchMove) {
       power = Math.floor(power * 1.1);
     }
     const boostedType = getTypeBoostingItemType(attacker.item);

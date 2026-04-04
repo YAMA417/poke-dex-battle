@@ -3,9 +3,11 @@ import { isPokemonType } from '../../types/pokemon';
 import { moveIs } from '../normalize-id';
 import { calculateBaseDamage } from './calculate-base-damage';
 import { calculateModifier } from './calculate-modifier';
+import { calculateMultiHitDamage } from './calculate-multi-hit';
 import { getDynamaxMovePower } from './dynamax-power';
 import { resolveBasePower } from './resolve-base-power';
 import { resolveEffectiveAttack, resolveEffectiveDefense } from './resolve-effective-stat';
+import { resolveHitCountRange } from './resolve-hit-count';
 import { getZMovePower } from './z-move-power';
 
 /**
@@ -44,6 +46,10 @@ export {
   calculateWeatherModifier,
   getStatStageMultiplier,
 } from '../damage-calc';
+
+// 連続技
+export { resolveHitCountRange } from './resolve-hit-count';
+export type { HitCountRange } from './resolve-hit-count';
 
 // 型定義
 export type { BattleContext, CalcMove, CalcPokemon } from '../../types/damage';
@@ -102,6 +108,54 @@ export function calculateDamageV2(
     effectiveMove = { ...effectiveMove, power: getDynamaxMovePower(effectiveMove.power) };
   }
 
+  // HPを決定（ダイマックス時は2倍）
+  const baseHp = defender.maxHp ?? defender.stats.hp ?? 100;
+  const defenderHp = defender.isDynamaxed ? baseHp * 2 : baseHp;
+
+  // 連続技分岐: multiHit がある場合は複数回計算
+  const multiHit = effectiveMove.damageEffect?.multiHit;
+  if (multiHit) {
+    const range = resolveHitCountRange(multiHit, attacker.ability, attacker.item);
+    // hitCount を range 内にクランプ（スキルリンク等で強制される場合に対応）
+    const rawHitCount = effectiveMove.hitCount ?? range.defaultCount;
+    const hitCount = Math.max(range.min, Math.min(range.max, rawHitCount));
+
+    // 1発計算用のコールバック（前処理済みの effectiveMove を受け取り、power だけ差し替えて計算）
+    const singleHitCalc = (m: CalcMove): DamageResult => {
+      const finalPower = resolveBasePower(m, attacker, defender, context);
+      const finalAttack = resolveEffectiveAttack(attacker, m, context, defender.ability);
+      const finalDefense = resolveEffectiveDefense(defender, m, attacker.ability, context);
+      const baseDamage = calculateBaseDamage(attacker.level, finalPower, finalAttack, finalDefense);
+      const { minDamage, maxDamage, stab, typeEffectiveness, weatherModifier } = calculateModifier(
+        baseDamage,
+        attacker,
+        defender,
+        m,
+        context
+      );
+
+      return {
+        minDamage,
+        maxDamage,
+        minPercent: Math.round((minDamage / defenderHp) * 100 * 10) / 10,
+        maxPercent: Math.round((maxDamage / defenderHp) * 100 * 10) / 10,
+        guaranteed: maxDamage > 0 ? Math.ceil(defenderHp / maxDamage) : Infinity,
+        possible: minDamage > 0 ? Math.ceil(defenderHp / minDamage) : Infinity,
+        details: {
+          baseDamage,
+          typeEffectiveness,
+          stab,
+          weatherModifier,
+          criticalModifier: m.isCritical ? 1.5 : 1.0,
+          randomModifier: [0.85, 1.0],
+        },
+      };
+    };
+
+    return calculateMultiHitDamage(singleHitCalc, effectiveMove, multiHit, hitCount, defenderHp);
+  }
+
+  // 通常1発計算
   // 1. 技の最終威力を計算
   const finalPower = resolveBasePower(effectiveMove, attacker, defender, context);
 
@@ -123,11 +177,7 @@ export function calculateDamageV2(
     context
   );
 
-  // 6. HPを決定（ダイマックス時は2倍）
-  const baseHp = defender.maxHp ?? defender.stats.hp ?? 100;
-  const defenderHp = defender.isDynamaxed ? baseHp * 2 : baseHp;
-
-  // 7. 結果を構築
+  // 6. 結果を構築
   return {
     minDamage,
     maxDamage,

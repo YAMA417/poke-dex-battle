@@ -1,4 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import {
+  ABILITY_MULTISCALE,
+  ABILITY_TECHNICIAN,
+  ITEM_CHOICE_BAND,
+  ITEM_LIFE_ORB,
+} from '../../constants/damage-calc-names';
 import type { BattleContext, CalcMove, CalcPokemon } from '../../types/damage';
 import { calculateStab, calculateWeatherModifier, getStatStageMultiplier } from '../damage-calc';
 import { calculateDamageV2 } from '../damage-calc/index';
@@ -186,7 +192,7 @@ describe('damage-calc', () => {
         level: 50,
         types: ['Normal'],
         stats: { hp: 0, atk: 150, def: 0, spa: 0, spd: 0, spe: 0 },
-        ability: 'Technician',
+        ability: ABILITY_TECHNICIAN,
       };
       const defender: CalcPokemon = {
         level: 50,
@@ -213,7 +219,7 @@ describe('damage-calc', () => {
         level: 50,
         types: ['Dragon', 'Flying'],
         stats: { hp: 0, atk: 150, def: 0, spa: 0, spd: 0, spe: 0 },
-        item: 'Choice Band',
+        item: ITEM_CHOICE_BAND,
       };
       const defender: CalcPokemon = {
         level: 50,
@@ -240,7 +246,7 @@ describe('damage-calc', () => {
         level: 50,
         types: ['Dragon', 'Flying'],
         stats: { hp: 0, atk: 150, def: 0, spa: 0, spd: 0, spe: 0 },
-        item: 'Life Orb',
+        item: ITEM_LIFE_ORB,
       };
       const defender: CalcPokemon = {
         level: 50,
@@ -272,7 +278,7 @@ describe('damage-calc', () => {
         level: 50,
         types: ['Dragon', 'Flying'],
         stats: { hp: 183, atk: 0, def: 100, spa: 0, spd: 0, spe: 0 },
-        ability: 'Multiscale',
+        ability: ABILITY_MULTISCALE,
         currentHp: 183,
         maxHp: 183,
       };

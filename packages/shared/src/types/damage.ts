@@ -10,21 +10,6 @@ export type Field = 'none' | 'electric' | 'grassy' | 'misty' | 'psychic';
 /** 能力ランク（-6〜+6） */
 export type StatStage = -6 | -5 | -4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
-/** 特性の種類（Phase 1: 基本10個） */
-export type Ability =
-  // 攻撃側
-  | 'Technician' // テクニシャン
-  | 'Iron Fist' // てつのこぶし
-  | 'Reckless' // すてみ
-  | 'Huge Power' // ちからもち
-  | 'Pure Power' // ヨガパワー（ちからもちと同じ効果）
-  // 防御側
-  | 'Multiscale' // マルチスケイル
-  | 'Solid Rock' // ハードロック
-  | 'Filter' // フィルター
-  | 'Fluffy' // もふもふ
-  | 'Thick Fat'; // あついしぼう
-
 /**
  * ダメージ計算用のポケモン型（新エンジン）
  * 実数値ベースで統一
@@ -77,6 +62,8 @@ export interface CalcMove {
   isDynamaxMove?: boolean;
   flags?: MoveFlags;
   damageEffect?: DamageEffect;
+  /** 連続技のヒット数（UI側から指定） */
+  hitCount?: number;
 }
 
 /**
@@ -129,6 +116,14 @@ export interface MoveFlags {
   isVariablePowerMove?: boolean; // 可変威力技か
 }
 
+/** 連続技の各ヒット情報 */
+export interface MultiHitPerHit {
+  minDamage: number;
+  maxDamage: number;
+  minPercent: number;
+  maxPercent: number;
+}
+
 /** ダメージ計算結果 */
 export interface DamageResult {
   // ダメージ範囲（乱数込み）
@@ -142,6 +137,11 @@ export interface DamageResult {
   // 確定数（何発で倒せるか）
   guaranteed: number; // 最大ダメージでの確定数
   possible: number; // 最小ダメージでの確定数
+
+  /** 連続技の内訳（multiHit技のみ） */
+  multiHit?: {
+    perHit: MultiHitPerHit[];
+  };
 
   // デバッグ用の詳細情報
   details?: {

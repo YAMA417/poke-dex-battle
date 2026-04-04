@@ -63,6 +63,8 @@ const DEFAULT_ATTACKER_DATA: AttackerData = {
   isStellarBoostUsed: false,
   isZMove: false,
   isDynamaxed: false,
+  hitCount: undefined,
+  moveMultiHit: undefined,
 };
 
 const DEFAULT_DEFENDER_DATA: DefenderData = {
@@ -362,6 +364,7 @@ export function DamageCalculator() {
         isDynamaxMove: attacker.isDynamaxed,
         flags: moveFlags,
         damageEffect: moveData?.damageEffect ?? undefined,
+        hitCount: attacker.hitCount,
       };
 
       // バトルコンテキスト構築

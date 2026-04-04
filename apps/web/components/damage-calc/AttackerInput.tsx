@@ -14,15 +14,23 @@ import {
 } from '@/components/ui/select';
 import { useAllPokemon, useAllItems, useMoveByName } from '@/hooks/useApiData';
 import { usePokemonSearch } from '@/hooks/usePokemonSearch';
-import type { PokemonType, PokemonSpeciesData, StatStage, TeraType } from '@poke-dex-battle/shared';
+import type {
+  PokemonType,
+  PokemonSpeciesData,
+  StatStage,
+  TeraType,
+  MultiHitInfo,
+} from '@poke-dex-battle/shared';
 import {
   calcOtherStat,
   reverseCalcOtherEv,
   getZMovePower,
   getDynamaxMovePower,
   isTeraType,
+  resolveHitCountRange,
 } from '@poke-dex-battle/shared';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { HitCountSelector } from './HitCountSelector';
 import { MoveInput } from './MoveInput';
 import {
   MegaEvolutionControl,
@@ -70,6 +78,10 @@ export interface AttackerData {
   isStellarBoostUsed: boolean;
   isZMove: boolean;
   isDynamaxed: boolean;
+  /** 連続技のヒット数（UI選択値） */
+  hitCount?: number;
+  /** 連続技情報（技選択時に設定） */
+  moveMultiHit?: MultiHitInfo;
 }
 
 interface AttackerInputProps {
@@ -156,6 +168,17 @@ export function AttackerInput({
       id: `item-${item.id}`,
     }));
   }, [allItems]);
+
+  // 日本語名 → 英語名の解決（resolveHitCountRange 用）
+  const abilityEnglishName = useMemo(() => {
+    if (!data.abilityName || !pokemonData?.abilities) return undefined;
+    return pokemonData.abilities.find((a) => a.nameJa === data.abilityName)?.name;
+  }, [data.abilityName, pokemonData?.abilities]);
+
+  const itemEnglishName = useMemo(() => {
+    if (!data.itemName || !allItems) return undefined;
+    return allItems.find((item) => item.nameJa === data.itemName)?.name;
+  }, [data.itemName, allItems]);
 
   // メガフォームのデータを適用したAttackerDataを構築する（単一のonDataChange呼び出しに統合）
   const buildMegaData = useCallback(
@@ -421,7 +444,14 @@ export function AttackerInput({
             movePower={data.movePower}
             moveType={data.moveType}
             moveCategory={data.moveCategory}
-            onMoveSelect={(move) =>
+            onMoveSelect={(move) => {
+              // 連続技情報を更新
+              const multiHit = move.multiHit;
+              let hitCount: number | undefined;
+              if (multiHit) {
+                const range = resolveHitCountRange(multiHit, abilityEnglishName, itemEnglishName);
+                hitCount = range.defaultCount;
+              }
               onDataChange({
                 ...data,
                 moveName: move.name,
@@ -429,13 +459,37 @@ export function AttackerInput({
                 moveType: move.type,
                 moveCategory: move.category,
                 moveTarget: move.target,
-              })
-            }
+                moveMultiHit: multiHit,
+                hitCount,
+              });
+            }}
             onMovePowerChange={(power) => onDataChange({ ...data, movePower: power })}
             onMoveTypeChange={(type) => onDataChange({ ...data, moveType: type })}
             onMoveCategoryChange={(cat) => onDataChange({ ...data, moveCategory: cat })}
             compact
           />
+
+          {/* ヒット数選択（連続技かつZ技/ダイマックスOFFの場合のみ） */}
+          {data.moveMultiHit &&
+            !data.isZMove &&
+            !data.isDynamaxed &&
+            (() => {
+              const range = resolveHitCountRange(
+                data.moveMultiHit,
+                abilityEnglishName,
+                itemEnglishName
+              );
+              return (
+                <HitCountSelector
+                  min={range.min}
+                  max={range.max}
+                  hitCount={data.hitCount ?? range.max}
+                  onHitCountChange={(count) => onDataChange({ ...data, hitCount: count })}
+                  disabled={range.min === range.max}
+                  idPrefix={idPrefix}
+                />
+              );
+            })()}
 
           {/* Z技 */}
           {showZMove && (

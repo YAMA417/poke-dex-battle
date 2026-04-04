@@ -1,3 +1,24 @@
+import {
+  ABILITY_FUR_COAT,
+  ABILITY_GUTS,
+  ABILITY_HADRON_ENGINE,
+  ABILITY_ORICHALCUM_PULSE,
+  ABILITY_PROTOSYNTHESIS,
+  ABILITY_QUARK_DRIVE,
+  ABILITY_SOLAR_POWER,
+  ABILITY_UNAWARE,
+  ABILITY_TABLETS_OF_RUIN,
+  ABILITY_VESSEL_OF_RUIN,
+  ABILITY_SWORD_OF_RUIN,
+  ABILITY_BEADS_OF_RUIN,
+  ITEM_ASSAULT_VEST,
+  ITEM_BOOSTER_ENERGY,
+  ITEM_CHOICE_BAND,
+  ITEM_CHOICE_SPECS,
+  ITEM_EVIOLITE,
+  ITEM_MUSCLE_BAND,
+  ITEM_WISE_GLASSES,
+} from '../../constants/damage-calc-names';
 import type { BattleContext, CalcMove, CalcPokemon } from '../../types/damage';
 import { getStatStageMultiplier } from '../damage-calc';
 import { abilityIs, itemIs } from '../normalize-id';
@@ -27,7 +48,7 @@ export function resolveEffectiveAttack(
   const multiplier = getStatStageMultiplier(stage);
 
   // てんねん (Unaware): 防御側がてんねんの場合、攻撃側のすべての能力変化を無視
-  const ignoreAttackStages = abilityIs(opponentAbility, 'Unaware');
+  const ignoreAttackStages = abilityIs(opponentAbility, ABILITY_UNAWARE);
 
   // 急所の場合は能力ダウンを無視（負のランクを適用しない）
   const effectiveAttack =
@@ -40,13 +61,17 @@ export function resolveEffectiveAttack(
   // === 特性によるステータス補正 ===
 
   // ひひいろのこどう (Orichalcum Pulse): 晴れ時に物理攻撃 5461/4096倍
-  if (abilityIs(attacker.ability, 'Orichalcum Pulse') && isPhysical && context?.weather === 'sun') {
+  if (
+    abilityIs(attacker.ability, ABILITY_ORICHALCUM_PULSE) &&
+    isPhysical &&
+    context?.weather === 'sun'
+  ) {
     finalAttack = Math.floor((finalAttack * 5461) / 4096);
   }
 
   // ハドロンエンジン (Hadron Engine): エレキフィールド時に特攻 5461/4096倍
   if (
-    abilityIs(attacker.ability, 'Hadron Engine') &&
+    abilityIs(attacker.ability, ABILITY_HADRON_ENGINE) &&
     !isPhysical &&
     context?.field === 'electric'
   ) {
@@ -54,18 +79,22 @@ export function resolveEffectiveAttack(
   }
 
   // サンパワー (Solar Power): 晴れ時に特攻1.5倍
-  if (abilityIs(attacker.ability, 'Solar Power') && !isPhysical && context?.weather === 'sun') {
+  if (
+    abilityIs(attacker.ability, ABILITY_SOLAR_POWER) &&
+    !isPhysical &&
+    context?.weather === 'sun'
+  ) {
     finalAttack = Math.floor(finalAttack * 1.5);
   }
 
   // こだいかっせい (Protosynthesis): 晴れまたはブーストエナジーで最高ステータスを補正
   // クォークチャージ (Quark Drive): エレキフィールドまたはブーストエナジーで最高ステータスを補正
   const isProtosynthesisActive =
-    abilityIs(attacker.ability, 'Protosynthesis') &&
-    (context?.weather === 'sun' || itemIs(attacker.item, 'Booster Energy'));
+    abilityIs(attacker.ability, ABILITY_PROTOSYNTHESIS) &&
+    (context?.weather === 'sun' || itemIs(attacker.item, ITEM_BOOSTER_ENERGY));
   const isQuarkDriveActive =
-    abilityIs(attacker.ability, 'Quark Drive') &&
-    (context?.field === 'electric' || itemIs(attacker.item, 'Booster Energy'));
+    abilityIs(attacker.ability, ABILITY_QUARK_DRIVE) &&
+    (context?.field === 'electric' || itemIs(attacker.item, ITEM_BOOSTER_ENERGY));
 
   if (isProtosynthesisActive || isQuarkDriveActive) {
     // 攻撃/特攻: 5325/4096倍（該当ステータスが全5ステータス中最高の場合のみ）
@@ -85,7 +114,7 @@ export function resolveEffectiveAttack(
 
   // こんじょう (Guts): 状態異常時に物理攻撃1.5倍
   if (
-    abilityIs(attacker.ability, 'Guts') &&
+    abilityIs(attacker.ability, ABILITY_GUTS) &&
     attacker.status &&
     attacker.status !== 'none' &&
     isPhysical
@@ -100,12 +129,12 @@ export function resolveEffectiveAttack(
     defenderSideAbilities.some((a) => abilityIs(a, name)) || abilityIs(opponentAbility, name);
 
   // わざわいのうつわ (Tablets of Ruin): 相手の物理攻撃 0.75倍
-  if (hasDefenderSideAbility('Tablets of Ruin') && isPhysical) {
+  if (hasDefenderSideAbility(ABILITY_TABLETS_OF_RUIN) && isPhysical) {
     finalAttack = Math.floor(finalAttack * 0.75);
   }
 
   // わざわいのおふだ (Vessel of Ruin): 相手の特攻 0.75倍
-  if (hasDefenderSideAbility('Vessel of Ruin') && !isPhysical) {
+  if (hasDefenderSideAbility(ABILITY_VESSEL_OF_RUIN) && !isPhysical) {
     finalAttack = Math.floor(finalAttack * 0.75);
   }
 
@@ -113,22 +142,22 @@ export function resolveEffectiveAttack(
 
   // こだわりハチマキ/メガネ: 攻撃を1.5倍
   if (
-    (itemIs(attacker.item, 'Choice Band') && isPhysical) ||
-    (itemIs(attacker.item, 'Choice Specs') && !isPhysical)
+    (itemIs(attacker.item, ITEM_CHOICE_BAND) && isPhysical) ||
+    (itemIs(attacker.item, ITEM_CHOICE_SPECS) && !isPhysical)
   ) {
     finalAttack = Math.floor(finalAttack * 1.5);
   }
 
   // ちからのハチマキ/ものしりメガネ: 攻撃を1.1倍
   if (
-    (itemIs(attacker.item, 'Muscle Band') && isPhysical) ||
-    (itemIs(attacker.item, 'Wise Glasses') && !isPhysical)
+    (itemIs(attacker.item, ITEM_MUSCLE_BAND) && isPhysical) ||
+    (itemIs(attacker.item, ITEM_WISE_GLASSES) && !isPhysical)
   ) {
     finalAttack = Math.floor(finalAttack * 1.1);
   }
 
   // やけど: 物理攻撃を0.5倍（こんじょう持ちは除く）
-  if (attacker.status === 'burn' && isPhysical && !abilityIs(attacker.ability, 'Guts')) {
+  if (attacker.status === 'burn' && isPhysical && !abilityIs(attacker.ability, ABILITY_GUTS)) {
     finalAttack = Math.floor(finalAttack * 0.5);
   }
 
@@ -162,7 +191,7 @@ export function resolveEffectiveDefense(
   const multiplier = getStatStageMultiplier(stage);
 
   // てんねん (Unaware): 攻撃側がてんねんの場合、防御側のすべての能力変化を無視
-  const ignoreDefenseStages = abilityIs(opponentAbility, 'Unaware');
+  const ignoreDefenseStages = abilityIs(opponentAbility, ABILITY_UNAWARE);
 
   // 急所の場合は能力アップを無視（正のランクを適用しない）
   const effectiveDefense =
@@ -185,17 +214,17 @@ export function resolveEffectiveDefense(
   }
 
   // ファーコート (Fur Coat): 物理防御を2倍
-  if (abilityIs(defender.ability, 'Fur Coat') && usesPhysicalDef) {
+  if (abilityIs(defender.ability, ABILITY_FUR_COAT) && usesPhysicalDef) {
     finalDefense = Math.floor(finalDefense * 2);
   }
 
   // こだいかっせい (Protosynthesis) / クォークチャージ (Quark Drive): 防御側の補正
   const isDefProtosynthesisActive =
-    abilityIs(defender.ability, 'Protosynthesis') &&
-    (context?.weather === 'sun' || itemIs(defender.item, 'Booster Energy'));
+    abilityIs(defender.ability, ABILITY_PROTOSYNTHESIS) &&
+    (context?.weather === 'sun' || itemIs(defender.item, ITEM_BOOSTER_ENERGY));
   const isDefQuarkDriveActive =
-    abilityIs(defender.ability, 'Quark Drive') &&
-    (context?.field === 'electric' || itemIs(defender.item, 'Booster Energy'));
+    abilityIs(defender.ability, ABILITY_QUARK_DRIVE) &&
+    (context?.field === 'electric' || itemIs(defender.item, ITEM_BOOSTER_ENERGY));
 
   if (isDefProtosynthesisActive || isDefQuarkDriveActive) {
     // 防御/特防: 5325/4096倍（該当ステータスが全5ステータス中最高の場合のみ）
@@ -221,24 +250,24 @@ export function resolveEffectiveDefense(
     attackerSideAbilities.some((a) => abilityIs(a, name)) || abilityIs(opponentAbility, name);
 
   // わざわいのつるぎ (Sword of Ruin): 相手の物理防御 0.75倍
-  if (hasAttackerSideAbility('Sword of Ruin') && usesPhysicalDef) {
+  if (hasAttackerSideAbility(ABILITY_SWORD_OF_RUIN) && usesPhysicalDef) {
     finalDefense = Math.floor(finalDefense * 0.75);
   }
 
   // わざわいのたま (Beads of Ruin): 相手の特防 0.75倍
-  if (hasAttackerSideAbility('Beads of Ruin') && !usesPhysicalDef) {
+  if (hasAttackerSideAbility(ABILITY_BEADS_OF_RUIN) && !usesPhysicalDef) {
     finalDefense = Math.floor(finalDefense * 0.75);
   }
 
   // === 持ち物による防御補正 ===
 
   // しんかのきせき (Eviolite): 防御・特防1.5倍
-  if (itemIs(defender.item, 'Eviolite')) {
+  if (itemIs(defender.item, ITEM_EVIOLITE)) {
     finalDefense = Math.floor(finalDefense * 1.5);
   }
 
   // とつげきチョッキ (Assault Vest): 特防1.5倍
-  if (itemIs(defender.item, 'Assault Vest') && !usesPhysicalDef) {
+  if (itemIs(defender.item, ITEM_ASSAULT_VEST) && !usesPhysicalDef) {
     finalDefense = Math.floor(finalDefense * 1.5);
   }
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ITEM_CHOICE_BAND, ITEM_MUSCLE_BAND } from '../../../constants/damage-calc-names';
 import type { CalcMove, CalcPokemon } from '../../../types/damage';
 import {
   resolveEffectiveAttack,
@@ -64,7 +65,7 @@ describe('resolveEffectiveAttack', () => {
   it('should apply Choice Band for physical moves (1.5x)', () => {
     const withBand: CalcPokemon = {
       ...attacker,
-      item: 'Choice Band',
+      item: ITEM_CHOICE_BAND,
     };
     const result = resolveEffectiveAttack(withBand, physicalMove);
     expect(result).toBe(Math.floor(134 * 1.5)); // 201
@@ -73,7 +74,7 @@ describe('resolveEffectiveAttack', () => {
   it('should apply Muscle Band for physical moves (1.1x)', () => {
     const withBand: CalcPokemon = {
       ...attacker,
-      item: 'Muscle Band',
+      item: ITEM_MUSCLE_BAND,
     };
     const result = resolveEffectiveAttack(withBand, physicalMove);
     expect(result).toBe(Math.floor(134 * 1.1)); // 147
@@ -105,7 +106,7 @@ describe('resolveEffectiveAttack', () => {
   it('should chain modifiers correctly', () => {
     const burned: CalcPokemon = {
       ...attacker,
-      item: 'Choice Band',
+      item: ITEM_CHOICE_BAND,
       status: 'burn',
     };
     // Choice Band (1.5x) for physical attack, then burn (0.5x)
