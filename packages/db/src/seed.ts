@@ -2,14 +2,22 @@
  * シードスクリプト（CSV/JSONファイルベース）
  * packages/db/export/*.csv / regulations.json を読み込んでDBに投入する
  *
- * 実行順: abilities → items → moves → pokemon（2パス）→ regulations（2パス）
+ * 実行順: abilities → items → moves → pokemon（2パス）→ regulations（2パス）→ learnsets
  */
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import dotenv from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { abilities, items, moves, pokemon, regulations, regulationPokemon } from './schema';
+import {
+  abilities,
+  items,
+  learnsets,
+  moves,
+  pokemon,
+  regulations,
+  regulationPokemon,
+} from './schema';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 
 if (!process.env.DATABASE_URL) {
@@ -356,6 +364,69 @@ async function seedRegulations(): Promise<number> {
 }
 
 // ---------------------------------------------------------------------------
+// 6. learnsets
+// ---------------------------------------------------------------------------
+
+async function seedLearnsets(): Promise<number> {
+  console.log('\n[6/6] learnsets...');
+
+  const csvPath = resolve(EXPORT_DIR, 'learnsets.csv');
+  let rows: Record<string, string>[];
+  try {
+    rows = parseCsv(csvPath);
+  } catch {
+    console.log('  learnsets.csv が見つかりません。スキップします。');
+    console.log('  先に npm run db:extract-learnsets を実行してください。');
+    return 0;
+  }
+
+  if (rows.length === 0) {
+    console.log('  learnsets.csv が空です。スキップします。');
+    return 0;
+  }
+
+  // pokemon.slug → pokemon.id マッピング
+  const pkRows = await db.select({ id: pokemon.id, slug: pokemon.slug }).from(pokemon);
+  const pokemonIdMap = new Map(pkRows.map((p) => [p.slug, p.id]));
+
+  // moves.slug → moves.id マッピング
+  const mvRows = await db.select({ id: moves.id, slug: moves.slug }).from(moves);
+  const moveIdMap = new Map(mvRows.map((m) => [m.slug, m.id]));
+
+  type LearnMethod = (typeof learnsets.$inferInsert)['method'];
+
+  const data: (typeof learnsets.$inferInsert)[] = [];
+  let skipped = 0;
+
+  for (const r of rows) {
+    const pokemonId = pokemonIdMap.get(r.pokemon_slug);
+    const moveId = moveIdMap.get(r.move_slug);
+
+    if (!pokemonId || !moveId) {
+      skipped++;
+      continue;
+    }
+
+    data.push({
+      pokemonId,
+      moveId,
+      method: r.method as LearnMethod,
+      level: parseInt(r.level, 10) || 0,
+    });
+  }
+
+  if (skipped > 0) {
+    console.log(`  スキップ（slug不一致）: ${skipped}件`);
+  }
+
+  await batchInsert('learnsets', data, (batch) =>
+    db.insert(learnsets).values(batch).onConflictDoNothing()
+  );
+
+  return data.length;
+}
+
+// ---------------------------------------------------------------------------
 // メイン
 // ---------------------------------------------------------------------------
 
@@ -368,6 +439,7 @@ async function main() {
     moves: await seedMoves(),
     pokemon: await seedPokemon(),
     regulations: await seedRegulations(),
+    learnsets: await seedLearnsets(),
   };
 
   console.log('\n=== 完了 ===');

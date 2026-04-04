@@ -1,6 +1,5 @@
 'use client';
 
-import { Autocomplete } from '@/components/ui/autocomplete';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -11,11 +10,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { MoveFilteredSelect } from '@/components/move/MoveFilteredSelect';
 import { useAllMoves, useLearnset, usePokemonByName } from '@/hooks/useApiData';
 import type { MoveRow } from '@/lib/api-adapters';
 import type { PokemonType } from '@poke-dex-battle/shared';
 import { POKEMON_TYPE_OPTIONS } from '@poke-dex-battle/shared';
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 
 export interface MoveSelectData {
   name: string;
@@ -31,9 +31,9 @@ interface MoveInputProps {
   movePower: number;
   moveType: PokemonType;
   moveCategory: 'Physical' | 'Special';
-  // 技選択時の一括更新（rerender-move-effect-to-event）
+  /** 技選択時の一括更新 */
   onMoveSelect: (data: MoveSelectData) => void;
-  // 個別フィールドの手動変更（フルモードのみ）
+  /** 個別フィールドの手動変更（フルモードのみ） */
   onMovePowerChange: (power: number) => void;
   onMoveTypeChange: (type: PokemonType) => void;
   onMoveCategoryChange: (category: 'Physical' | 'Special') => void;
@@ -51,97 +51,54 @@ export function MoveInput({
   onMoveTypeChange,
   onMoveCategoryChange,
   compact,
-}: MoveInputProps) {
+}: MoveInputProps): React.ReactNode {
   // API経由でデータを取得
   const { data: allMoves } = useAllMoves();
   const { data: pokemonData } = usePokemonByName(pokemonName || null);
   const pokemonId = pokemonData?.id ?? null;
   const { data: learnsetData } = useLearnset(pokemonId);
 
-  // 全技データ（ポケモン選択時は learnset で絞り込み、レベル技/わざマシンで分類）
-  const moveOptions = useMemo(() => {
-    if (!allMoves) return [];
-    const moveById = new Map(allMoves.map((m) => [m.id, m]));
+  // 習得可能技の slug リスト
+  const learnableMoves = learnsetData?.moves ?? null;
 
-    if (pokemonName && learnsetData) {
-      const levelMoveIds: string[] = learnsetData.level ?? [];
-      const machineMoveIds: string[] = learnsetData.machine ?? [];
-
-      if (levelMoveIds.length > 0 || machineMoveIds.length > 0) {
-        const levelOptions = levelMoveIds
-          .map((id) => moveById.get(id))
-          .filter((m) => m != null)
-          .map((move) => ({
-            label: move.nameJa,
-            value: move.nameJa,
-            id: `move-${move.id}`,
-            group: 'レベル技・思い出し技',
-          }));
-
-        const levelMoveIdSet = new Set(levelMoveIds);
-        // わざマシン技からレベル技と重複するものを除外
-        const machineOptions = machineMoveIds
-          .filter((id) => !levelMoveIdSet.has(id))
-          .map((id) => moveById.get(id))
-          .filter((m) => m != null)
-          .map((move) => ({
-            label: move.nameJa,
-            value: move.nameJa,
-            id: `move-${move.id}`,
-            group: 'わざマシン',
-          }));
-
-        return [...levelOptions, ...machineOptions];
-      }
-    }
-
-    // ポケモン未選択 or learnset 取得不可の場合は全技
-    return allMoves.map((move) => ({
-      label: move.nameJa,
-      value: move.nameJa,
-      id: `move-${move.id}`,
-    }));
-  }, [pokemonName, allMoves, learnsetData]);
-
-  // 全技のMap（技選択時の検索用）
-  const moveByNameJa = useMemo(() => {
+  // slug → MoveRow の高速マップ
+  const moveBySlug = useMemo(() => {
     if (!allMoves) return new Map<string, MoveRow>();
-    return new Map(allMoves.map((m) => [m.nameJa, m]));
+    return new Map(allMoves.map((m) => [m.slug, m]));
   }, [allMoves]);
 
-  // rerender-move-effect-to-event: 技選択時にデータを一括反映
-  const handleMoveSelect = (selectedName: string) => {
-    const moveData = moveByNameJa.get(selectedName);
-    if (moveData) {
-      onMoveSelect({
-        name: selectedName,
-        power: moveData.power ?? movePower,
-        type: moveData.type as PokemonType,
-        category:
-          moveData.category === 'Physical' || moveData.category === 'Special'
-            ? moveData.category
-            : moveCategory,
-        target: moveData.target ?? '',
-      });
-    } else {
-      onMoveSelect({
-        name: selectedName,
-        power: movePower,
-        type: moveType,
-        category: moveCategory,
-        target: '',
-      });
-    }
-  };
+  // 技選択時に slug → MoveSelectData 変換して親に通知
+  const handleMoveSelect = useCallback(
+    (slug: string) => {
+      const moveData = moveBySlug.get(slug);
+      if (moveData) {
+        onMoveSelect({
+          name: moveData.nameJa,
+          power: moveData.power ?? movePower,
+          type: moveData.type as PokemonType,
+          category:
+            moveData.category === 'Physical' || moveData.category === 'Special'
+              ? moveData.category
+              : moveCategory,
+          target: moveData.target ?? '',
+        });
+      }
+    },
+    [moveBySlug, movePower, moveCategory, onMoveSelect]
+  );
 
-  // compact モード: 技名 Autocomplete のみ
+  // compact モード: MoveFilteredSelect のみ
   if (compact) {
     return (
-      <Autocomplete
-        id="move-name"
-        options={moveOptions}
+      <MoveFilteredSelect
+        learnableMoves={learnableMoves}
+        allMoves={allMoves ?? []}
         onSelect={handleMoveSelect}
+        excludeCategories={['Status']}
+        collapsible={true}
+        defaultExpanded={false}
         placeholder="技名"
+        aria-label="技を選択"
       />
     );
   }
@@ -150,11 +107,14 @@ export function MoveInput({
     <div className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="move-name">技名</Label>
-        <Autocomplete
-          id="move-name"
-          options={moveOptions}
+        <MoveFilteredSelect
+          learnableMoves={learnableMoves}
+          allMoves={allMoves ?? []}
           onSelect={handleMoveSelect}
+          excludeCategories={['Status']}
+          collapsible={false}
           placeholder="技名を入力"
+          aria-label="技を選択"
         />
       </div>
 

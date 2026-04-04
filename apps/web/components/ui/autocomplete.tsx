@@ -9,6 +9,8 @@ export interface AutocompleteOption {
   value: string;
   id?: string | number;
   group?: string;
+  /** ドロップダウン項目のカスタムレンダリング用メタデータ */
+  meta?: Record<string, unknown>;
 }
 
 export interface AutocompleteProps extends Omit<
@@ -19,10 +21,14 @@ export interface AutocompleteProps extends Omit<
   onSelect: (value: string) => void;
   onClear?: () => void;
   isLoading?: boolean;
+  /** ドロップダウン項目のカスタムレンダリング */
+  renderOption?: (option: AutocompleteOption) => React.ReactNode;
+  /** ドロップダウンが開いて候補が0件のときに表示するメッセージ */
+  emptyMessage?: string;
 }
 
 export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps>(
-  ({ options, onSelect, onClear, className, ...props }, ref) => {
+  ({ options, onSelect, onClear, renderOption, emptyMessage, className, ...props }, ref) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const listboxId = React.useId();
     const [open, setOpen] = React.useState(false);
@@ -57,14 +63,19 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
     }, [filteredOptions, highlightedIndex]);
 
     // コンテナ外クリックでドロップダウンを閉じ、未選択なら元の値に戻す
+    const previousValueRef = React.useRef(previousValue);
+    previousValueRef.current = previousValue;
+    const inputValueRef = React.useRef(inputValue);
+    inputValueRef.current = inputValue;
+
     React.useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
         if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
           setOpen(false);
           setHighlightedIndex(-1);
           // 何も選択せずに外をクリックした場合、元の値に戻す
-          if (previousValue && inputValue === '') {
-            setInputValue(previousValue);
+          if (previousValueRef.current && inputValueRef.current === '') {
+            setInputValue(previousValueRef.current);
           }
         }
       };
@@ -180,6 +191,12 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
           </button>
         )}
 
+        {open && filteredOptions.length === 0 && emptyMessage && (
+          <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-input bg-background p-3 text-center text-sm text-muted-foreground shadow-md">
+            {emptyMessage}
+          </div>
+        )}
+
         {open && filteredOptions.length > 0 && (
           <div
             id={listboxId}
@@ -225,7 +242,7 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
                         highlightedIndex === globalIndex ? 'bg-accent' : 'hover:bg-accent'
                       )}
                     >
-                      {option.label}
+                      {renderOption ? renderOption(option) : option.label}
                     </button>
                   ))}
                 </div>

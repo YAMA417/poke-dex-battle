@@ -30,34 +30,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pok
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  // moveId(number) → move slug で返す（フロントエンドがslugで管理しているため）
+  // moveId(number) → move slug のフラットリストで返す（method別分類は不要）
   const moveIds = [...new Set(result.map((r) => r.moveId))];
   const moveRowsFull = await db
     .select({ id: moves.id, slug: moves.slug })
     .from(moves)
     .where(inArray(moves.id, moveIds));
 
-  const moveIdToSlug = new Map(moveRowsFull.map((m) => [m.id, m.slug]));
+  const moveSlugs = moveRowsFull.map((m) => m.slug);
 
-  const level: string[] = [];
-  const machine: string[] = [];
-  const egg: string[] = [];
-
-  for (const row of result) {
-    const slug = moveIdToSlug.get(row.moveId);
-    if (!slug) continue;
-    switch (row.method) {
-      case 'level-up':
-        level.push(slug);
-        break;
-      case 'machine':
-        machine.push(slug);
-        break;
-      case 'egg':
-        egg.push(slug);
-        break;
-    }
-  }
-
-  return NextResponse.json({ pokemonId: pokemonSlug, level, machine, egg });
+  return NextResponse.json({ pokemonId: pokemonSlug, moves: moveSlugs });
 }

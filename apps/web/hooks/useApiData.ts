@@ -82,10 +82,10 @@ export function useDefaultRegulation() {
   return useSWR<RegulationData | null>('/api/regulations', fetcher<RegulationData | null>);
 }
 
-/** 習得技を取得 */
+/** 習得技を取得（フラットなslugリスト） */
 export function useLearnset(pokemonId: string | null) {
-  return useSWR<{ pokemonId: string; level: string[]; machine: string[]; egg: string[] }>(
+  return useSWR<{ pokemonId: string; moves: string[] }>(
     pokemonId ? `/api/learnsets/${pokemonId}` : null,
-    fetcher<{ pokemonId: string; level: string[]; machine: string[]; egg: string[] }>
+    fetcher<{ pokemonId: string; moves: string[] }>
   );
 }

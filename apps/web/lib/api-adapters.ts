@@ -43,7 +43,8 @@ export interface PokemonRow {
 
 /** /api/moves が返す行 */
 export interface MoveRow {
-  id: string;
+  id: number;
+  slug: string;
   num: number;
   name: string;
   nameJa: string;
