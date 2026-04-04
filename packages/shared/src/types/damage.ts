@@ -1,3 +1,4 @@
+import type { DamageEffect } from './damage-effect';
 import type { PokemonType, TeraType } from './pokemon';
 
 /** 天候 */
@@ -47,7 +48,11 @@ export interface CalcPokemon {
     spe?: StatStage;
   };
   ability?: string;
+  abilityId?: number;
+  abilityDamageEffect?: DamageEffect;
   item?: string;
+  itemId?: number;
+  itemDamageEffect?: DamageEffect;
   status?: 'burn' | 'none';
   currentHp?: number;
   maxHp?: number;
@@ -62,6 +67,7 @@ export interface CalcPokemon {
  * ダメージ計算用の技型（新エンジン）
  */
 export interface CalcMove {
+  id?: number;
   name: string;
   power: number;
   type: PokemonType;
@@ -70,6 +76,7 @@ export interface CalcMove {
   isZMove?: boolean;
   isDynamaxMove?: boolean;
   flags?: MoveFlags;
+  damageEffect?: DamageEffect;
 }
 
 /**
@@ -113,6 +120,10 @@ export interface MoveFlags {
   usesDefenseAsAttack?: boolean; // 攻撃側の防御で計算（ボディプレス）
   targetsPhysicalDefense?: boolean; // 特殊技だが防御側の物理防御で計算（サイコショック等）
   usesTargetAttack?: boolean; // 防御側の攻撃で計算（イカサマ）
+  isSlicingMove?: boolean; // 切る技か（きれあじ用）
+  isSoundMove?: boolean; // 音技か
+  isBulletMove?: boolean; // 弾技か（ぼうだん用）
+  isWindMove?: boolean; // 風技か（かぜのり用）
   isPriorityMove?: boolean; // 先制技か
   isMultiHitMove?: boolean; // 連続技か
   isVariablePowerMove?: boolean; // 可変威力技か

@@ -17,12 +17,12 @@ import { cn } from '@/lib/utils';
 type MoveCategory = 'Physical' | 'Special' | 'Status';
 
 interface MoveFilteredSelectProps {
-  /** 習得可能な move slug リスト */
-  learnableMoves: string[] | null;
+  /** 習得可能な moveId リスト（DB の数値ID） */
+  learnableMoves: number[] | null;
   /** 全技データ */
   allMoves: MoveRow[];
-  /** 技選択時のコールバック（slug を返す） */
-  onSelect: (moveSlug: string) => void;
+  /** 技選択時のコールバック（英語名を返す） */
+  onSelect: (moveName: string) => void;
   /** 除外するカテゴリ（例: ダメージ計算では ['Status']） */
   excludeCategories?: MoveCategory[];
   /** 折りたたみ可能か（false=常時展開、デフォルト: false） */
@@ -128,20 +128,14 @@ export function MoveFilteredSelect({
     [excludedCatSet]
   );
 
-  // ----- slug → MoveRow の高速ルックアップ -----
-
-  const moveBySlug = useMemo(() => {
-    return new Map(allMoves.map((m) => [m.slug, m]));
-  }, [allMoves]);
-
   // ----- フィルタリングロジック -----
 
   const filteredOptions = useMemo((): AutocompleteOption[] => {
     // 1. learnableMoves に含まれる技のみ抽出（null なら全技）
     let candidates: MoveRow[];
     if (learnableMoves) {
-      const slugSet = new Set(learnableMoves);
-      candidates = allMoves.filter((m) => slugSet.has(m.slug));
+      const idSet = new Set(learnableMoves);
+      candidates = allMoves.filter((m) => idSet.has(m.id));
     } else {
       candidates = allMoves;
     }
@@ -164,8 +158,8 @@ export function MoveFilteredSelect({
     // 5. AutocompleteOption[] に変換
     return candidates.map((m) => ({
       label: m.nameJa,
-      value: m.slug,
-      id: `move-${m.slug}`,
+      value: m.name,
+      id: `move-${m.name}`,
       meta: {
         type: m.type,
         category: m.category,

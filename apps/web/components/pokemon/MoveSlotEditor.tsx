@@ -49,16 +49,16 @@ export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps
   const { data: learnsetData } = useLearnset(pokemonId);
   const { data: allMovesRaw } = useAllMoves();
 
-  // 習得可能技の slug リスト
+  // 習得可能技の ID リスト（数値配列）
   const learnableMoves = learnsetData?.moves ?? null;
 
-  // 全技の slug→MoveData マップ
-  const moveBySlugMap = useMemo(() => {
+  // 全技の name→MoveData マップ
+  const moveByNameMap2 = useMemo(() => {
     if (!allMovesRaw) return new Map<string, MoveData>();
     const map = new Map<string, MoveData>();
     for (const row of allMovesRaw) {
       const md = toMoveData(row);
-      if (md) map.set(row.slug, md);
+      if (md) map.set(row.name, md);
     }
     return map;
   }, [allMovesRaw]);
@@ -102,11 +102,11 @@ export function MoveSlotEditor({ moves, species, onChange }: MoveSlotEditorProps
 
   /** MoveFilteredSelect の onSelect コールバックを生成 */
   const handleSlotSelect = useCallback(
-    (slot: number) => (slug: string) => {
-      const md = moveBySlugMap.get(slug);
+    (slot: number) => (name: string) => {
+      const md = moveByNameMap2.get(name);
       if (md) selectMove(slot, md);
     },
-    [moveBySlugMap, selectMove]
+    [moveByNameMap2, selectMove]
   );
 
   const clearMove = useCallback(

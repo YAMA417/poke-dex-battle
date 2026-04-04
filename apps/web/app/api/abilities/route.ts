@@ -9,13 +9,10 @@ export async function GET(request: Request) {
   const name = searchParams.get('name');
 
   if (name) {
-    const normalized = name.toLowerCase().replace(/[^a-z0-9]/g, '');
     const results = await db
       .select()
       .from(abilities)
-      .where(
-        or(eq(abilities.nameJa, name), ilike(abilities.name, name), eq(abilities.slug, normalized))
-      )
+      .where(or(eq(abilities.nameJa, name), ilike(abilities.name, name)))
       .limit(1);
     return NextResponse.json(results[0] ?? null);
   }

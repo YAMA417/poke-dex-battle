@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Regulation, Pokemon, PokemonSpeciesData } from '@poke-dex-battle/shared';
-import { useAllPokemon, useAllItems } from '@/hooks/useApiData';
+import { useAllPokemon, useAllItems, useDefaultRegulation } from '@/hooks/useApiData';
 import { toSpeciesData } from '@/lib/api-adapters';
 import { usePartyStore } from '@/hooks/use-party-store';
 import { PokemonSearchModal } from '@/components/pokemon/PokemonSearchModal';
@@ -53,11 +53,12 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
     existingParty?.regulation ?? 'Champions'
   );
 
-  // レギュレーション → DB regulation ID マッピング
-  const regulationDbId = regulation === 'Champions' ? 'champions-season1' : undefined;
+  // デフォルトレギュレーションをAPI経由で取得
+  const { data: defaultRegulation } = useDefaultRegulation();
+  const regulationName = defaultRegulation?.name;
 
   // API経由でレギュレーション対応ポケモンを取得
-  const { data: allPokemonRaw } = useAllPokemon(regulationDbId);
+  const { data: allPokemonRaw } = useAllPokemon(regulationName);
   const allPokemonByName = useMemo(() => {
     if (!allPokemonRaw) return new Map<string, PokemonSpeciesData>();
     const map = new Map<string, PokemonSpeciesData>();
@@ -77,7 +78,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
     if (!allItemsRaw) return new Map<string, string>();
     const map = new Map<string, string>();
     for (const row of allItemsRaw) {
-      if (row.id && row.nameJa) map.set(row.id, row.nameJa);
+      if (row.id && row.nameJa) map.set(String(row.id), row.nameJa);
       if (row.name && row.nameJa) map.set(row.name, row.nameJa);
     }
     return map;
@@ -437,7 +438,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
         onClose={() => setSearchOpen(false)}
         onSelect={handleSpeciesSelect}
         disabledIds={pokemons.map((p) => p.species.id)}
-        regulation={regulationDbId}
+        regulation={regulationName}
       />
     </div>
   );

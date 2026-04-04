@@ -26,6 +26,13 @@ export { resolveBasePower } from './resolve-base-power';
 export { resolveEffectiveAttack, resolveEffectiveDefense } from './resolve-effective-stat';
 export { getZMovePower } from './z-move-power';
 
+// damageEffect ルール解釈
+export {
+  applyPowerModifierRule,
+  evaluateAttackerModifier,
+  evaluateDefenderModifier,
+} from './apply-damage-effect';
+
 // 既存のdamage-calc.tsから再エクスポート
 export {
   calculateAttackerAbilityModifier,
@@ -44,12 +51,6 @@ export type { BattleContext, CalcMove, CalcPokemon } from '../../types/damage';
 /**
  * 新ダメージ計算エンジン（V2）のメインエントリポイント
  * 新型（CalcPokemon, CalcMove, BattleContext）での直接計算
- *
- * @param attacker - 攻撃側ポケモン
- * @param defender - 防御側ポケモン
- * @param move - 技情報
- * @param context - バトルコンテキスト
- * @returns ダメージ計算結果
  */
 export function calculateDamageV2(
   attacker: CalcPokemon,
@@ -57,13 +58,16 @@ export function calculateDamageV2(
   move: CalcMove,
   context: BattleContext
 ): DamageResult {
-  // テラバースト (Tera Blast): テラスタル時の処理
+  // テラバースト: damageEffect または文字列で判定
   let effectiveMove: CalcMove = move;
-  if (moveIs(move.name, 'Tera Blast') && attacker.isTerastallized) {
+  const isTeraBlast =
+    (move.damageEffect?.powerModifier &&
+      (move.damageEffect.powerModifier as any).condition === 'tera_blast') ||
+    moveIs(move.name, 'Tera Blast');
+
+  if (isTeraBlast && attacker.isTerastallized) {
     const isStellar = attacker.teraType === 'Stellar';
     const newPower = isStellar ? 100 : move.power;
-    // ステラ時はノーマルタイプ維持（相性は別途オーバーライド）
-    // 通常テラスタル時はテラタイプに変更
     const newType = isStellar
       ? move.type
       : attacker.teraType && isPokemonType(attacker.teraType)

@@ -13,7 +13,6 @@ import type {
 import {
   calculateDamageV2,
   getAbilityConditionEffect,
-  getMoveFlags,
   isSpreadMoveTarget,
   moveIs,
 } from '@poke-dex-battle/shared';
@@ -116,7 +115,7 @@ export function DamageCalculator() {
   const showTerastal = battleSystems.includes('terastal');
   const showZMove = battleSystems.includes('zmove');
   const showDynamax = battleSystems.includes('dynamax');
-  const regulationSlug = regulation?.slug;
+  const regulationSlug = regulation?.name;
 
   // API経由で全データを取得し、名前→データのMapを構築
   const { data: allMovesRaw } = useAllMoves();
@@ -261,12 +260,29 @@ export function DamageCalculator() {
       // 技の英語名とフラグを取得
       const moveData = attacker.moveName ? (moveByNameJa.get(attacker.moveName) ?? null) : null;
       const moveEnglishName = moveData?.name || '';
-      const moveFlags = getMoveFlags(moveEnglishName, moveData?.shortDesc);
+      // DB由来のフラグを使用（デフォルト値はフォールバック用）
+      const defaultFlags = {
+        isPunchMove: false,
+        isRecoilMove: false,
+        isBiteMove: false,
+        isAuraMove: false,
+        hasSecondaryEffect: false,
+        usesDefenseAsAttack: false,
+        targetsPhysicalDefense: false,
+        usesTargetAttack: false,
+      } as const;
+      const moveFlags = moveData?.flags ?? defaultFlags;
 
       // ワイドフォース: サイコフィールド時は全体技化（防御側2体いる場合のみ）
       const isExpandingForcePsychic =
         moveIs(moveEnglishName, 'Expanding Force') && field === 'psychic' && bothDefendersPresent;
       const effectiveIsSpread = isSpread || isExpandingForcePsychic;
+
+      // 攻撃側の特性・アイテムのダメージエフェクトを取得
+      const attackerAbilityData = attacker.abilityName
+        ? abilityByNameJa.get(attacker.abilityName)
+        : null;
+      const attackerItemData = attacker.itemName ? itemByNameJa.get(attacker.itemName) : null;
 
       // 攻撃側ポケモン構築
       const attackerPokemon: CalcPokemon = {
@@ -292,17 +308,21 @@ export function DamageCalculator() {
               : 0) as StatStage,
           spa: (isPhysical ? 0 : attacker.specialAttackRank) as StatStage,
         },
-        ability: attacker.abilityName
-          ? abilityByNameJa.get(attacker.abilityName)?.name || undefined
-          : undefined,
-        item: attacker.itemName
-          ? itemByNameJa.get(attacker.itemName)?.name || attacker.itemName
-          : undefined,
+        ability: attackerAbilityData?.name || undefined,
+        abilityDamageEffect: attackerAbilityData?.damageEffect ?? undefined,
+        item: attackerItemData?.name || attacker.itemName || undefined,
+        itemDamageEffect: attackerItemData?.damageEffect ?? undefined,
         status: attacker.isBurned ? 'burn' : 'none',
         teraType: attacker.isTerastallized ? (attacker.teraType ?? undefined) : undefined,
         isTerastallized: attacker.isTerastallized,
         isStellarBoostUsed: attacker.isStellarBoostUsed,
       };
+
+      // 防御側の特性・アイテムのダメージエフェクトを取得
+      const defenderAbilityData = defender.abilityName
+        ? abilityByNameJa.get(defender.abilityName)
+        : null;
+      const defenderItemData = defender.itemName ? itemByNameJa.get(defender.itemName) : null;
 
       // 防御側ポケモン構築
       const defenderPokemon: CalcPokemon = {
@@ -320,12 +340,10 @@ export function DamageCalculator() {
           def: defender.defenseRank as StatStage,
           spd: defender.specialDefenseRank as StatStage,
         },
-        ability: defender.abilityName
-          ? abilityByNameJa.get(defender.abilityName)?.name || undefined
-          : undefined,
-        item: defender.itemName
-          ? itemByNameJa.get(defender.itemName)?.name || defender.itemName
-          : undefined,
+        ability: defenderAbilityData?.name || undefined,
+        abilityDamageEffect: defenderAbilityData?.damageEffect ?? undefined,
+        item: defenderItemData?.name || defender.itemName || undefined,
+        itemDamageEffect: defenderItemData?.damageEffect ?? undefined,
         maxHp: defender.hpStat,
         teraType: defender.isTerastallized ? (defender.teraType ?? undefined) : undefined,
         isTerastallized: defender.isTerastallized,
@@ -334,6 +352,7 @@ export function DamageCalculator() {
 
       // 技構築
       const calcMove: CalcMove = {
+        id: moveData?.id,
         name: moveEnglishName,
         power: attacker.movePower,
         type: attacker.moveType,
@@ -342,6 +361,7 @@ export function DamageCalculator() {
         isZMove: attacker.isZMove,
         isDynamaxMove: attacker.isDynamaxed,
         flags: moveFlags,
+        damageEffect: moveData?.damageEffect ?? undefined,
       };
 
       // バトルコンテキスト構築

@@ -5,18 +5,18 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request: Request): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
-  const slug = searchParams.get('slug');
+  const name = searchParams.get('name');
 
-  if (slug) {
-    // 指定slugのレギュレーションを返す
+  if (name) {
+    // 指定nameのレギュレーションを返す
     const [row] = await db
       .select({
-        slug: regulations.slug,
+        id: regulations.id,
         name: regulations.name,
         battleSystems: regulations.battleSystems,
       })
       .from(regulations)
-      .where(eq(regulations.slug, slug))
+      .where(eq(regulations.name, name))
       .limit(1);
 
     return NextResponse.json(row ?? null);
@@ -25,7 +25,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   // デフォルトレギュレーション（isDefault=true）を返す
   const [row] = await db
     .select({
-      slug: regulations.slug,
+      id: regulations.id,
       name: regulations.name,
       battleSystems: regulations.battleSystems,
     })

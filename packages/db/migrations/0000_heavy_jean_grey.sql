@@ -4,25 +4,25 @@ CREATE TYPE "public"."pokemon_category" AS ENUM('normal', 'sub_legendary', 'rest
 CREATE TYPE "public"."pokemon_type" AS ENUM('Normal', 'Fire', 'Water', 'Electric', 'Grass', 'Ice', 'Fighting', 'Poison', 'Ground', 'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy');--> statement-breakpoint
 CREATE TABLE "abilities" (
 	"id" bigserial PRIMARY KEY NOT NULL,
-	"slug" text NOT NULL,
 	"num" integer NOT NULL,
 	"name" text NOT NULL,
 	"name_ja" text NOT NULL,
 	"short_desc" text,
 	"short_desc_ja" text,
-	CONSTRAINT "abilities_slug_unique" UNIQUE("slug")
+	"damage_effect" jsonb,
+	CONSTRAINT "abilities_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
 CREATE TABLE "items" (
 	"id" bigserial PRIMARY KEY NOT NULL,
-	"slug" text NOT NULL,
 	"num" integer NOT NULL,
 	"name" text NOT NULL,
 	"name_ja" text NOT NULL,
 	"short_desc" text,
 	"short_desc_ja" text,
 	"is_competitive" boolean DEFAULT false NOT NULL,
-	CONSTRAINT "items_slug_unique" UNIQUE("slug")
+	"damage_effect" jsonb,
+	CONSTRAINT "items_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
 CREATE TABLE "learnsets" (
@@ -35,7 +35,6 @@ CREATE TABLE "learnsets" (
 --> statement-breakpoint
 CREATE TABLE "moves" (
 	"id" bigserial PRIMARY KEY NOT NULL,
-	"slug" text NOT NULL,
 	"num" integer NOT NULL,
 	"name" text NOT NULL,
 	"name_ja" text NOT NULL,
@@ -48,12 +47,25 @@ CREATE TABLE "moves" (
 	"target" text NOT NULL,
 	"short_desc" text,
 	"short_desc_ja" text,
-	CONSTRAINT "moves_slug_unique" UNIQUE("slug")
+	"is_contact" boolean DEFAULT false NOT NULL,
+	"is_punch" boolean DEFAULT false NOT NULL,
+	"is_bite" boolean DEFAULT false NOT NULL,
+	"is_aura" boolean DEFAULT false NOT NULL,
+	"is_recoil" boolean DEFAULT false NOT NULL,
+	"is_slicing" boolean DEFAULT false NOT NULL,
+	"is_sound" boolean DEFAULT false NOT NULL,
+	"is_bullet" boolean DEFAULT false NOT NULL,
+	"is_wind" boolean DEFAULT false NOT NULL,
+	"has_secondary_effect" boolean DEFAULT false NOT NULL,
+	"uses_defense_as_attack" boolean DEFAULT false NOT NULL,
+	"targets_physical_defense" boolean DEFAULT false NOT NULL,
+	"uses_target_attack" boolean DEFAULT false NOT NULL,
+	"damage_effect" jsonb,
+	CONSTRAINT "moves_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
 CREATE TABLE "pokemon" (
 	"id" bigserial PRIMARY KEY NOT NULL,
-	"slug" text NOT NULL,
 	"num" integer NOT NULL,
 	"name" text NOT NULL,
 	"name_ja" text NOT NULL,
@@ -77,7 +89,7 @@ CREATE TABLE "pokemon" (
 	"form_type" "form_type" DEFAULT 'base' NOT NULL,
 	"base_form_id" bigint,
 	"nfe" boolean DEFAULT false NOT NULL,
-	CONSTRAINT "pokemon_slug_unique" UNIQUE("slug")
+	CONSTRAINT "pokemon_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
 CREATE TABLE "regulation_pokemon" (
@@ -89,7 +101,6 @@ CREATE TABLE "regulation_pokemon" (
 --> statement-breakpoint
 CREATE TABLE "regulations" (
 	"id" bigserial PRIMARY KEY NOT NULL,
-	"slug" text NOT NULL,
 	"name" text NOT NULL,
 	"battle_systems" text[] DEFAULT '{}' NOT NULL,
 	"restricted_count" integer DEFAULT 0 NOT NULL,
@@ -97,7 +108,7 @@ CREATE TABLE "regulations" (
 	"from_date" date,
 	"to_date" date,
 	"is_default" boolean DEFAULT false NOT NULL,
-	CONSTRAINT "regulations_slug_unique" UNIQUE("slug")
+	CONSTRAINT "regulations_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
 ALTER TABLE "learnsets" ADD CONSTRAINT "learnsets_pokemon_id_pokemon_id_fk" FOREIGN KEY ("pokemon_id") REFERENCES "public"."pokemon"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint

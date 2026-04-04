@@ -18,7 +18,6 @@ import type { PokemonType, PokemonSpeciesData, StatStage, TeraType } from '@poke
 import {
   calcOtherStat,
   reverseCalcOtherEv,
-  getMoveFlags,
   getZMovePower,
   getDynamaxMovePower,
   isTeraType,
@@ -271,8 +270,7 @@ export function AttackerInput({
 
   // 特殊技フラグの判定（ボディプレス等）
   const { data: moveData } = useMoveByName(data.moveName || null);
-  const moveFlags = moveData ? getMoveFlags(moveData.name, moveData.shortDesc ?? undefined) : null;
-  const usesDefenseAsAttack = moveFlags?.usesDefenseAsAttack ?? false;
+  const usesDefenseAsAttack = moveData?.usesDefenseAsAttack ?? false;
 
   // ボディプレス時は防御ステータスを使用
   const currentModifier = usesDefenseAsAttack

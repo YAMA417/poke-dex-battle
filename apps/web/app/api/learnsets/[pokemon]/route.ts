@@ -4,13 +4,13 @@ import { eq, inArray } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ pokemon: string }> }) {
-  const pokemonSlug = (await params).pokemon;
+  const pokemonParam = (await params).pokemon;
 
-  // slug → numeric pokemon.id
+  // name → numeric pokemon.id
   const pkRow = await db
     .select({ id: pokemon.id, baseFormId: pokemon.baseFormId })
     .from(pokemon)
-    .where(eq(pokemon.slug, pokemonSlug))
+    .where(eq(pokemon.name, pokemonParam))
     .limit(1);
 
   if (pkRow.length === 0) {
@@ -30,14 +30,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pok
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  // moveId(number) → move slug のフラットリストで返す（method別分類は不要）
+  // moveId(number) → DB IDのフラットリストで返す
   const moveIds = [...new Set(result.map((r) => r.moveId))];
-  const moveRowsFull = await db
-    .select({ id: moves.id, slug: moves.slug })
-    .from(moves)
-    .where(inArray(moves.id, moveIds));
 
-  const moveSlugs = moveRowsFull.map((m) => m.slug);
-
-  return NextResponse.json({ pokemonId: pokemonSlug, moves: moveSlugs });
+  return NextResponse.json({ pokemonId: pokemonParam, moves: moveIds });
 }

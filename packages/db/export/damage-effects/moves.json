@@ -1,0 +1,63 @@
+{
+  "Weather Ball": { "powerModifier": { "condition": "weather_active", "multiplier": 2.0 } },
+  "Solar Beam": {
+    "powerModifier": {
+      "condition": "weather_weakening",
+      "weathers": ["rain", "sandstorm", "snow"],
+      "multiplier": 0.5
+    }
+  },
+  "Solar Blade": {
+    "powerModifier": {
+      "condition": "weather_weakening",
+      "weathers": ["rain", "sandstorm", "snow"],
+      "multiplier": 0.5
+    }
+  },
+  "Earthquake": {
+    "powerModifier": { "condition": "field_weakening", "field": "grassy", "multiplier": 0.5 }
+  },
+  "Bulldoze": {
+    "powerModifier": { "condition": "field_weakening", "field": "grassy", "multiplier": 0.5 }
+  },
+  "Magnitude": {
+    "powerModifier": { "condition": "field_weakening", "field": "grassy", "multiplier": 0.5 }
+  },
+  "Knock Off": { "powerModifier": { "condition": "defender_has_item", "multiplier": 1.5 } },
+  "Expanding Force": {
+    "powerModifier": { "condition": "field_boost", "field": "psychic", "multiplier": 1.5 }
+  },
+  "Rising Voltage": {
+    "powerModifier": { "condition": "field_boost", "field": "electric", "multiplier": 2.0 }
+  },
+  "Acrobatics": { "powerModifier": { "condition": "attacker_no_item", "multiplier": 2.0 } },
+  "Tera Blast": { "powerModifier": { "condition": "tera_blast" } },
+  "Electro Drift": {
+    "powerModifier": { "condition": "super_effective_boost", "multiplier": 1.3332519 }
+  },
+  "Collision Course": {
+    "powerModifier": { "condition": "super_effective_boost", "multiplier": 1.3332519 }
+  },
+  "Bullet Seed": { "multiHit": { "type": "fixed", "min": 2, "max": 5 } },
+  "Rock Blast": { "multiHit": { "type": "fixed", "min": 2, "max": 5 } },
+  "Icicle Spear": { "multiHit": { "type": "fixed", "min": 2, "max": 5 } },
+  "Tail Slap": { "multiHit": { "type": "fixed", "min": 2, "max": 5 } },
+  "Scale Shot": { "multiHit": { "type": "fixed", "min": 2, "max": 5 } },
+  "Pin Missile": { "multiHit": { "type": "fixed", "min": 2, "max": 5 } },
+  "Arm Thrust": { "multiHit": { "type": "fixed", "min": 2, "max": 5 } },
+  "Bone Rush": { "multiHit": { "type": "fixed", "min": 2, "max": 5 } },
+  "Fury Swipes": { "multiHit": { "type": "fixed", "min": 2, "max": 5 } },
+  "Water Shuriken": { "multiHit": { "type": "fixed", "min": 2, "max": 5 } },
+  "Population Bomb": { "multiHit": { "type": "fixed", "min": 1, "max": 10 } },
+  "Surging Strikes": { "multiHit": { "type": "fixed", "min": 3, "max": 3 } },
+  "Dual Wingbeat": { "multiHit": { "type": "fixed", "min": 2, "max": 2 } },
+  "Double Iron Bash": { "multiHit": { "type": "fixed", "min": 2, "max": 2 } },
+  "Dragon Darts": { "multiHit": { "type": "fixed", "min": 2, "max": 2 } },
+  "Double Hit": { "multiHit": { "type": "fixed", "min": 2, "max": 2 } },
+  "Double Kick": { "multiHit": { "type": "fixed", "min": 2, "max": 2 } },
+  "Dual Chop": { "multiHit": { "type": "fixed", "min": 2, "max": 2 } },
+  "Gear Grind": { "multiHit": { "type": "fixed", "min": 2, "max": 2 } },
+  "Bonemerang": { "multiHit": { "type": "fixed", "min": 2, "max": 2 } },
+  "Triple Kick": { "multiHit": { "type": "escalating", "powers": [10, 20, 30] } },
+  "Triple Axel": { "multiHit": { "type": "escalating", "powers": [20, 40, 60] } }
+}

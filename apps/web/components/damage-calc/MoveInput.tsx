@@ -55,22 +55,22 @@ export function MoveInput({
   // API経由でデータを取得
   const { data: allMoves } = useAllMoves();
   const { data: pokemonData } = usePokemonByName(pokemonName || null);
-  const pokemonId = pokemonData?.id ?? null;
-  const { data: learnsetData } = useLearnset(pokemonId);
+  const pokemonSlug = pokemonData?.name ?? null;
+  const { data: learnsetData } = useLearnset(pokemonSlug);
 
-  // 習得可能技の slug リスト
+  // 習得可能技の ID リスト（数値配列）
   const learnableMoves = learnsetData?.moves ?? null;
 
-  // slug → MoveRow の高速マップ
-  const moveBySlug = useMemo(() => {
+  // name → MoveRow の高速マップ
+  const moveByName = useMemo(() => {
     if (!allMoves) return new Map<string, MoveRow>();
-    return new Map(allMoves.map((m) => [m.slug, m]));
+    return new Map(allMoves.map((m) => [m.name, m]));
   }, [allMoves]);
 
-  // 技選択時に slug → MoveSelectData 変換して親に通知
+  // 技選択時に name → MoveSelectData 変換して親に通知
   const handleMoveSelect = useCallback(
-    (slug: string) => {
-      const moveData = moveBySlug.get(slug);
+    (name: string) => {
+      const moveData = moveByName.get(name);
       if (moveData) {
         onMoveSelect({
           name: moveData.nameJa,
@@ -84,7 +84,7 @@ export function MoveInput({
         });
       }
     },
-    [moveBySlug, movePower, moveCategory, onMoveSelect]
+    [moveByName, movePower, moveCategory, onMoveSelect]
   );
 
   // compact モード: MoveFilteredSelect のみ
