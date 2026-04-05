@@ -4,6 +4,7 @@ import type {
   AbilityData,
   ItemData,
   PokemonType,
+  DamageEffect,
 } from '@poke-dex-battle/shared';
 
 // ---------------------------------------------------------------------------
@@ -12,7 +13,7 @@ import type {
 
 /** /api/pokemon が返す行 */
 export interface PokemonRow {
-  id: string;
+  id: number;
   num: number;
   name: string;
   nameJa: string;
@@ -37,11 +38,13 @@ export interface PokemonRow {
   fixedItemNameJa: string | null;
   fixedTeraType: string | null;
   genderRate?: number | null;
+  formType: string;
+  baseFormId: number | null;
 }
 
 /** /api/moves が返す行 */
 export interface MoveRow {
-  id: string;
+  id: number;
   num: number;
   name: string;
   nameJa: string;
@@ -53,25 +56,43 @@ export interface MoveRow {
   priority: number;
   target: string;
   shortDesc: string | null;
+  // 技フラグ
+  isContact?: boolean;
+  isPunch?: boolean;
+  isBite?: boolean;
+  isAura?: boolean;
+  isRecoil?: boolean;
+  isSlicing?: boolean;
+  isSound?: boolean;
+  isBullet?: boolean;
+  isWind?: boolean;
+  hasSecondaryEffect?: boolean;
+  usesDefenseAsAttack?: boolean;
+  targetsPhysicalDefense?: boolean;
+  usesTargetAttack?: boolean;
+  damageEffect?: DamageEffect;
 }
 
 /** /api/abilities が返す行 */
 export interface AbilityRow {
-  id: string;
+  id: number;
   num: number;
   name: string;
   nameJa: string;
   shortDesc: string | null;
+  damageEffect?: DamageEffect;
 }
 
 /** /api/items が返す行 */
 export interface ItemRow {
-  id: string;
+  id: number;
   num: number;
   name: string;
   nameJa: string;
   shortDesc: string | null;
   isCompetitive: boolean;
+  damageEffect?: DamageEffect;
+  category: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -92,8 +113,8 @@ export function toSpeciesData(row: PokemonRow | null | undefined): PokemonSpecie
     abilities.push({ name: row.abilityH, nameJa: row.abilityHJa ?? row.abilityH, isHidden: true });
 
   return {
-    id: row.num,
-    name: row.id,
+    id: row.id,
+    name: row.name,
     nameJa: row.nameJa,
     types: row.types as PokemonType[],
     baseStats: {
@@ -113,6 +134,7 @@ export function toSpeciesData(row: PokemonRow | null | undefined): PokemonSpecie
     fixedItemNameJa: row.fixedItemNameJa ?? null,
     fixedTeraType: row.fixedTeraType ?? null,
     genderRate: row.genderRate ?? null,
+    formType: row.formType ?? 'base',
   };
 }
 
@@ -122,7 +144,7 @@ export function toSpeciesData(row: PokemonRow | null | undefined): PokemonSpecie
 export function toMoveData(row: MoveRow | null | undefined): MoveData | null {
   if (!row) return null;
   return {
-    id: row.num,
+    id: row.id,
     name: row.name,
     nameJa: row.nameJa,
     type: row.type as PokemonType,
@@ -133,6 +155,22 @@ export function toMoveData(row: MoveRow | null | undefined): MoveData | null {
     priority: row.priority,
     target: row.target,
     shortDesc: row.shortDesc ?? undefined,
+    flags: {
+      isContactMove: row.isContact ?? false,
+      isPunchMove: row.isPunch ?? false,
+      isBiteMove: row.isBite ?? false,
+      isAuraMove: row.isAura ?? false,
+      isRecoilMove: row.isRecoil ?? false,
+      isSlicingMove: row.isSlicing ?? false,
+      isSoundMove: row.isSound ?? false,
+      isBulletMove: row.isBullet ?? false,
+      isWindMove: row.isWind ?? false,
+      hasSecondaryEffect: row.hasSecondaryEffect ?? false,
+      usesDefenseAsAttack: row.usesDefenseAsAttack ?? false,
+      targetsPhysicalDefense: row.targetsPhysicalDefense ?? false,
+      usesTargetAttack: row.usesTargetAttack ?? false,
+    },
+    damageEffect: row.damageEffect ?? undefined,
   };
 }
 
@@ -142,10 +180,11 @@ export function toMoveData(row: MoveRow | null | undefined): MoveData | null {
 export function toAbilityData(row: AbilityRow | null | undefined): AbilityData | null {
   if (!row) return null;
   return {
-    id: row.num,
+    id: row.id,
     name: row.name,
     nameJa: row.nameJa,
     shortDesc: row.shortDesc ?? undefined,
+    damageEffect: row.damageEffect ?? undefined,
   };
 }
 
@@ -155,9 +194,12 @@ export function toAbilityData(row: AbilityRow | null | undefined): AbilityData |
 export function toItemData(row: ItemRow | null | undefined): ItemData | null {
   if (!row) return null;
   return {
-    id: row.num,
+    id: row.id,
     name: row.name,
     nameJa: row.nameJa,
     shortDesc: row.shortDesc ?? undefined,
+    damageEffect: row.damageEffect ?? undefined,
+    isCompetitive: row.isCompetitive,
+    category: row.category ?? undefined,
   };
 }

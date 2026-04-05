@@ -3,12 +3,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Regulation, Pokemon, PokemonSpeciesData } from '@poke-dex-battle/shared';
-import { useAllPokemon, useAllItems } from '@/hooks/useApiData';
+import { useAllPokemon, useAllItems, useDefaultRegulation } from '@/hooks/useApiData';
 import { toSpeciesData } from '@/lib/api-adapters';
 import { usePartyStore } from '@/hooks/use-party-store';
 import { PokemonSearchModal } from '@/components/pokemon/PokemonSearchModal';
 import { PokemonEditForm } from '@/components/pokemon/PokemonEditForm';
 import { ChevronRight, ChevronLeft, Plus, Trash2, Check } from 'lucide-react';
+import Image from 'next/image';
 
 type Step = 1 | 2 | 3;
 
@@ -53,11 +54,12 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
     existingParty?.regulation ?? 'Champions'
   );
 
-  // レギュレーション → DB regulation ID マッピング
-  const regulationDbId = regulation === 'Champions' ? 'champions-season1' : undefined;
+  // デフォルトレギュレーションをAPI経由で取得
+  const { data: defaultRegulation } = useDefaultRegulation();
+  const regulationName = defaultRegulation?.name;
 
   // API経由でレギュレーション対応ポケモンを取得
-  const { data: allPokemonRaw } = useAllPokemon(regulationDbId);
+  const { data: allPokemonRaw } = useAllPokemon(regulationName);
   const allPokemonByName = useMemo(() => {
     if (!allPokemonRaw) return new Map<string, PokemonSpeciesData>();
     const map = new Map<string, PokemonSpeciesData>();
@@ -77,7 +79,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
     if (!allItemsRaw) return new Map<string, string>();
     const map = new Map<string, string>();
     for (const row of allItemsRaw) {
-      if (row.id && row.nameJa) map.set(row.id, row.nameJa);
+      if (row.id && row.nameJa) map.set(String(row.id), row.nameJa);
       if (row.name && row.nameJa) map.set(row.name, row.nameJa);
     }
     return map;
@@ -102,6 +104,31 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [editingIdx, setEditingIdx] = useState<number>(0);
+
+  // フォームバリエーション逆引き用に全ポケモン（レギュレーション制限なし）を取得
+  const { data: allPokemonUnfiltered } = useAllPokemon();
+
+  // 選択中ポケモンのフォームバリエーション（メガ等）の fixedItem を収集
+  const editingPokemonFixedItems = useMemo(() => {
+    if (!allPokemonUnfiltered || pokemons.length === 0) return new Set<string>();
+    const editingSpecies = pokemons[editingIdx]?.species;
+    if (!editingSpecies) return new Set<string>();
+
+    const names = new Set<string>();
+    // ベースフォームの fixedItem
+    if (editingSpecies.fixedItem) names.add(editingSpecies.fixedItem);
+
+    // 全ポケモンからベースフォームIDが一致するフォームの fixedItem を収集
+    const baseRow = allPokemonUnfiltered.find((r) => r.name === editingSpecies.name);
+    if (baseRow) {
+      for (const row of allPokemonUnfiltered) {
+        if (row.baseFormId === baseRow.id && row.fixedItem) {
+          names.add(row.fixedItem);
+        }
+      }
+    }
+    return names;
+  }, [allPokemonUnfiltered, pokemons, editingIdx]);
   const [step, setStep] = useState<Step>(1);
 
   const [partyId, setPartyId] = useState<string | undefined>(initialPartyId);
@@ -295,11 +322,12 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                   }}
                 >
                   {species.spriteUrl ? (
-                    <img
+                    <Image
                       src={species.spriteUrl}
                       alt={species.nameJa}
                       width={56}
                       height={56}
+                      unoptimized
                       className="h-full w-full object-contain"
                     />
                   ) : (
@@ -376,11 +404,12 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                 className={`flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-semibold transition-all ${editingIdx === i ? 'border-pokemon-blue bg-white text-pokemon-blue' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
               >
                 {species.spriteUrl ? (
-                  <img
+                  <Image
                     src={species.spriteUrl}
                     alt=""
                     width={24}
                     height={24}
+                    unoptimized
                     className="h-6 w-6 object-contain"
                   />
                 ) : (
@@ -410,6 +439,8 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                 species={pokemons[editingIdx].species}
                 items={allItemsRaw ?? []}
                 onChange={(data) => handlePokemonChange(editingIdx, data)}
+                battleSystems={defaultRegulation?.battleSystems ?? []}
+                allPokemonFixedItems={editingPokemonFixedItems}
               />
             )}
           </div>
@@ -437,7 +468,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
         onClose={() => setSearchOpen(false)}
         onSelect={handleSpeciesSelect}
         disabledIds={pokemons.map((p) => p.species.id)}
-        regulation={regulationDbId}
+        regulation={regulationName}
       />
     </div>
   );

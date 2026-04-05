@@ -8,6 +8,6 @@
     "fromDate": "2026-04-08",
     "toDate": null,
     "isDefault": true,
-    "includePokemonCategories": ["normal"]
+    "includePokemonCategories": ["normal", "sub_legendary"]
   }
 ]

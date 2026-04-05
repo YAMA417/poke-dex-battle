@@ -41,6 +41,7 @@ yarn-error.*
 
 # Testing
 coverage/
+.playwright-mcp/
 
 # TypeScript
 *.tsbuildinfo

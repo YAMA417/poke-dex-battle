@@ -2,15 +2,23 @@
  * シードスクリプト（CSV/JSONファイルベース）
  * packages/db/export/*.csv / regulations.json を読み込んでDBに投入する
  *
- * 実行順: abilities → items → moves → pokemon（2パス）→ regulations（2パス）
+ * 実行順: abilities → items → moves → pokemon（2パス）→ regulations（2パス）→ learnsets
  */
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import dotenv from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { abilities, items, moves, pokemon, regulations, regulationPokemon } from './schema';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import {
+  abilities,
+  items,
+  learnsets,
+  moves,
+  pokemon,
+  regulations,
+  regulationPokemon,
+} from './schema';
+import { and, eq, inArray } from 'drizzle-orm';
 
 if (!process.env.DATABASE_URL) {
   dotenv.config({ path: resolve(__dirname, '../../../apps/web/.env.local') });
@@ -32,7 +40,10 @@ const EXPORT_DIR = resolve(__dirname, '../export');
 // ---------------------------------------------------------------------------
 
 function parseCsv(filePath: string): Record<string, string>[] {
-  const content = readFileSync(filePath, 'utf-8').replace(/^\uFEFF/, '');
+  const content = readFileSync(filePath, 'utf-8')
+    .replace(/^\uFEFF/, '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
   const lines = content.split('\n');
 
   function parseRow(line: string): string[] {
@@ -70,6 +81,10 @@ function toIntOrNull(s: string): number | null {
   return isNaN(n) ? null : n;
 }
 
+function toBool(s: string): boolean {
+  return s === '○' || s === 'true';
+}
+
 async function batchInsert<T>(
   label: string,
   rows: T[],
@@ -83,21 +98,36 @@ async function batchInsert<T>(
   process.stdout.write('\n');
 }
 
+/**
+ * damage_effect JSONファイルを読み込む
+ * キーは英語名、値はDamageEffect JSON
+ */
+function loadDamageEffects(filename: string): Record<string, unknown> {
+  try {
+    const path = resolve(EXPORT_DIR, 'damage-effects', filename);
+    return JSON.parse(readFileSync(path, 'utf-8'));
+  } catch {
+    console.warn(`  WARN: damage-effects/${filename} が見つかりません。スキップします。`);
+    return {};
+  }
+}
+
 // ---------------------------------------------------------------------------
 // 1. abilities
 // ---------------------------------------------------------------------------
 
 async function seedAbilities(): Promise<number> {
-  console.log('\n[1/4] abilities...');
+  console.log('\n[1/6] abilities...');
   const rows = parseCsv(resolve(EXPORT_DIR, 'abilities.csv')).filter((r) => r.include === '○');
+  const damageEffects = loadDamageEffects('abilities.json');
 
   const data = rows.map((r) => ({
-    slug: r.slug,
     num: parseInt(r.num, 10),
     name: r.name_en,
     nameJa: r.name_ja,
     shortDesc: r.short_desc_en || null,
     shortDescJa: r.short_desc_ja || null,
+    damageEffect: damageEffects[r.name_en] ?? null,
   }));
 
   await batchInsert('abilities', data, (batch) =>
@@ -111,17 +141,19 @@ async function seedAbilities(): Promise<number> {
 // ---------------------------------------------------------------------------
 
 async function seedItems(): Promise<number> {
-  console.log('\n[2/4] items...');
+  console.log('\n[2/6] items...');
   const rows = parseCsv(resolve(EXPORT_DIR, 'items.csv')).filter((r) => r.include === '○');
+  const damageEffects = loadDamageEffects('items.json');
 
   const data = rows.map((r) => ({
-    slug: r.slug,
     num: parseInt(r.num, 10),
     name: r.name_en,
     nameJa: r.name_ja,
     shortDesc: r.short_desc_en || null,
     shortDescJa: r.short_desc_ja || null,
-    isCompetitive: r.is_competitive === '○' || r.is_competitive === 'true',
+    isCompetitive: toBool(r.is_competitive),
+    damageEffect: damageEffects[r.name_en] ?? null,
+    category: r.category || null,
   }));
 
   await batchInsert('items', data, (batch) => db.insert(items).values(batch).onConflictDoNothing());
@@ -133,13 +165,13 @@ async function seedItems(): Promise<number> {
 // ---------------------------------------------------------------------------
 
 async function seedMoves(): Promise<number> {
-  console.log('\n[3/4] moves...');
+  console.log('\n[3/6] moves...');
   const rows = parseCsv(resolve(EXPORT_DIR, 'moves.csv')).filter((r) => r.include === '○');
+  const damageEffects = loadDamageEffects('moves.json');
 
   type MoveType = (typeof moves.$inferInsert)['type'];
 
   const data = rows.map((r) => ({
-    slug: r.slug,
     num: parseInt(r.num, 10),
     name: r.name_en,
     nameJa: r.name_ja,
@@ -152,6 +184,21 @@ async function seedMoves(): Promise<number> {
     target: r.target,
     shortDesc: r.short_desc_en || null,
     shortDescJa: r.short_desc_ja || null,
+    // 技フラグ
+    isContact: toBool(r.is_contact),
+    isPunch: toBool(r.is_punch),
+    isBite: toBool(r.is_bite),
+    isAura: toBool(r.is_aura),
+    isRecoil: toBool(r.is_recoil),
+    isSlicing: toBool(r.is_slicing),
+    isSound: toBool(r.is_sound),
+    isBullet: toBool(r.is_bullet),
+    isWind: toBool(r.is_wind),
+    hasSecondaryEffect: toBool(r.has_secondary_effect),
+    usesDefenseAsAttack: toBool(r.uses_defense_as_attack),
+    targetsPhysicalDefense: toBool(r.targets_physical_defense),
+    usesTargetAttack: toBool(r.uses_target_attack),
+    damageEffect: damageEffects[r.name_en] ?? null,
   }));
 
   await batchInsert('moves', data, (batch) => db.insert(moves).values(batch).onConflictDoNothing());
@@ -163,29 +210,56 @@ async function seedMoves(): Promise<number> {
 // ---------------------------------------------------------------------------
 
 async function seedPokemon(): Promise<number> {
-  console.log('\n[4/4] pokemon...');
+  console.log('\n[4/6] pokemon...');
   const rows = parseCsv(resolve(EXPORT_DIR, 'pokemon.csv')).filter((r) => r.include === '○');
 
-  // 特性 slug → id マップ
-  const abilityRows = await db.select({ id: abilities.id, slug: abilities.slug }).from(abilities);
-  const abilityIdMap = new Map(abilityRows.map((a) => [a.slug, a.id]));
+  // CSVのslug→name_en マップ（abilities用）
+  const abilCsv = parseCsv(resolve(EXPORT_DIR, 'abilities.csv'));
+  const abilSlugToName = new Map(abilCsv.map((r) => [r.slug, r.name_en]));
 
-  // アイテム slug → id マップ
-  const itemRows = await db.select({ id: items.id, slug: items.slug }).from(items);
-  const itemIdMap = new Map(itemRows.map((i) => [i.slug, i.id]));
+  // 特性 name → id マップ
+  const abilityRows = await db.select({ id: abilities.id, name: abilities.name }).from(abilities);
+  const abilityIdMap = new Map(abilityRows.map((a) => [a.name, a.id]));
+
+  // CSVのslug→name_en マップ（items用）
+  const itemCsv = parseCsv(resolve(EXPORT_DIR, 'items.csv'));
+  const itemSlugToName = new Map(itemCsv.map((r) => [r.slug, r.name_en]));
+
+  // アイテム name → id マップ
+  const itemRows = await db.select({ id: items.id, name: items.name }).from(items);
+  const itemIdMap = new Map(itemRows.map((i) => [i.name, i.id]));
 
   type PokemonType = (typeof pokemon.$inferInsert)['types'][number];
   type PokemonCategory = (typeof pokemon.$inferInsert)['category'];
   type FormType = (typeof pokemon.$inferInsert)['formType'];
 
+  // 特性のslugからDB IDを解決するヘルパー
+  function resolveAbilityId(slug: string | undefined): number | null {
+    if (!slug) return null;
+    const name = abilSlugToName.get(slug);
+    if (!name) return null;
+    return abilityIdMap.get(name) ?? null;
+  }
+
   // パス1: 全件を baseFormId=null で挿入
   const data = rows.map((r) => {
-    const ability0Id = abilityIdMap.get(r.ability0_slug);
+    const ability0Id = resolveAbilityId(r.ability0_slug);
     if (!ability0Id)
-      throw new Error(`ability not found: "${r.ability0_slug}" (pokemon: ${r.slug})`);
+      throw new Error(`ability not found: "${r.ability0_slug}" (pokemon: ${r.name_en})`);
+
+    // アイテムの解決
+    let fixedItemId: number | null = null;
+    if (r.fixed_item) {
+      const itemName = itemSlugToName.get(r.fixed_item);
+      if (itemName) {
+        fixedItemId = itemIdMap.get(itemName) ?? null;
+      }
+      if (!fixedItemId) {
+        throw new Error(`item not found: "${r.fixed_item}" (pokemon: ${r.name_en})`);
+      }
+    }
 
     return {
-      slug: r.slug,
       num: parseInt(r.num, 10),
       name: r.name_en,
       nameJa: r.name_ja,
@@ -197,18 +271,13 @@ async function seedPokemon(): Promise<number> {
       spd: parseInt(r.spd, 10),
       spe: parseInt(r.spe, 10),
       ability0Id,
-      ability1Id: abilityIdMap.get(r.ability1_slug) ?? null,
-      abilityHId: abilityIdMap.get(r.abilityH_slug) ?? null,
+      ability1Id: resolveAbilityId(r.ability1_slug),
+      abilityHId: resolveAbilityId(r.abilityH_slug),
       weightkg: parseFloat(r.weight_kg),
       heightm: parseFloat(r.height_m),
       category: (r.category || 'normal') as PokemonCategory,
       spriteUrl: r.sprite_url || null,
-      fixedItemId: r.fixed_item
-        ? (itemIdMap.get(r.fixed_item) ??
-          (() => {
-            throw new Error(`item not found: "${r.fixed_item}" (pokemon: ${r.slug})`);
-          })())
-        : null,
+      fixedItemId,
       fixedTeraType: (r.fixed_tera_type as PokemonType) || null,
       genderRate: toIntOrNull(r.gender_rate),
       formType: r.form_type as FormType,
@@ -218,53 +287,30 @@ async function seedPokemon(): Promise<number> {
   });
 
   await batchInsert('pokemon pass1', data, (batch) =>
-    db
-      .insert(pokemon)
-      .values(batch)
-      .onConflictDoUpdate({
-        target: pokemon.slug,
-        set: {
-          num: sql`excluded.num`,
-          name: sql`excluded.name`,
-          nameJa: sql`excluded.name_ja`,
-          types: sql`excluded.types`,
-          hp: sql`excluded.hp`,
-          atk: sql`excluded.atk`,
-          def: sql`excluded.def`,
-          spa: sql`excluded.spa`,
-          spd: sql`excluded.spd`,
-          spe: sql`excluded.spe`,
-          ability0Id: sql`excluded.ability_0_id`,
-          ability1Id: sql`excluded.ability_1_id`,
-          abilityHId: sql`excluded.ability_h_id`,
-          weightkg: sql`excluded.weight_kg`,
-          heightm: sql`excluded.height_m`,
-          category: sql`excluded.category`,
-          spriteUrl: sql`excluded.sprite_url`,
-          fixedItemId: sql`excluded.fixed_item_id`,
-          fixedTeraType: sql`excluded.fixed_tera_type`,
-          genderRate: sql`excluded.gender_rate`,
-          formType: sql`excluded.form_type`,
-          nfe: sql`excluded.nfe`,
-        },
-      })
+    db.insert(pokemon).values(batch).onConflictDoNothing()
   );
 
   // パス2: baseFormId 更新
-  const pkRows = await db.select({ id: pokemon.id, slug: pokemon.slug }).from(pokemon);
-  const pokemonIdMap = new Map(pkRows.map((p) => [p.slug, p.id]));
+  // name → id マップ
+  const pkRows = await db.select({ id: pokemon.id, name: pokemon.name }).from(pokemon);
+  const pokemonIdMap = new Map(pkRows.map((p) => [p.name, p.id]));
+
+  // CSV slug → name_en マップ
+  const pkCsv = parseCsv(resolve(EXPORT_DIR, 'pokemon.csv'));
+  const pkSlugToName = new Map(pkCsv.map((r) => [r.slug, r.name_en]));
 
   const nonBase = rows.filter((r) => r.base_form_slug);
   let updated = 0;
   let warned = 0;
   for (const r of nonBase) {
-    const baseFormId = pokemonIdMap.get(r.base_form_slug);
+    const baseFormName = pkSlugToName.get(r.base_form_slug);
+    const baseFormId = baseFormName ? pokemonIdMap.get(baseFormName) : undefined;
     if (!baseFormId) {
-      console.warn(`\n  WARN: base form not found: "${r.base_form_slug}" (for ${r.slug})`);
+      console.warn(`\n  WARN: base form not found: "${r.base_form_slug}" (for ${r.name_en})`);
       warned++;
       continue;
     }
-    const selfId = pokemonIdMap.get(r.slug)!;
+    const selfId = pokemonIdMap.get(r.name_en)!;
     await db.update(pokemon).set({ baseFormId }).where(eq(pokemon.id, selfId));
     updated++;
   }
@@ -290,19 +336,16 @@ interface RegulationDef {
 }
 
 async function seedRegulations(): Promise<number> {
-  console.log('\n[5/5] regulations...');
+  console.log('\n[5/6] regulations...');
   const defs: RegulationDef[] = JSON.parse(
     readFileSync(resolve(EXPORT_DIR, 'regulations.json'), 'utf-8')
   );
 
-  let totalPokemon = 0;
-
   for (const def of defs) {
-    // regulation 挿入（conflict時は既存IDを取得）
+    // regulation 挿入（nameで一意判定）
     await db
       .insert(regulations)
       .values({
-        slug: def.slug,
         name: def.name,
         battleSystems: def.battleSystems,
         restrictedCount: def.restrictedCount,
@@ -316,17 +359,14 @@ async function seedRegulations(): Promise<number> {
     const existing = await db
       .select({ id: regulations.id })
       .from(regulations)
-      .where(eq(regulations.slug, def.slug))
+      .where(eq(regulations.name, def.name))
       .limit(1);
     if (existing.length === 0) continue;
     const reg = existing[0];
 
-    console.log(`  ${def.slug} (id=${reg.id}): ポケモン登録中...`);
+    console.log(`  ${def.name} (id=${reg.id}): ポケモン登録中...`);
 
     // includePokemonCategories に該当する最終進化ポケモンIDを取得
-    // formType は 'base'（通常フォーム）と 'variant'（地域フォーム等）のみ対象
-    // mega/primal/tera/battle_only はバトル中に変化するフォームのため除外
-    // TODO: 将来的に regulations.json の includeFormTypes で制御可能にする
     type PokemonCategory = (typeof pokemon.$inferSelect)['category'];
     type FormType = (typeof pokemon.$inferSelect)['formType'];
     const categories = def.includePokemonCategories as PokemonCategory[];
@@ -344,15 +384,86 @@ async function seedRegulations(): Promise<number> {
 
     const rpData = pkIds.map((p) => ({ regulationId: reg.id, pokemonId: p.id }));
 
-    // 既存レコードを削除してから再挿入（nfe等の変更を確実に反映するため）
+    // 既存レコードを削除してから再挿入
     await db.delete(regulationPokemon).where(eq(regulationPokemon.regulationId, reg.id));
-    await batchInsert(`  ${def.slug}`, rpData, (batch) =>
+    await batchInsert(`  ${def.name}`, rpData, (batch) =>
       db.insert(regulationPokemon).values(batch).onConflictDoNothing()
     );
-    totalPokemon += rpData.length;
   }
 
   return defs.length;
+}
+
+// ---------------------------------------------------------------------------
+// 6. learnsets
+// ---------------------------------------------------------------------------
+
+async function seedLearnsets(): Promise<number> {
+  console.log('\n[6/6] learnsets...');
+
+  const csvPath = resolve(EXPORT_DIR, 'learnsets.csv');
+  let rows: Record<string, string>[];
+  try {
+    rows = parseCsv(csvPath);
+  } catch {
+    console.log('  learnsets.csv が見つかりません。スキップします。');
+    console.log('  先に npm run db:extract-learnsets を実行してください。');
+    return 0;
+  }
+
+  if (rows.length === 0) {
+    console.log('  learnsets.csv が空です。スキップします。');
+    return 0;
+  }
+
+  // CSVのslug→name_enマップを構築
+  const pkCsv = parseCsv(resolve(EXPORT_DIR, 'pokemon.csv'));
+  const pkSlugToName = new Map(pkCsv.map((r) => [r.slug, r.name_en]));
+  const mvCsv = parseCsv(resolve(EXPORT_DIR, 'moves.csv'));
+  const mvSlugToName = new Map(mvCsv.map((r) => [r.slug, r.name_en]));
+
+  // pokemon.name → pokemon.id マッピング
+  const pkRows = await db.select({ id: pokemon.id, name: pokemon.name }).from(pokemon);
+  const pokemonIdMap = new Map(pkRows.map((p) => [p.name, p.id]));
+
+  // moves.name → moves.id マッピング
+  const mvRows = await db.select({ id: moves.id, name: moves.name }).from(moves);
+  const moveIdMap = new Map(mvRows.map((m) => [m.name, m.id]));
+
+  type LearnMethod = (typeof learnsets.$inferInsert)['method'];
+
+  const data: (typeof learnsets.$inferInsert)[] = [];
+  let skipped = 0;
+
+  for (const r of rows) {
+    // slug → name_en → DB id の2段階解決
+    const pkName = pkSlugToName.get(r.pokemon_slug);
+    const mvName = mvSlugToName.get(r.move_slug);
+    const pokemonId = pkName ? pokemonIdMap.get(pkName) : undefined;
+    const moveId = mvName ? moveIdMap.get(mvName) : undefined;
+
+    if (!pokemonId || !moveId) {
+      skipped++;
+      continue;
+    }
+
+    data.push({
+      pokemonId,
+      moveId,
+      method: r.method as LearnMethod,
+      level: parseInt(r.level, 10) || 0,
+    });
+  }
+
+  if (skipped > 0) {
+    console.log(`  スキップ（名前不一致）: ${skipped}件`);
+  }
+
+  await batchInsert('learnsets', data, (batch) =>
+    db.insert(learnsets).values(batch).onConflictDoNothing()
+  );
+
+  return data.length;
 }
 
 // ---------------------------------------------------------------------------
@@ -368,6 +479,7 @@ async function main() {
     moves: await seedMoves(),
     pokemon: await seedPokemon(),
     regulations: await seedRegulations(),
+    learnsets: await seedLearnsets(),
   };
 
   console.log('\n=== 完了 ===');

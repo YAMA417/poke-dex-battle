@@ -1,9 +1,18 @@
 'use client';
 
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
-import type { PokemonType } from '@poke-dex-battle/shared';
-import { getTypeDisplayName } from '@poke-dex-battle/shared';
+import type { PokemonType, PokemonSpeciesData, TeraType } from '@poke-dex-battle/shared';
+import { getTypeDisplayName, isTeraType, POKEMON_TYPES } from '@poke-dex-battle/shared';
 import { POKEMON_TYPE_COLORS } from '@/lib/constants';
 
 // --- 性格補正コンパクトボタン ---
@@ -127,6 +136,61 @@ export function EvPreset({
   );
 }
 
+// --- メガシンカ / ゲンシカイキ コントロール ---
+
+interface MegaEvolutionControlProps {
+  idPrefix: string;
+  isMegaEvolved: boolean;
+  megaFormSlug: string | null;
+  megaForms: PokemonSpeciesData[];
+  megaLabel: string;
+  onToggle: (checked: boolean) => void;
+  onVariantChange: (slug: string) => void;
+}
+
+export function MegaEvolutionControl({
+  idPrefix,
+  isMegaEvolved,
+  megaFormSlug,
+  megaForms,
+  megaLabel,
+  onToggle,
+  onVariantChange,
+}: MegaEvolutionControlProps) {
+  if (megaForms.length === 0) return null;
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id={`${idPrefix}-mega`}
+          checked={isMegaEvolved}
+          onCheckedChange={(checked: boolean) => onToggle(checked === true)}
+          aria-label={`${megaLabel}を切り替え`}
+        />
+        <Label htmlFor={`${idPrefix}-mega`} className="cursor-pointer text-xs font-normal">
+          {megaLabel}
+        </Label>
+      </div>
+      {/* バリアント選択（2種以上の場合のみ） */}
+      {isMegaEvolved && megaForms.length >= 2 && (
+        <Select value={megaFormSlug ?? ''} onValueChange={onVariantChange}>
+          <SelectTrigger className="h-8 text-sm" aria-label={`${megaLabel}フォーム選択`}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {megaForms.map((f) => (
+              <SelectItem key={f.name} value={f.name}>
+                {f.nameJa}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+    </div>
+  );
+}
+
 // --- タイプバッジ ---
 
 export function TypeBadges({ types }: { types: PokemonType[] }) {
@@ -142,6 +206,173 @@ export function TypeBadges({ types }: { types: PokemonType[] }) {
           {getTypeDisplayName(type, locale)}
         </span>
       ))}
+    </div>
+  );
+}
+
+// --- テラスタルコントロール ---
+
+/** テラタイプの全選択肢（18タイプ + ステラ） */
+const TERA_TYPE_OPTIONS: { value: TeraType; label: string }[] = [
+  ...POKEMON_TYPES.map((t) => ({ value: t as TeraType, label: getTypeDisplayName(t, 'ja') })),
+  { value: 'Stellar', label: 'ステラ' },
+];
+
+interface TerastalControlProps {
+  idPrefix: string;
+  isTerastallized: boolean;
+  teraType: TeraType | null;
+  fixedTeraType: string | null;
+  isStellarBoostUsed?: boolean;
+  showStellarBoost?: boolean;
+  onToggle: (checked: boolean) => void;
+  onTeraTypeChange: (type: TeraType) => void;
+  onStellarBoostChange?: (used: boolean) => void;
+}
+
+export function TerastalControl({
+  idPrefix,
+  isTerastallized,
+  teraType,
+  fixedTeraType,
+  isStellarBoostUsed,
+  showStellarBoost,
+  onToggle,
+  onTeraTypeChange,
+  onStellarBoostChange,
+}: TerastalControlProps) {
+  const isFixed = fixedTeraType !== null && fixedTeraType !== undefined;
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id={`${idPrefix}-terastal`}
+          checked={isTerastallized}
+          onCheckedChange={(checked: boolean) => onToggle(checked === true)}
+          aria-label="テラスタルを切り替え"
+        />
+        <Label htmlFor={`${idPrefix}-terastal`} className="cursor-pointer text-xs font-normal">
+          テラスタル
+        </Label>
+      </div>
+      {isTerastallized && (
+        <>
+          <div className={isFixed ? 'pointer-events-none opacity-50' : ''} aria-disabled={isFixed}>
+            <Select
+              value={teraType ?? ''}
+              onValueChange={(v: string) => {
+                if (isFixed) return;
+                if (isTeraType(v)) onTeraTypeChange(v);
+              }}
+            >
+              <SelectTrigger className="h-8 text-sm" aria-label="テラタイプを選択">
+                <SelectValue placeholder="テラタイプ" />
+              </SelectTrigger>
+              <SelectContent>
+                {TERA_TYPE_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {/* ステラ選択時のブースト表示（攻撃側のみ） */}
+          {showStellarBoost && teraType === 'Stellar' && onStellarBoostChange && (
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id={`${idPrefix}-stellar-boost`}
+                checked={!isStellarBoostUsed}
+                onCheckedChange={(checked: boolean) => onStellarBoostChange(!(checked === true))}
+                aria-label="ステラブーストの使用状態を切り替え"
+              />
+              <Label
+                htmlFor={`${idPrefix}-stellar-boost`}
+                className="cursor-pointer text-xs font-normal"
+              >
+                ステラブースト未使用
+              </Label>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// --- Z技コントロール ---
+
+interface ZMoveControlProps {
+  idPrefix: string;
+  isZMove: boolean;
+  zMovePower: number;
+  onToggle: (checked: boolean) => void;
+}
+
+export function ZMoveControl({ idPrefix, isZMove, zMovePower, onToggle }: ZMoveControlProps) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id={`${idPrefix}-zmove`}
+          checked={isZMove}
+          onCheckedChange={(checked: boolean) => onToggle(checked === true)}
+          aria-label="Z技を切り替え"
+        />
+        <Label htmlFor={`${idPrefix}-zmove`} className="cursor-pointer text-xs font-normal">
+          Z技
+        </Label>
+      </div>
+      {isZMove && (
+        <p className="text-xs text-muted-foreground" aria-label="Z技威力">
+          Z威力: {zMovePower}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// --- ダイマックスコントロール ---
+
+interface DynamaxControlProps {
+  idPrefix: string;
+  isDynamaxed: boolean;
+  dynamaxMovePower?: number;
+  hpStat?: number;
+  onToggle: (checked: boolean) => void;
+}
+
+export function DynamaxControl({
+  idPrefix,
+  isDynamaxed,
+  dynamaxMovePower,
+  hpStat,
+  onToggle,
+}: DynamaxControlProps) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id={`${idPrefix}-dynamax`}
+          checked={isDynamaxed}
+          onCheckedChange={(checked: boolean) => onToggle(checked === true)}
+          aria-label="ダイマックスを切り替え"
+        />
+        <Label htmlFor={`${idPrefix}-dynamax`} className="cursor-pointer text-xs font-normal">
+          ダイマックス
+        </Label>
+      </div>
+      {isDynamaxed && dynamaxMovePower !== undefined && (
+        <p className="text-xs text-muted-foreground" aria-label="ダイマックス威力">
+          ダイマックス威力: {dynamaxMovePower}
+        </p>
+      )}
+      {isDynamaxed && hpStat !== undefined && (
+        <p className="text-xs text-muted-foreground" aria-label="ダイマックスHP">
+          ダイマックスHP: {hpStat * 2}
+        </p>
+      )}
     </div>
   );
 }

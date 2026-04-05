@@ -58,7 +58,6 @@ function StatBarWithEv({
   evContributionColor = 'bg-orange-400',
 }: StatBarWithEvProps) {
   const totalValue = baseValue + evContribution;
-  const totalPct = Math.min(100, Math.round((totalValue / max) * 100));
   const basePct = Math.min(100, Math.round((baseValue / max) * 100));
   const evPct = Math.min(100, Math.round((evContribution / max) * 100));
 

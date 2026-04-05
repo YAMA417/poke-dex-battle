@@ -5,6 +5,7 @@ import {
   boolean,
   date,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -53,11 +54,10 @@ export const formTypeEnum = pgEnum('form_type', [
   'battle_only',
 ]);
 
-// レギュレーション（gamesテーブルを廃止・統合）
+// レギュレーション
 export const regulations = pgTable('regulations', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
-  slug: text('slug').notNull().unique(),
-  name: text('name').notNull(),
+  name: text('name').notNull().unique(),
   battleSystems: text('battle_systems').array().notNull().default([]),
   restrictedCount: integer('restricted_count').notNull().default(0),
   mythicalAllowed: boolean('mythical_allowed').notNull().default(false),
@@ -69,32 +69,32 @@ export const regulations = pgTable('regulations', {
 // 特性マスターデータ（pokemonが参照するため先に定義）
 export const abilities = pgTable('abilities', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
-  slug: text('slug').notNull().unique(),
   num: integer('num').notNull(),
-  name: text('name').notNull(),
+  name: text('name').notNull().unique(),
   nameJa: text('name_ja').notNull(),
   shortDesc: text('short_desc'),
   shortDescJa: text('short_desc_ja'),
+  damageEffect: jsonb('damage_effect'),
 });
 
 // アイテムマスターデータ
 export const items = pgTable('items', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
-  slug: text('slug').notNull().unique(),
   num: integer('num').notNull(),
-  name: text('name').notNull(),
+  name: text('name').notNull().unique(),
   nameJa: text('name_ja').notNull(),
   shortDesc: text('short_desc'),
   shortDescJa: text('short_desc_ja'),
   isCompetitive: boolean('is_competitive').notNull().default(false),
+  damageEffect: jsonb('damage_effect'),
+  category: text('category'),
 });
 
 // ポケモンマスターデータ
 export const pokemon = pgTable('pokemon', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
-  slug: text('slug').notNull().unique(),
   num: integer('num').notNull(),
-  name: text('name').notNull(),
+  name: text('name').notNull().unique(),
   nameJa: text('name_ja').notNull(),
   types: pokemonTypeEnum('types').array().notNull(),
   hp: integer('hp').notNull(),
@@ -123,9 +123,8 @@ export const pokemon = pgTable('pokemon', {
 // 技マスターデータ
 export const moves = pgTable('moves', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
-  slug: text('slug').notNull().unique(),
   num: integer('num').notNull(),
-  name: text('name').notNull(),
+  name: text('name').notNull().unique(),
   nameJa: text('name_ja').notNull(),
   type: pokemonTypeEnum('type').notNull(),
   category: text('category').notNull(),
@@ -136,6 +135,22 @@ export const moves = pgTable('moves', {
   target: text('target').notNull(),
   shortDesc: text('short_desc'),
   shortDescJa: text('short_desc_ja'),
+  // 技フラグ（ダメージ計算で使用）
+  isContact: boolean('is_contact').notNull().default(false),
+  isPunch: boolean('is_punch').notNull().default(false),
+  isBite: boolean('is_bite').notNull().default(false),
+  isAura: boolean('is_aura').notNull().default(false),
+  isRecoil: boolean('is_recoil').notNull().default(false),
+  isSlicing: boolean('is_slicing').notNull().default(false),
+  isSound: boolean('is_sound').notNull().default(false),
+  isBullet: boolean('is_bullet').notNull().default(false),
+  isWind: boolean('is_wind').notNull().default(false),
+  hasSecondaryEffect: boolean('has_secondary_effect').notNull().default(false),
+  usesDefenseAsAttack: boolean('uses_defense_as_attack').notNull().default(false),
+  targetsPhysicalDefense: boolean('targets_physical_defense').notNull().default(false),
+  usesTargetAttack: boolean('uses_target_attack').notNull().default(false),
+  // 技固有のダメージ計算ルール（連続技、威力変動等）
+  damageEffect: jsonb('damage_effect'),
 });
 
 // 覚える技

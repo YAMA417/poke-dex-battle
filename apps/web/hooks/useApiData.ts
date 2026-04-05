@@ -62,10 +62,30 @@ export function useItemByName(name: string | null) {
   );
 }
 
-/** 習得技を取得 */
+/** メガフォーム一覧を取得（baseフォームのslug指定） */
+export function useMegaForms(baseSlug: string | null) {
+  return useSWR<PokemonRow[]>(
+    baseSlug ? `/api/pokemon?megaForms=${encodeURIComponent(baseSlug)}` : null,
+    fetcher<PokemonRow[]>
+  );
+}
+
+/** レギュレーション型 */
+interface RegulationData {
+  slug: string;
+  name: string;
+  battleSystems: string[];
+}
+
+/** デフォルトレギュレーションを取得 */
+export function useDefaultRegulation() {
+  return useSWR<RegulationData | null>('/api/regulations', fetcher<RegulationData | null>);
+}
+
+/** 習得技を取得（フラットなmoveId数値リスト） */
 export function useLearnset(pokemonId: string | null) {
-  return useSWR<{ pokemonId: string; level: string[]; machine: string[]; egg: string[] }>(
+  return useSWR<{ pokemonId: string; moves: number[] }>(
     pokemonId ? `/api/learnsets/${pokemonId}` : null,
-    fetcher<{ pokemonId: string; level: string[]; machine: string[]; egg: string[] }>
+    fetcher<{ pokemonId: string; moves: number[] }>
   );
 }

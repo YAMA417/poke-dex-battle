@@ -1,5 +1,5 @@
 {
-  "id": "76d1df4e-796d-416f-bdce-3d35fad70377",
+  "id": "f8a555ed-f7b1-4520-b2bc-cf8f7f8f9689",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -12,12 +12,6 @@
           "name": "id",
           "type": "bigserial",
           "primaryKey": true,
-          "notNull": true
-        },
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true
         },
         "num": {
@@ -49,16 +43,22 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "damage_effect": {
+          "name": "damage_effect",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "abilities_slug_unique": {
-          "name": "abilities_slug_unique",
+        "abilities_name_unique": {
+          "name": "abilities_name_unique",
           "nullsNotDistinct": false,
-          "columns": ["slug"]
+          "columns": ["name"]
         }
       },
       "policies": {},
@@ -73,12 +73,6 @@
           "name": "id",
           "type": "bigserial",
           "primaryKey": true,
-          "notNull": true
-        },
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true
         },
         "num": {
@@ -117,16 +111,22 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
+        },
+        "damage_effect": {
+          "name": "damage_effect",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "items_slug_unique": {
-          "name": "items_slug_unique",
+        "items_name_unique": {
+          "name": "items_name_unique",
           "nullsNotDistinct": false,
-          "columns": ["slug"]
+          "columns": ["name"]
         }
       },
       "policies": {},
@@ -206,12 +206,6 @@
           "primaryKey": true,
           "notNull": true
         },
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "num": {
           "name": "num",
           "type": "integer",
@@ -285,16 +279,113 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "is_contact": {
+          "name": "is_contact",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_punch": {
+          "name": "is_punch",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_bite": {
+          "name": "is_bite",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_aura": {
+          "name": "is_aura",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_recoil": {
+          "name": "is_recoil",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_slicing": {
+          "name": "is_slicing",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_sound": {
+          "name": "is_sound",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_bullet": {
+          "name": "is_bullet",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_wind": {
+          "name": "is_wind",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "has_secondary_effect": {
+          "name": "has_secondary_effect",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "uses_defense_as_attack": {
+          "name": "uses_defense_as_attack",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "targets_physical_defense": {
+          "name": "targets_physical_defense",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "uses_target_attack": {
+          "name": "uses_target_attack",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "damage_effect": {
+          "name": "damage_effect",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "moves_slug_unique": {
-          "name": "moves_slug_unique",
+        "moves_name_unique": {
+          "name": "moves_name_unique",
           "nullsNotDistinct": false,
-          "columns": ["slug"]
+          "columns": ["name"]
         }
       },
       "policies": {},
@@ -309,12 +400,6 @@
           "name": "id",
           "type": "bigserial",
           "primaryKey": true,
-          "notNull": true
-        },
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true
         },
         "num": {
@@ -513,10 +598,10 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "pokemon_slug_unique": {
-          "name": "pokemon_slug_unique",
+        "pokemon_name_unique": {
+          "name": "pokemon_name_unique",
           "nullsNotDistinct": false,
-          "columns": ["slug"]
+          "columns": ["name"]
         }
       },
       "policies": {},
@@ -589,12 +674,6 @@
           "primaryKey": true,
           "notNull": true
         },
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "name": {
           "name": "name",
           "type": "text",
@@ -646,10 +725,10 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "regulations_slug_unique": {
-          "name": "regulations_slug_unique",
+        "regulations_name_unique": {
+          "name": "regulations_name_unique",
           "nullsNotDistinct": false,
-          "columns": ["slug"]
+          "columns": ["name"]
         }
       },
       "policies": {},

@@ -5,7 +5,6 @@ import { persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import type { Party, CreatePartyInput, UpdatePartyInput } from '@poke-dex-battle/shared';
 import type { Pokemon } from '@poke-dex-battle/shared';
-import { exportPartiesToJson, importPartiesFromJson } from '@poke-dex-battle/shared';
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;

@@ -2,53 +2,45 @@
 
 # CLAUDE.md
 
-## IMPORTANT: 必須ルール
+## 必須ルール
 
-- 応答は日本語、コミットは英語（Conventional Commits）
-- `packages/shared/` に新しいモジュールを追加したら、同階層にテストファイルを作成すること
-- `npm run build:shared` を実行してから web を起動すること（shared が未ビルドだと型エラーが出る）
-- コーディング規約は `.github/copilot-instructions.md` を参照すること
-- テストコードは Copilot が苦戦している場合のみ Claude が直接実装する
+- 応答は日本語、コミットメッセージも日本語（Conventional Commits のプレフィックスは英語）
+- コメント・ログ出力も日本語
+- コーディング規約は `.github/copilot-instructions.md` を参照
+- `packages/shared/` に新モジュール追加時は同階層にテストファイルを作成
 
-## WHAT: 構成
+## 構成
 
 ポケモンダブルバトル支援アプリ。npm workspaces モノレポ。
 
-```
-apps/web/          Next.js 16（App Router）
-packages/shared/   共通ロジック・型定義（tsup / dual CJS+ESM）
-packages/db/       DB スキーマ・接続（Drizzle ORM + PostgreSQL）
-backend/api/       Hono API（未着手）
-```
+- `apps/web/` — Next.js 16（App Router）
+- `packages/shared/` — 共通ロジック・型定義（tsup / dual CJS+ESM）
+- `packages/db/` — DB スキーマ・接続（Drizzle ORM + PostgreSQL）
+- `backend/api/` — Hono API（未着手）
 
-## HOW: コマンド
+## コマンド
 
-```bash
-npm install                                        # 依存関係インストール
-npm run build:shared                               # MUST: web 起動前に実行
-npm run dev                                        # 全サービス同時起動
-npm run dev:frontend                               # フロントエンドのみ
-npm test -w @poke-dex-battle/shared                # テスト実行
-npx vitest run -w packages/shared -- <path>        # テスト単体実行
-npm run typecheck -w @poke-dex-battle/shared       # 型チェック
-npm run db:push                                    # DB スキーマ反映（開発用）
-npm run db:seed                                    # シードデータ投入
-```
+npm install # 依存インストール
+npm run build:shared # MUST: web 起動前に実行
+npm run dev # 全サービス同時起動
+npm run dev:frontend # フロントのみ
+npm test -w @poke-dex-battle/shared # shared テスト
+npx vitest run -w packages/shared -- <path> # テスト単体実行
+npm run typecheck -w @poke-dex-battle/shared # 型チェック
+npm run db:push # DB スキーマ反映
+npm run db:seed # シードデータ投入
 
-## TDD ワークフロー
+## ワークフロー
 
-機能実装時は以下の順序を守る:
+### TDD（shared パッケージ）
 
-1. 失敗するテストを書く（Red）→ `npm test -w @poke-dex-battle/shared` で確認
-2. 最小限の実装（Green）→ `npm test -w @poke-dex-battle/shared` で確認
-3. リファクタリング
+1. Red: 失敗するテストを書く → `npm test -w @poke-dex-battle/shared`
+2. Green: 最小限の実装 → テスト通過を確認
+3. Refactor: リファクタリング
 
-## スキル
+### 実装完了後の検証手順
 
-| やりたいこと          | コマンド           |
-| --------------------- | ------------------ |
-| 機能設計 → 指示書作成 | `/design-review`   |
-| 実装のセルフレビュー  | `/review-impl`     |
-| ブランチレビュー      | `/review`          |
-| 変更の学習解説        | `/explain`         |
-| レビューへの意見回答  | `/review-feedback` |
+1. `npm run build:shared` — ビルド成功
+2. `npm test -w @poke-dex-battle/shared` — テスト全通過
+3. `npm run typecheck -w @poke-dex-battle/shared` — 型エラーなし
+4. `/review-impl` でセルフレビュー

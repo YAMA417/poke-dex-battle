@@ -11,17 +11,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAllPokemon, useAllItems } from '@/hooks/useApiData';
+import { useAllPokemon } from '@/hooks/useApiData';
 import { usePokemonSearch } from '@/hooks/usePokemonSearch';
-import type { PokemonType, StatStage } from '@poke-dex-battle/shared';
+import type { PokemonType, PokemonSpeciesData, StatStage, TeraType } from '@poke-dex-battle/shared';
 import {
   calcHpStat,
   calcOtherStat,
   reverseCalcHpEv,
   reverseCalcOtherEv,
+  isTeraType,
+  DAMAGE_CALC_DEFENDER_ITEMS,
 } from '@poke-dex-battle/shared';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { NatureModifierCompact, EvPreset, TypeBadges } from './SharedFormComponents';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  MegaEvolutionControl,
+  NatureModifierCompact,
+  EvPreset,
+  TypeBadges,
+  TerastalControl,
+  DynamaxControl,
+} from './SharedFormComponents';
+import { useMegaEvolution } from '@/hooks/useMegaEvolution';
 import { generateIdPrefix } from '@/utils/id';
 
 const STAT_STAGES: StatStage[] = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6];
@@ -41,6 +51,11 @@ export interface DefenderData {
   specialDefenseRank: StatStage;
   abilityName: string;
   itemName: string;
+  isMegaEvolved: boolean;
+  megaFormSlug: string | null;
+  isTerastallized: boolean;
+  teraType: TeraType | null;
+  isDynamaxed: boolean;
 }
 
 interface DefenderInputProps {
@@ -48,9 +63,22 @@ interface DefenderInputProps {
   onDataChange: (data: DefenderData) => void;
   idKey: string;
   displayMode: 'compact' | 'full';
+  showMega?: boolean;
+  showTerastal?: boolean;
+  showDynamax?: boolean;
+  regulationSlug?: string;
 }
 
-export function DefenderInput({ data, onDataChange, idKey, displayMode }: DefenderInputProps) {
+export function DefenderInput({
+  data,
+  onDataChange,
+  idKey,
+  displayMode,
+  showMega,
+  showTerastal,
+  showDynamax,
+  regulationSlug,
+}: DefenderInputProps) {
   const idPrefix = useMemo(
     () => generateIdPrefix(data.pokemonName || 'defender', idKey),
     [data.pokemonName, idKey]
@@ -61,6 +89,10 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
   dataRef.current = data;
   const onDataChangeRef = useRef(onDataChange);
   onDataChangeRef.current = onDataChange;
+  // 前のポケモン名を追跡（ポケモン変更時にアイテムをリセットするため）
+  const prevPokemonNameRef = useRef<string>('');
+  // 種族値のキャッシュ（useEffect BでpokemonData依存を外すため）
+  const baseStatsRef = useRef({ hp: 0, def: 0, spd: 0 });
 
   // EV/IV の内部 state
   const [hpEv, setHpEv] = useState(0);
@@ -70,9 +102,17 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
   const [spDefEv, setSpDefEv] = useState(0);
   const [spDefIv, setSpDefIv] = useState(31);
 
-  const { data: pokemonData } = usePokemonSearch(data.pokemonName);
+  const { data: pokemonData, megaForms } = usePokemonSearch(data.pokemonName);
 
-  const { data: allPokemon } = useAllPokemon('champions-season1');
+  // メガシンカ共通ロジック
+  const { currentMegaForm, megaLabel, spriteUrl } = useMegaEvolution({
+    isMegaEvolved: data.isMegaEvolved,
+    megaFormSlug: data.megaFormSlug,
+    megaForms,
+    baseSpriteUrl: pokemonData?.spriteUrl,
+  });
+
+  const { data: allPokemon } = useAllPokemon(regulationSlug);
   const pokemonOptions = useMemo(() => {
     return (allPokemon ?? []).map((pokemon) => ({
       label: pokemon.nameJa,
@@ -93,35 +133,24 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
     return [];
   }, [pokemonData]);
 
-  // スプライトURL
-  const spriteUrl = pokemonData?.spriteUrl;
+  // メガフォームのデータを適用したDefenderDataを構築する（単一のonDataChange呼び出しに統合）
+  const buildMegaData = useCallback(
+    (d: DefenderData, megaForm: PokemonSpeciesData): DefenderData => {
+      const hpBase = megaForm.baseStats.hp;
+      const defBase = megaForm.baseStats.defense;
+      const spDefBase = megaForm.baseStats.specialDefense;
+      const firstAbility = megaForm.abilities[0];
+      const fixedItemName = megaForm.fixedItemNameJa ?? null;
 
-  // 持ち物オプション（競技用のみ）
-  const { data: allItems } = useAllItems();
-  const itemOptions = useMemo(() => {
-    return (allItems ?? []).map((item) => ({
-      label: item.nameJa,
-      value: item.nameJa,
-      id: `item-${item.id}`,
-    }));
-  }, [allItems]);
-
-  // ポケモンデータ取得時に種族値・タイプ・第1特性を自動反映
-  useEffect(() => {
-    if (pokemonData?.baseStats) {
-      const d = dataRef.current;
-      const hpBase = pokemonData.baseStats.hp;
-      const defBase = pokemonData.baseStats.defense;
-      const spDefBase = pokemonData.baseStats.specialDefense;
-      const firstAbility = pokemonData.abilities[0];
-
-      onDataChangeRef.current({
+      return {
         ...d,
+        isMegaEvolved: true,
+        megaFormSlug: megaForm.name,
         hpBaseStat: hpBase,
         defenseBaseStat: defBase,
         specialDefenseBaseStat: spDefBase,
-        pokemonTypes: pokemonData.types,
-        abilityName: firstAbility?.nameJa ?? '',
+        pokemonTypes: megaForm.types,
+        abilityName: firstAbility?.nameJa ?? d.abilityName,
         hpStat: calcHpStat(hpBase, hpIv, hpEv, 50),
         defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
         specialDefenseStat: calcOtherStat(
@@ -131,11 +160,159 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
           50,
           d.specialDefenseModifier
         ),
-      });
-    }
-  }, [pokemonData, hpIv, hpEv, defIv, defEv, spDefIv, spDefEv]);
+        ...(fixedItemName ? { itemName: fixedItemName } : {}),
+      };
+    },
+    [hpIv, hpEv, defIv, defEv, spDefIv, spDefEv]
+  );
+
+  const handleMegaToggle = useCallback(
+    (checked: boolean): void => {
+      const d = dataRef.current;
+      if (checked && megaForms.length > 0) {
+        const firstMega = megaForms[0];
+        onDataChangeRef.current(buildMegaData(d, firstMega));
+      } else if (pokemonData) {
+        // メガシンカ解除 → ベースフォームのデータを直接復元
+        const hpBase = pokemonData.baseStats.hp;
+        const defBase = pokemonData.baseStats.defense;
+        const spDefBase = pokemonData.baseStats.specialDefense;
+        const firstAbility = pokemonData.abilities[0];
+        onDataChangeRef.current({
+          ...d,
+          isMegaEvolved: false,
+          megaFormSlug: null,
+          hpBaseStat: hpBase,
+          defenseBaseStat: defBase,
+          specialDefenseBaseStat: spDefBase,
+          pokemonTypes: pokemonData.types,
+          abilityName: firstAbility?.nameJa ?? '',
+          hpStat: calcHpStat(hpBase, hpIv, hpEv, 50),
+          defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
+          specialDefenseStat: calcOtherStat(
+            spDefBase,
+            spDefIv,
+            spDefEv,
+            50,
+            d.specialDefenseModifier
+          ),
+          itemName: '',
+        });
+      } else {
+        onDataChangeRef.current({
+          ...d,
+          isMegaEvolved: false,
+          megaFormSlug: null,
+        });
+      }
+    },
+    [megaForms, buildMegaData, pokemonData, hpIv, hpEv, defIv, defEv, spDefIv, spDefEv]
+  );
+
+  const handleMegaVariantChange = useCallback(
+    (slug: string): void => {
+      const d = dataRef.current;
+      const selectedForm = megaForms.find((f) => f.name === slug);
+      if (selectedForm) {
+        onDataChangeRef.current(buildMegaData(d, selectedForm));
+      }
+    },
+    [megaForms, buildMegaData]
+  );
+
+  // useEffect A: ポケモン変更時 — 種族値・タイプ・第1特性・fixedItemを反映
+  // メガシンカ中はメガフォームのデータを使用するためスキップ
+  useEffect(() => {
+    if (!pokemonData?.baseStats) return;
+    const d = dataRef.current;
+
+    // メガシンカ中はベースフォームのデータ適用をスキップ
+    if (d.isMegaEvolved && d.megaFormSlug) return;
+
+    const hpBase = pokemonData.baseStats.hp;
+    const defBase = pokemonData.baseStats.defense;
+    const spDefBase = pokemonData.baseStats.specialDefense;
+    const firstAbility = pokemonData.abilities[0];
+
+    // 種族値をキャッシュ（useEffect BでpokemonData依存を外すため）
+    baseStatsRef.current = { hp: hpBase, def: defBase, spd: spDefBase };
+
+    // ポケモン変更検知
+    const currentName = pokemonData.name ?? '';
+    const pokemonChanged = currentName !== prevPokemonNameRef.current;
+    prevPokemonNameRef.current = currentName;
+
+    // fixedItem の処理
+    const fixedItem = pokemonData.fixedItemNameJa ?? null;
+
+    // アイテム決定: fixedItemがあればそれを設定、ポケモンが変わったらリセット、それ以外は現状維持
+    const itemUpdate = fixedItem ? { itemName: fixedItem } : pokemonChanged ? { itemName: '' } : {};
+
+    onDataChangeRef.current({
+      ...d,
+      hpBaseStat: hpBase,
+      defenseBaseStat: defBase,
+      specialDefenseBaseStat: spDefBase,
+      pokemonTypes: pokemonData.types,
+      abilityName: firstAbility?.nameJa ?? '',
+      hpStat: calcHpStat(hpBase, hpIv, hpEv, 50),
+      defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
+      specialDefenseStat: calcOtherStat(spDefBase, spDefIv, spDefEv, 50, d.specialDefenseModifier),
+      ...itemUpdate,
+    });
+    // 意図的にpokemonData/EV・IVのみに依存（ref経由で最新値を参照）
+  }, [pokemonData]);
+
+  // useEffect B: EV/IV・性格補正変更時 — ステータス実数値の再計算のみ
+  // pokemonData を依存から外し、baseStatsRef 経由で種族値を参照
+  // itemName は触らない（アイテム変更が上書きされるバグの修正）
+  useEffect(() => {
+    const { hp, def, spd } = baseStatsRef.current;
+    if (!hp) return; // 種族値未設定（ポケモン未選択）
+    const d = dataRef.current;
+
+    // メガシンカ中はベースフォームのデータ適用をスキップ
+    if (d.isMegaEvolved && d.megaFormSlug) return;
+
+    onDataChangeRef.current({
+      ...d,
+      hpStat: calcHpStat(hp, hpIv, hpEv, 50),
+      defenseStat: calcOtherStat(def, defIv, defEv, 50, d.defenseModifier),
+      specialDefenseStat: calcOtherStat(spd, spDefIv, spDefEv, 50, d.specialDefenseModifier),
+    });
+    // 意図的にpokemonData/EV・IVのみに依存（ref経由で最新値を参照）
+  }, [hpIv, hpEv, defIv, defEv, spDefIv, spDefEv]);
 
   // rerender-derived-state-no-effect: ステータスはイベントハンドラで直接計算
+
+  // テラスタルのハンドラ
+  const handleTerastalToggle = useCallback(
+    (checked: boolean): void => {
+      if (checked) {
+        const fixed = pokemonData?.fixedTeraType;
+        const defaultTeraType = fixed && isTeraType(fixed) ? fixed : null;
+        onDataChange({ ...data, isTerastallized: true, teraType: defaultTeraType });
+      } else {
+        onDataChange({ ...data, isTerastallized: false, teraType: null });
+      }
+    },
+    [data, onDataChange, pokemonData]
+  );
+
+  const handleTeraTypeChange = useCallback(
+    (type: TeraType): void => {
+      onDataChange({ ...data, teraType: type });
+    },
+    [data, onDataChange]
+  );
+
+  // ダイマックスハンドラ
+  const handleDynamaxToggle = useCallback(
+    (checked: boolean): void => {
+      onDataChange({ ...data, isDynamaxed: checked });
+    },
+    [data, onDataChange]
+  );
 
   if (displayMode === 'compact') {
     return (
@@ -163,13 +340,52 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
           <Autocomplete
             id={`${idPrefix}-pokemon-name`}
             options={pokemonOptions}
-            onSelect={(name) => onDataChange({ ...data, pokemonName: name })}
+            onSelect={(name) =>
+              onDataChange({
+                ...data,
+                pokemonName: name,
+                isMegaEvolved: false,
+                megaFormSlug: null,
+              })
+            }
             onClear={() =>
-              onDataChange({ ...data, pokemonName: '', pokemonTypes: [], abilityName: '' })
+              onDataChange({
+                ...data,
+                pokemonName: '',
+                pokemonTypes: [],
+                abilityName: '',
+                isMegaEvolved: false,
+                megaFormSlug: null,
+              })
             }
             placeholder="ポケモン名"
             value={data.pokemonName}
           />
+
+          {/* メガシンカ / ゲンシカイキ */}
+          {showMega && megaForms.length > 0 && (
+            <MegaEvolutionControl
+              idPrefix={idPrefix}
+              isMegaEvolved={data.isMegaEvolved}
+              megaFormSlug={data.megaFormSlug}
+              megaForms={megaForms}
+              megaLabel={megaLabel}
+              onToggle={handleMegaToggle}
+              onVariantChange={handleMegaVariantChange}
+            />
+          )}
+
+          {/* テラスタル */}
+          {showTerastal && (
+            <TerastalControl
+              idPrefix={idPrefix}
+              isTerastallized={data.isTerastallized}
+              teraType={data.teraType}
+              fixedTeraType={pokemonData?.fixedTeraType ?? null}
+              onToggle={handleTerastalToggle}
+              onTeraTypeChange={handleTeraTypeChange}
+            />
+          )}
 
           {/* HP */}
           <div className="space-y-1">
@@ -351,6 +567,16 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
             </div>
           </div>
 
+          {/* ダイマックス */}
+          {showDynamax && (
+            <DynamaxControl
+              idPrefix={idPrefix}
+              isDynamaxed={data.isDynamaxed}
+              hpStat={data.hpStat}
+              onToggle={handleDynamaxToggle}
+            />
+          )}
+
           {/* 能力ランク */}
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
@@ -395,28 +621,54 @@ export function DefenderInput({ data, onDataChange, idKey, displayMode }: Defend
             </div>
           </div>
 
-          {/* 特性 */}
+          {/* 特性（メガシンカ中はロック） */}
           <div className="space-y-1">
             <Label className="text-xs">特性</Label>
-            <Autocomplete
-              id={`${idPrefix}-ability`}
-              options={abilityOptions}
-              onSelect={(name) => onDataChange({ ...data, abilityName: name })}
-              placeholder="特性"
-              value={data.abilityName}
-            />
+            <div className={data.isMegaEvolved ? 'pointer-events-none opacity-50' : ''}>
+              <Autocomplete
+                id={`${idPrefix}-ability`}
+                options={abilityOptions}
+                onSelect={(name) => onDataChange({ ...data, abilityName: name })}
+                placeholder="特性"
+                value={data.abilityName}
+              />
+            </div>
           </div>
 
-          {/* 持ち物 */}
+          {/* 持ち物（メガシンカ中かつfixedItemありの場合、またはポケモン自体がfixedItemの場合はロック） */}
           <div className="space-y-1">
             <Label className="text-xs">持ち物</Label>
-            <Autocomplete
-              id={`${idPrefix}-item`}
-              options={itemOptions}
-              onSelect={(name) => onDataChange({ ...data, itemName: name })}
-              placeholder="持ち物"
-              value={data.itemName}
-            />
+            <div
+              className={
+                (data.isMegaEvolved && currentMegaForm?.fixedItemNameJa) ||
+                pokemonData?.fixedItemNameJa
+                  ? 'pointer-events-none opacity-50'
+                  : ''
+              }
+            >
+              <Select
+                value={data.itemName || '__none__'}
+                onValueChange={(v) =>
+                  onDataChange({ ...data, itemName: v === '__none__' ? '' : v })
+                }
+              >
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue placeholder="持ち物" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DAMAGE_CALC_DEFENDER_ITEMS.map((item) => (
+                    <SelectItem key={item.name || '__none__'} value={item.name || '__none__'}>
+                      <div className="flex flex-col">
+                        <span>{item.nameJa}</span>
+                        {item.label && (
+                          <span className="text-xs text-muted-foreground">{item.label}</span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
