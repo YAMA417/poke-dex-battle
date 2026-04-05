@@ -49,9 +49,9 @@ export function NatureModifierCompact({ value, onChange }: NatureModifierCompact
   );
 }
 
-// --- 努力値プリセット（Labelなし、ボタン+Inputのみ） ---
+// --- 能力ポイン��プリセット（Labelなし、ボタン+Inputのみ） ---
 
-export function EvPreset({
+export function AbilityPointPreset({
   value,
   onChange,
   calcStatFn,

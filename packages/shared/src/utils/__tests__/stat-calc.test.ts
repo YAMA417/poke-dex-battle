@@ -3,13 +3,12 @@ import type { BaseStats, Stats } from '../../types/pokemon';
 import {
   calcHpStat,
   calcOtherStat,
-  reverseCalcHpEv,
-  reverseCalcOtherEv,
+  reverseCalcHpAbilityPoint,
+  reverseCalcOtherAbilityPoint,
   toClassicEv,
   calcActualStats,
-  calcEvContributionToActualStats,
-  splitActualStatsByEvContribution,
-  findClosestRealizableEv,
+  splitActualStatsByAbilityPoint,
+  findClosestRealizableAbilityPoint,
   getNatureModifier,
 } from '../stat-calc';
 
@@ -24,11 +23,11 @@ const createStats = (
 ): Stats => ({ hp, attack, defense, specialAttack, specialDefense, speed });
 
 describe('calcHpStat', () => {
-  it('HP = 種族値 + 75 + 能力P（ev=0）', () => {
+  it('HP = 種族値 + 75 + 能力P（abilityPoint=0）', () => {
     expect(calcHpStat(91, 0)).toBe(166);
   });
 
-  it('HP = 種族値 + 75 + 能力P（ev=32）', () => {
+  it('HP = 種族値 + 75 + 能力P（abilityPoint=32）', () => {
     expect(calcHpStat(91, 32)).toBe(198);
   });
 
@@ -52,41 +51,41 @@ describe('calcOtherStat', () => {
     expect(calcOtherStat(134, 32, 0.9)).toBe(167);
   });
 
-  it('floor((種族値 + 20 + 能力P) * 性格補正) 上昇補正 ev=0', () => {
+  it('floor((種族値 + 20 + 能力P) * 性格補正) 上昇補正 abilityPoint=0', () => {
     // floor((134 + 20) * 1.1) = floor(169.4) = 169
     expect(calcOtherStat(134, 0, 1.1)).toBe(169);
   });
 });
 
-describe('reverseCalcHpEv', () => {
-  it('目標値からEVを逆算（ev=32）', () => {
-    expect(reverseCalcHpEv(198, 91)).toBe(32);
+describe('reverseCalcHpAbilityPoint', () => {
+  it('目標値から能力ポイントを逆算（abilityPoint=32）', () => {
+    expect(reverseCalcHpAbilityPoint(198, 91)).toBe(32);
   });
 
-  it('目標値からEVを逆算（ev=0）', () => {
-    expect(reverseCalcHpEv(166, 91)).toBe(0);
+  it('目標値から能力ポイントを逆算（abilityPoint=0）', () => {
+    expect(reverseCalcHpAbilityPoint(166, 91)).toBe(0);
   });
 
   it('上限を超える目標値は32にクランプ', () => {
-    expect(reverseCalcHpEv(999, 91)).toBe(32);
+    expect(reverseCalcHpAbilityPoint(999, 91)).toBe(32);
   });
 
   it('下限を下回る目標値は0にクランプ', () => {
-    expect(reverseCalcHpEv(0, 91)).toBe(0);
+    expect(reverseCalcHpAbilityPoint(0, 91)).toBe(0);
   });
 });
 
-describe('reverseCalcOtherEv', () => {
-  it('目標値からEVを逆算（ev=0, 補正なし）', () => {
-    expect(reverseCalcOtherEv(154, 134, 1.0)).toBe(0);
+describe('reverseCalcOtherAbilityPoint', () => {
+  it('目標値から能力ポイントを逆算（abilityPoint=0, 補正なし）', () => {
+    expect(reverseCalcOtherAbilityPoint(154, 134, 1.0)).toBe(0);
   });
 
-  it('目標値からEVを逆算（ev=32, 上昇補正）', () => {
-    expect(reverseCalcOtherEv(204, 134, 1.1)).toBe(32);
+  it('目標値から能力ポイントを逆算（abilityPoint=32, 上昇補正）', () => {
+    expect(reverseCalcOtherAbilityPoint(204, 134, 1.1)).toBe(32);
   });
 
-  it('目標値からEVを逆算（ev=1, 補正なし）', () => {
-    expect(reverseCalcOtherEv(155, 134, 1.0)).toBe(1);
+  it('目標値から能力ポイントを逆算（abilityPoint=1, 補正なし）', () => {
+    expect(reverseCalcOtherAbilityPoint(155, 134, 1.0)).toBe(1);
   });
 });
 
@@ -113,7 +112,7 @@ describe('toClassicEv', () => {
 });
 
 describe('calcActualStats', () => {
-  it('カイリュー Adamant性格 evs全0', () => {
+  it('カイリュー Adamant性格 abilityPoints全0', () => {
     const baseStats: BaseStats = {
       hp: 91,
       attack: 134,
@@ -122,8 +121,8 @@ describe('calcActualStats', () => {
       specialDefense: 100,
       speed: 80,
     };
-    const evs = createStats(0, 0, 0, 0, 0, 0);
-    const result = calcActualStats(baseStats, evs, 'Adamant');
+    const abilityPoints = createStats(0, 0, 0, 0, 0, 0);
+    const result = calcActualStats(baseStats, abilityPoints, 'Adamant');
 
     expect(result.hp).toBe(166); // 91 + 75 + 0
     expect(result.attack).toBe(169); // floor((134 + 20) * 1.1) = floor(169.4)
@@ -134,22 +133,8 @@ describe('calcActualStats', () => {
   });
 });
 
-describe('calcEvContributionToActualStats', () => {
-  it('全0 の場合は 0', () => {
-    expect(calcEvContributionToActualStats(createStats(0, 0, 0, 0, 0, 0))).toBe(0);
-  });
-
-  it('各ステータスの能力P合計を返す', () => {
-    expect(calcEvContributionToActualStats(createStats(10, 20, 5, 0, 1, 30))).toBe(66);
-  });
-
-  it('最大配分（hp:32, atk:32）', () => {
-    expect(calcEvContributionToActualStats(createStats(32, 32, 0, 0, 0, 0))).toBe(64);
-  });
-});
-
-describe('splitActualStatsByEvContribution', () => {
-  it('カイリュー Adamant性格 evs={hp:32, atk:32, def:0, spa:0, spd:0, spe:0}', () => {
+describe('splitActualStatsByAbilityPoint', () => {
+  it('カイリュー Adamant性格 abilityPoints={hp:32, atk:32, def:0, spa:0, spd:0, spe:0}', () => {
     const baseStats: BaseStats = {
       hp: 91,
       attack: 134,
@@ -158,8 +143,8 @@ describe('splitActualStatsByEvContribution', () => {
       specialDefense: 100,
       speed: 80,
     };
-    const evs = createStats(32, 32, 0, 0, 0, 0);
-    const result = splitActualStatsByEvContribution(baseStats, evs, 'Adamant');
+    const abilityPoints = createStats(32, 32, 0, 0, 0, 0);
+    const result = splitActualStatsByAbilityPoint(baseStats, abilityPoints, 'Adamant');
 
     // HP: baseValue=166 (91+75+0), evContribution=32 (198-166)
     expect(result.hp.baseValue).toBe(166);
@@ -175,40 +160,40 @@ describe('splitActualStatsByEvContribution', () => {
   });
 });
 
-describe('findClosestRealizableEv', () => {
+describe('findClosestRealizableAbilityPoint', () => {
   it('HP: 完全一致（target=170, base=91）', () => {
     // 91 + 75 + 4 = 170
-    const result = findClosestRealizableEv(170, 91, 1.0, true);
-    expect(result.ev).toBe(4);
+    const result = findClosestRealizableAbilityPoint(170, 91, 1.0, true);
+    expect(result.abilityPoint).toBe(4);
     expect(result.actualStat).toBe(170);
   });
 
   it('HP: 完全一致（target=168, base=91）', () => {
     // 91 + 75 + 2 = 168
-    const result = findClosestRealizableEv(168, 91, 1.0, true);
-    expect(result.ev).toBe(2);
+    const result = findClosestRealizableAbilityPoint(168, 91, 1.0, true);
+    expect(result.abilityPoint).toBe(2);
     expect(result.actualStat).toBe(168);
   });
 
   it('HP: 完全一致（target=197, base=91）', () => {
     // 91 + 75 + 31 = 197
-    const result = findClosestRealizableEv(197, 91, 1.0, true);
-    expect(result.ev).toBe(31);
+    const result = findClosestRealizableAbilityPoint(197, 91, 1.0, true);
+    expect(result.abilityPoint).toBe(31);
     expect(result.actualStat).toBe(197);
   });
 
   it('HP以外: 完全一致（target=155, base=134, mod=1.0）', () => {
     // floor((134 + 20 + 1) * 1.0) = 155
-    const result = findClosestRealizableEv(155, 134, 1.0, false);
-    expect(result.ev).toBe(1);
+    const result = findClosestRealizableAbilityPoint(155, 134, 1.0, false);
+    expect(result.abilityPoint).toBe(1);
     expect(result.actualStat).toBe(155);
   });
 
   it('HP以外: 最も近い値（target=156, base=134, mod=1.1）', () => {
-    // ev=0: floor((134+20+0)*1.1) = floor(169.4) = 169 > 156 → ev=0で既に超過
-    // 実際にはtargetが低いので ev=0 が最も近い
-    const result = findClosestRealizableEv(156, 134, 1.1, false);
-    expect(result.ev).toBeDefined();
+    // abilityPoint=0: floor((134+20+0)*1.1) = floor(169.4) = 169 > 156 → abilityPoint=0で既に超過
+    // 実際にはtargetが低いので abilityPoint=0 が最も近い
+    const result = findClosestRealizableAbilityPoint(156, 134, 1.1, false);
+    expect(result.abilityPoint).toBeDefined();
     expect(result.actualStat).toBeDefined();
   });
 });

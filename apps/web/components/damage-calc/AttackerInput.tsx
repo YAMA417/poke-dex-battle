@@ -23,7 +23,7 @@ import type {
 } from '@poke-dex-battle/shared';
 import {
   calcOtherStat,
-  reverseCalcOtherEv,
+  reverseCalcOtherAbilityPoint,
   getZMovePower,
   getDynamaxMovePower,
   isTeraType,
@@ -36,7 +36,7 @@ import { MoveInput } from './MoveInput';
 import {
   MegaEvolutionControl,
   NatureModifierCompact,
-  EvPreset,
+  AbilityPointPreset,
   TypeBadges,
   TerastalControl,
   ZMoveControl,
@@ -551,7 +551,7 @@ export function AttackerInput({
                   onChange={(e) => {
                     const targetStat = Math.max(1, parseInt(e.target.value) || 1);
                     if (usesDefenseAsAttack) {
-                      const newEv = reverseCalcOtherEv(
+                      const newEv = reverseCalcOtherAbilityPoint(
                         targetStat,
                         data.defenseBaseStat,
                         data.defenseModifier
@@ -568,7 +568,7 @@ export function AttackerInput({
                         ? data.attackBaseStat
                         : data.specialAttackBaseStat;
                       const mod = isPhysical ? data.attackModifier : data.specialAttackModifier;
-                      const newEv = reverseCalcOtherEv(targetStat, baseStat, mod);
+                      const newEv = reverseCalcOtherAbilityPoint(targetStat, baseStat, mod);
                       const actualStat = calcOtherStat(baseStat, newEv, mod);
                       if (isPhysical) {
                         setAttackEv(newEv);
@@ -608,8 +608,8 @@ export function AttackerInput({
                   }
                 }}
               />
-              <span className="text-xs text-muted-foreground">EV</span>
-              <EvPreset
+              <span className="text-xs text-muted-foreground">能力P</span>
+              <AbilityPointPreset
                 value={usesDefenseAsAttack ? defEv : isPhysical ? attackEv : spAtkEv}
                 onChange={(newEv) => {
                   if (usesDefenseAsAttack) {

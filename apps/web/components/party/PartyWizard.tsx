@@ -24,7 +24,7 @@ const DEFAULT_POKEMON = (species: PokemonSpeciesData): Pokemon => ({
   ability: species.abilities[0]?.name ?? '',
   teraType: species.types[0],
   item: undefined,
-  evs: { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0 },
+  abilityPoints: { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0 },
   moves: [],
   actualStats: undefined,
   spriteUrl: species.spriteUrl,
@@ -201,9 +201,11 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div
+      className={`mx-auto ${step === 3 ? 'max-w-5xl' : 'max-w-2xl'} transition-all duration-300`}
+    >
       {/* ステップインジケータ */}
-      <div className="mb-8 flex items-center gap-0">
+      <div className="mx-auto mb-8 flex max-w-2xl items-center gap-0">
         {STEPS.map((s, i) => {
           const stepNum = (i + 1) as Step;
           const isActive = step === stepNum;
@@ -240,7 +242,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
 
       {/* Step 1: パーティ情報 */}
       {step === 1 && (
-        <div className="animate-fadeIn space-y-5 rounded-2xl bg-white p-6 shadow">
+        <div className="animate-fadeIn mx-auto max-w-2xl space-y-5 rounded-2xl bg-white p-6 shadow">
           <div>
             <h3 className="mb-1 text-lg font-bold text-gray-800">{STEPS[0].label}</h3>
             <p className="text-sm text-gray-400">{STEPS[0].desc}</p>
@@ -303,7 +305,7 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
 
       {/* Step 2: ポケモン選択 */}
       {step === 2 && (
-        <div className="animate-fadeIn space-y-5 rounded-2xl bg-white p-6 shadow">
+        <div className="animate-fadeIn mx-auto max-w-2xl space-y-5 rounded-2xl bg-white p-6 shadow">
           <div>
             <h3 className="mb-1 text-lg font-bold text-gray-800">{STEPS[1].label}</h3>
             <p className="text-sm text-gray-400">{STEPS[1].desc}</p>

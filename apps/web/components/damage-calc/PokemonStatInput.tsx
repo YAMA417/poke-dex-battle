@@ -93,7 +93,7 @@ export function PokemonStatInput({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label htmlFor={`${statType}-iv`} className="text-xs">
-                個体値 (IV)
+                個体値
               </Label>
               <Input
                 id={`${statType}-iv`}
@@ -108,7 +108,7 @@ export function PokemonStatInput({
             </div>
             <div className="space-y-1">
               <Label htmlFor={`${statType}-ev`} className="text-xs">
-                努力値 (EV)
+                ���力ポイント
               </Label>
               <Input
                 id={`${statType}-ev`}

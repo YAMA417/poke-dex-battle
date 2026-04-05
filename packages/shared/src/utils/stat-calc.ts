@@ -52,21 +52,21 @@ export function getNatureModifier(nature: Nature, stat: keyof Omit<Stats, 'hp'>)
  * HP実数値を計算（チャンピオンズ仕様）
  * HP = 種族値 + 75 + 能力P
  * @param base - HP種族値
- * @param ev - 能力ポイント（0〜32）
+ * @param abilityPoint - 能力ポイント（0〜32）
  */
-export function calcHpStat(base: number, ev: number): number {
-  return base + 75 + ev;
+export function calcHpStat(base: number, abilityPoint: number): number {
+  return base + 75 + abilityPoint;
 }
 
 /**
  * HP以外の実数値を計算（チャンピオンズ仕様）
  * 能力値 = floor((種族値 + 20 + 能力P) * 性格補正)
  * @param base - 種族値
- * @param ev - 能力ポイント（0〜32）
+ * @param abilityPoint - 能力ポイント（0〜32）
  * @param natureModifier - 性格補正値（0.9 / 1.0 / 1.1）
  */
-export function calcOtherStat(base: number, ev: number, natureModifier: number): number {
-  return Math.floor((base + 20 + ev) * natureModifier);
+export function calcOtherStat(base: number, abilityPoint: number, natureModifier: number): number {
+  return Math.floor((base + 20 + abilityPoint) * natureModifier);
 }
 
 /**
@@ -75,26 +75,26 @@ export function calcOtherStat(base: number, ev: number, natureModifier: number):
  * @param base - HP種族値
  * @returns 能力ポイント（0〜32にクランプ）
  */
-export function reverseCalcHpEv(targetStat: number, base: number): number {
+export function reverseCalcHpAbilityPoint(targetStat: number, base: number): number {
   return Math.max(0, Math.min(32, targetStat - base - 75));
 }
 
 /**
- * HP以外の実数値から能力ポイントを逆算（最小EVを返す）
- * 到達不可能な場合は最も近いEV（32）を返す
+ * HP以外の実数値から能力ポイントを逆算（最小能力Pを返す）
+ * 到達不可能な場合は最も近い能力P（32）を返す
  * @param targetStat - 目標実数値
  * @param base - 種族値
  * @param natureModifier - 性格補正値
  * @returns 能力ポイント（0〜32）
  */
-export function reverseCalcOtherEv(
+export function reverseCalcOtherAbilityPoint(
   targetStat: number,
   base: number,
   natureModifier: number
 ): number {
-  for (let ev = 0; ev <= 32; ev += 1) {
-    if (calcOtherStat(base, ev, natureModifier) >= targetStat) {
-      return ev;
+  for (let abilityPoint = 0; abilityPoint <= 32; abilityPoint += 1) {
+    if (calcOtherStat(base, abilityPoint, natureModifier) >= targetStat) {
+      return abilityPoint;
     }
   }
   return 32;
@@ -113,48 +113,46 @@ export function toClassicEv(abilityPoint: number): number {
 /**
  * 全ステータスの実数値を計算（チャンピオンズ仕様）
  * @param baseStats - 種族値
- * @param evs - 能力ポイント
+ * @param abilityPoints - 能力ポイント
  * @param nature - 性格
  */
-export function calcActualStats(baseStats: BaseStats, evs: Stats, nature: Nature): Stats {
+export function calcActualStats(baseStats: BaseStats, abilityPoints: Stats, nature: Nature): Stats {
   return {
-    hp: calcHpStat(baseStats.hp, evs.hp),
-    attack: calcOtherStat(baseStats.attack, evs.attack, getNatureModifier(nature, 'attack')),
-    defense: calcOtherStat(baseStats.defense, evs.defense, getNatureModifier(nature, 'defense')),
+    hp: calcHpStat(baseStats.hp, abilityPoints.hp),
+    attack: calcOtherStat(
+      baseStats.attack,
+      abilityPoints.attack,
+      getNatureModifier(nature, 'attack')
+    ),
+    defense: calcOtherStat(
+      baseStats.defense,
+      abilityPoints.defense,
+      getNatureModifier(nature, 'defense')
+    ),
     specialAttack: calcOtherStat(
       baseStats.specialAttack,
-      evs.specialAttack,
+      abilityPoints.specialAttack,
       getNatureModifier(nature, 'specialAttack')
     ),
     specialDefense: calcOtherStat(
       baseStats.specialDefense,
-      evs.specialDefense,
+      abilityPoints.specialDefense,
       getNatureModifier(nature, 'specialDefense')
     ),
-    speed: calcOtherStat(baseStats.speed, evs.speed, getNatureModifier(nature, 'speed')),
+    speed: calcOtherStat(baseStats.speed, abilityPoints.speed, getNatureModifier(nature, 'speed')),
   };
-}
-
-/**
- * 能力ポイントから寄与される合計を計算（チャンピオンズ仕様）
- * 単純に各ステータスの能力ポイントを合算する
- * @param evs - 能力ポイントオブジェクト
- * @returns 能力ポイントの合計（最大 6 * 32 = 192、実際の上限は66）
- */
-export function calcEvContributionToActualStats(evs: Stats): number {
-  return evs.hp + evs.attack + evs.defense + evs.specialAttack + evs.specialDefense + evs.speed;
 }
 
 /**
  * 実数値を能力P=0の基本値と能力P増加分に分割する（チャンピオンズ仕様）
  * @param baseStats - 種族値
- * @param evs - 能力ポイント
+ * @param abilityPoints - 能力ポイント
  * @param nature - 性格
  * @returns 各ステータスの { baseValue, evContribution } を含むオブジェクト
  */
-export function splitActualStatsByEvContribution(
+export function splitActualStatsByAbilityPoint(
   baseStats: BaseStats,
-  evs: Stats,
+  abilityPoints: Stats,
   nature: Nature
 ): Record<keyof Stats, { baseValue: number; evContribution: number }> {
   // 能力P=0の状態での基本値を計算
@@ -165,7 +163,7 @@ export function splitActualStatsByEvContribution(
   );
 
   // 現在の実数値を計算
-  const currentValues = calcActualStats(baseStats, evs, nature);
+  const currentValues = calcActualStats(baseStats, abilityPoints, nature);
 
   // 差分を計算（能力P増加分）
   return {
@@ -204,27 +202,29 @@ export function splitActualStatsByEvContribution(
  * @param isHp - HPかどうか
  * @returns 最も近い能力Pと実際の実数値
  */
-export function findClosestRealizableEv(
+export function findClosestRealizableAbilityPoint(
   targetStat: number,
   base: number,
   natureModifier: number,
   isHp: boolean
-): { ev: number; actualStat: number } {
-  const maxEv = 32;
-  let bestEv = 0;
+): { abilityPoint: number; actualStat: number } {
+  const maxAbilityPoint = 32;
+  let bestAbilityPoint = 0;
   let bestStat = isHp ? calcHpStat(base, 0) : calcOtherStat(base, 0, natureModifier);
 
-  for (let ev = 0; ev <= maxEv; ev += 1) {
-    const actual = isHp ? calcHpStat(base, ev) : calcOtherStat(base, ev, natureModifier);
+  for (let abilityPoint = 0; abilityPoint <= maxAbilityPoint; abilityPoint += 1) {
+    const actual = isHp
+      ? calcHpStat(base, abilityPoint)
+      : calcOtherStat(base, abilityPoint, natureModifier);
 
     if (actual === targetStat) {
       // 完全一致
-      return { ev, actualStat: actual };
+      return { abilityPoint, actualStat: actual };
     }
 
     if (actual < targetStat) {
       // より近い値を記録
-      bestEv = ev;
+      bestAbilityPoint = abilityPoint;
       bestStat = actual;
     } else {
       // targetStat を超えた → 終了
@@ -232,5 +232,5 @@ export function findClosestRealizableEv(
     }
   }
 
-  return { ev: bestEv, actualStat: bestStat };
+  return { abilityPoint: bestAbilityPoint, actualStat: bestStat };
 }

@@ -17,8 +17,8 @@ import type { PokemonType, PokemonSpeciesData, StatStage, TeraType } from '@poke
 import {
   calcHpStat,
   calcOtherStat,
-  reverseCalcHpEv,
-  reverseCalcOtherEv,
+  reverseCalcHpAbilityPoint,
+  reverseCalcOtherAbilityPoint,
   isTeraType,
   DAMAGE_CALC_DEFENDER_ITEMS,
 } from '@poke-dex-battle/shared';
@@ -26,7 +26,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   MegaEvolutionControl,
   NatureModifierCompact,
-  EvPreset,
+  AbilityPointPreset,
   TypeBadges,
   TerastalControl,
   DynamaxControl,
@@ -387,7 +387,7 @@ export function DefenderInput({
                   value={data.hpStat}
                   onChange={(e) => {
                     const targetStat = Math.max(1, parseInt(e.target.value) || 1);
-                    const newEv = reverseCalcHpEv(targetStat, data.hpBaseStat);
+                    const newEv = reverseCalcHpAbilityPoint(targetStat, data.hpBaseStat);
                     const actualStat = calcHpStat(data.hpBaseStat, newEv);
                     setHpEv(newEv);
                     onDataChange({ ...data, hpStat: actualStat });
@@ -397,8 +397,8 @@ export function DefenderInput({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">EV</span>
-              <EvPreset
+              <span className="text-xs text-muted-foreground">能力P</span>
+              <AbilityPointPreset
                 value={hpEv}
                 onChange={(newEv) => {
                   setHpEv(newEv);
@@ -421,7 +421,7 @@ export function DefenderInput({
                   value={data.defenseStat}
                   onChange={(e) => {
                     const targetStat = Math.max(1, parseInt(e.target.value) || 1);
-                    const newEv = reverseCalcOtherEv(
+                    const newEv = reverseCalcOtherAbilityPoint(
                       targetStat,
                       data.defenseBaseStat,
                       data.defenseModifier
@@ -449,8 +449,8 @@ export function DefenderInput({
                   })
                 }
               />
-              <span className="text-xs text-muted-foreground">EV</span>
-              <EvPreset
+              <span className="text-xs text-muted-foreground">能力P</span>
+              <AbilityPointPreset
                 value={defEv}
                 onChange={(newEv) => {
                   setDefEv(newEv);
@@ -476,7 +476,7 @@ export function DefenderInput({
                   value={data.specialDefenseStat}
                   onChange={(e) => {
                     const targetStat = Math.max(1, parseInt(e.target.value) || 1);
-                    const newEv = reverseCalcOtherEv(
+                    const newEv = reverseCalcOtherAbilityPoint(
                       targetStat,
                       data.specialDefenseBaseStat,
                       data.specialDefenseModifier
@@ -504,8 +504,8 @@ export function DefenderInput({
                   })
                 }
               />
-              <span className="text-xs text-muted-foreground">EV</span>
-              <EvPreset
+              <span className="text-xs text-muted-foreground">能力P</span>
+              <AbilityPointPreset
                 value={spDefEv}
                 onChange={(newEv) => {
                   setSpDefEv(newEv);

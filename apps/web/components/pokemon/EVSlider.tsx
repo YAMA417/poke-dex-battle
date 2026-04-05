@@ -1,7 +1,12 @@
 'use client';
 
 import type { Stats } from '@poke-dex-battle/shared';
-import { clampEv, calcEvTotal, MAX_EV_PER_STAT, MAX_EV_TOTAL } from '@poke-dex-battle/shared';
+import {
+  clampAbilityPoint,
+  calcAbilityPointTotal,
+  MAX_ABILITY_POINT_PER_STAT,
+  MAX_ABILITY_POINT_TOTAL,
+} from '@poke-dex-battle/shared';
 
 const STAT_LABELS: { key: keyof Stats; label: string }[] = [
   { key: 'hp', label: 'HP' },
@@ -13,20 +18,20 @@ const STAT_LABELS: { key: keyof Stats; label: string }[] = [
 ];
 
 interface EVSliderProps {
-  evs: Stats;
+  abilityPoints: Stats;
   natureUp?: keyof Stats;
   natureDown?: keyof Stats;
-  onChange: (newEvs: Stats) => void;
+  onChange: (newAbilityPoints: Stats) => void;
 }
 
-export function EVSlider({ evs, natureUp, natureDown, onChange }: EVSliderProps) {
-  const total = calcEvTotal(evs);
-  const remaining = MAX_EV_TOTAL - total;
-  const pct = Math.round((total / MAX_EV_TOTAL) * 100);
+export function EVSlider({ abilityPoints, natureUp, natureDown, onChange }: EVSliderProps) {
+  const total = calcAbilityPointTotal(abilityPoints);
+  const remaining = MAX_ABILITY_POINT_TOTAL - total;
+  const pct = Math.round((total / MAX_ABILITY_POINT_TOTAL) * 100);
 
   function handleChange(stat: keyof Stats, value: number) {
-    const clamped = clampEv(evs, stat, value);
-    onChange({ ...evs, [stat]: clamped });
+    const clamped = clampAbilityPoint(abilityPoints, stat, value);
+    onChange({ ...abilityPoints, [stat]: clamped });
   }
 
   function handleInputChange(stat: keyof Stats, raw: string) {
@@ -39,11 +44,11 @@ export function EVSlider({ evs, natureUp, natureDown, onChange }: EVSliderProps)
       {/* 合計バー */}
       <div className="space-y-1">
         <div className="flex justify-between text-xs text-gray-600">
-          <span className="font-semibold">努力値合計</span>
+          <span className="font-semibold">能力ポイント合計</span>
           <span
             className={`font-bold tabular-nums ${remaining === 0 ? 'text-red-500' : 'text-gray-700'}`}
           >
-            {total} <span className="font-normal text-gray-400">/ {MAX_EV_TOTAL}</span>
+            {total} <span className="font-normal text-gray-400">/ {MAX_ABILITY_POINT_TOTAL}</span>
             {remaining > 0 && (
               <span className="ml-1 font-normal text-green-600">（残り{remaining}）</span>
             )}
@@ -64,7 +69,7 @@ export function EVSlider({ evs, natureUp, natureDown, onChange }: EVSliderProps)
         {STAT_LABELS.map(({ key, label }) => {
           const isUp = natureUp === key;
           const isDown = natureDown === key;
-          const currentVal = evs[key];
+          const currentVal = abilityPoints[key];
           const displayLabel = `${label}${isUp ? ' ↑' : isDown ? ' ↓' : ''}`;
           const labelColorClass = isUp
             ? 'text-red-500'
@@ -78,7 +83,7 @@ export function EVSlider({ evs, natureUp, natureDown, onChange }: EVSliderProps)
               <input
                 type="number"
                 min={0}
-                max={MAX_EV_PER_STAT}
+                max={MAX_ABILITY_POINT_PER_STAT}
                 value={currentVal}
                 onChange={(e) => handleInputChange(key, e.target.value)}
                 className="w-full rounded border border-gray-200 px-1 py-1 text-center text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
