@@ -1,6 +1,7 @@
+import { ABILITY_PARENTAL_BOND } from '../../constants/damage-calc-names';
 import type { BattleContext, CalcMove, CalcPokemon, DamageResult } from '../../types/damage';
 import { isPokemonType } from '../../types/pokemon';
-import { moveIs } from '../normalize-id';
+import { abilityIs, moveIs } from '../normalize-id';
 import { calculateBaseDamage } from './calculate-base-damage';
 import { calculateModifier } from './calculate-modifier';
 import { calculateMultiHitDamage } from './calculate-multi-hit';
@@ -8,6 +9,7 @@ import { getDynamaxMovePower } from './dynamax-power';
 import { resolveBasePower } from './resolve-base-power';
 import { resolveEffectiveAttack, resolveEffectiveDefense } from './resolve-effective-stat';
 import { resolveHitCountRange } from './resolve-hit-count';
+import { simulateKoTurns, resolveRecoveryItem } from './simulate-ko-turns';
 import { getZMovePower } from './z-move-power';
 
 /**
@@ -51,6 +53,10 @@ export {
 export { resolveHitCountRange } from './resolve-hit-count';
 export type { HitCountRange } from './resolve-hit-count';
 
+// 確定数シミュレーション
+export { simulateKoTurns, resolveRecoveryItem } from './simulate-ko-turns';
+export type { RecoveryType } from './simulate-ko-turns';
+
 // 型定義
 export type { BattleContext, CalcMove, CalcPokemon } from '../../types/damage';
 
@@ -68,7 +74,7 @@ export function calculateDamageV2(
   let effectiveMove: CalcMove = move;
   const isTeraBlast =
     (move.damageEffect?.powerModifier &&
-      (move.damageEffect.powerModifier as any).condition === 'tera_blast') ||
+      (move.damageEffect.powerModifier as { condition: string }).condition === 'tera_blast') ||
     moveIs(move.name, 'Tera Blast');
 
   if (isTeraBlast && attacker.isTerastallized) {
@@ -108,6 +114,11 @@ export function calculateDamageV2(
     effectiveMove = { ...effectiveMove, power: getDynamaxMovePower(effectiveMove.power) };
   }
 
+  // フォトンゲイザー: こうげき > とくこう の場合は物理技になる
+  if (moveIs(effectiveMove.name, 'Photon Geyser') && attacker.stats.atk > attacker.stats.spa) {
+    effectiveMove = { ...effectiveMove, category: 'Physical' };
+  }
+
   // HPを決定（ダイマックス時は2倍）
   const baseHp = defender.maxHp ?? defender.stats.hp ?? 100;
   const defenderHp = defender.isDynamaxed ? baseHp * 2 : baseHp;
@@ -123,7 +134,7 @@ export function calculateDamageV2(
     // 1発計算用のコールバック（前処理済みの effectiveMove を受け取り、power だけ差し替えて計算）
     const singleHitCalc = (m: CalcMove): DamageResult => {
       const finalPower = resolveBasePower(m, attacker, defender, context);
-      const finalAttack = resolveEffectiveAttack(attacker, m, context, defender.ability);
+      const finalAttack = resolveEffectiveAttack(attacker, m, context, defender.ability, defender);
       const finalDefense = resolveEffectiveDefense(defender, m, attacker.ability, context);
       const baseDamage = calculateBaseDamage(attacker.level, finalPower, finalAttack, finalDefense);
       const { minDamage, maxDamage, stab, typeEffectiveness, weatherModifier } = calculateModifier(
@@ -134,13 +145,14 @@ export function calculateDamageV2(
         context
       );
 
+      const recovery = resolveRecoveryItem(defender.item, defender.types);
       return {
         minDamage,
         maxDamage,
         minPercent: Math.round((minDamage / defenderHp) * 100 * 10) / 10,
         maxPercent: Math.round((maxDamage / defenderHp) * 100 * 10) / 10,
-        guaranteed: maxDamage > 0 ? Math.ceil(defenderHp / maxDamage) : Infinity,
-        possible: minDamage > 0 ? Math.ceil(defenderHp / minDamage) : Infinity,
+        guaranteed: simulateKoTurns(defenderHp, maxDamage, recovery),
+        possible: simulateKoTurns(defenderHp, minDamage, recovery),
         details: {
           baseDamage,
           typeEffectiveness,
@@ -152,7 +164,15 @@ export function calculateDamageV2(
       };
     };
 
-    return calculateMultiHitDamage(singleHitCalc, effectiveMove, multiHit, hitCount, defenderHp);
+    return calculateMultiHitDamage(
+      singleHitCalc,
+      effectiveMove,
+      multiHit,
+      hitCount,
+      defenderHp,
+      defender.item,
+      defender.types
+    );
   }
 
   // 通常1発計算
@@ -160,7 +180,13 @@ export function calculateDamageV2(
   const finalPower = resolveBasePower(effectiveMove, attacker, defender, context);
 
   // 2. 実効攻撃力を計算
-  const finalAttack = resolveEffectiveAttack(attacker, effectiveMove, context, defender.ability);
+  const finalAttack = resolveEffectiveAttack(
+    attacker,
+    effectiveMove,
+    context,
+    defender.ability,
+    defender
+  );
 
   // 3. 実効防御力を計算
   const finalDefense = resolveEffectiveDefense(defender, effectiveMove, attacker.ability, context);
@@ -177,14 +203,41 @@ export function calculateDamageV2(
     context
   );
 
-  // 6. 結果を構築
+  // 6. おやこあい: 1発目通常 + 2発目 0.25倍
+  if (abilityIs(attacker.ability, ABILITY_PARENTAL_BOND) && !multiHit) {
+    const secondMin = Math.floor(minDamage * 0.25);
+    const secondMax = Math.floor(maxDamage * 0.25);
+    const totalMin = minDamage + secondMin;
+    const totalMax = maxDamage + secondMax;
+
+    const recovery = resolveRecoveryItem(defender.item, defender.types);
+    return {
+      minDamage: totalMin,
+      maxDamage: totalMax,
+      minPercent: Math.round((totalMin / defenderHp) * 100 * 10) / 10,
+      maxPercent: Math.round((totalMax / defenderHp) * 100 * 10) / 10,
+      guaranteed: simulateKoTurns(defenderHp, totalMax, recovery),
+      possible: simulateKoTurns(defenderHp, totalMin, recovery),
+      details: {
+        baseDamage,
+        typeEffectiveness,
+        stab,
+        weatherModifier,
+        criticalModifier: move.isCritical ? 1.5 : 1.0,
+        randomModifier: [0.85, 1.0],
+      },
+    };
+  }
+
+  // 7. 結果を構築（回復アイテムを考慮した確定数）
+  const recovery = resolveRecoveryItem(defender.item, defender.types);
   return {
     minDamage,
     maxDamage,
     minPercent: Math.round((minDamage / defenderHp) * 100 * 10) / 10,
     maxPercent: Math.round((maxDamage / defenderHp) * 100 * 10) / 10,
-    guaranteed: maxDamage > 0 ? Math.ceil(defenderHp / maxDamage) : Infinity,
-    possible: minDamage > 0 ? Math.ceil(defenderHp / minDamage) : Infinity,
+    guaranteed: simulateKoTurns(defenderHp, maxDamage, recovery),
+    possible: simulateKoTurns(defenderHp, minDamage, recovery),
     details: {
       baseDamage,
       typeEffectiveness,

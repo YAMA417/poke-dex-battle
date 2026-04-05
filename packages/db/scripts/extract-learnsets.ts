@@ -142,7 +142,7 @@ async function main(): Promise<void> {
   for (const row of pokemonRows) {
     const nameEn = row.name_en;
     const pokemonSlug = row.slug;
-    let showdownId = toID(nameEn);
+    const showdownId = toID(nameEn);
 
     // showdown の species を取得
     let species = dex.species.get(showdownId);

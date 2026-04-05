@@ -11,7 +11,10 @@ export type PowerModifierRule =
   | { condition: 'defender_has_item'; multiplier: number }
   | { condition: 'attacker_no_item'; multiplier: number }
   | { condition: 'tera_blast' }
-  | { condition: 'super_effective_boost'; multiplier: number };
+  | { condition: 'super_effective_boost'; multiplier: number }
+  | { condition: 'attacker_status_abnormal'; multiplier: number }
+  | { condition: 'defender_hp_half_or_less'; multiplier: number }
+  | { condition: 'defender_status_poison'; multiplier: number };
 
 // === 連続技情報 ===
 

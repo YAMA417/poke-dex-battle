@@ -18,7 +18,7 @@ import {
   regulations,
   regulationPokemon,
 } from './schema';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 
 if (!process.env.DATABASE_URL) {
   dotenv.config({ path: resolve(__dirname, '../../../apps/web/.env.local') });
@@ -341,8 +341,6 @@ async function seedRegulations(): Promise<number> {
     readFileSync(resolve(EXPORT_DIR, 'regulations.json'), 'utf-8')
   );
 
-  let totalPokemon = 0;
-
   for (const def of defs) {
     // regulation 挿入（nameで一意判定）
     await db
@@ -391,7 +389,6 @@ async function seedRegulations(): Promise<number> {
     await batchInsert(`  ${def.name}`, rpData, (batch) =>
       db.insert(regulationPokemon).values(batch).onConflictDoNothing()
     );
-    totalPokemon += rpData.length;
   }
 
   return defs.length;

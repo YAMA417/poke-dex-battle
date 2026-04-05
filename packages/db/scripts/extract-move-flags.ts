@@ -88,7 +88,7 @@ function main() {
   const { headers, rows } = parseCsv(csvPath);
 
   // 既存のフラグ列を削除（再実行対応）
-  const cleanHeaders = headers.filter((h) => !FLAG_COLUMNS.includes(h as any));
+  const cleanHeaders = headers.filter((h) => !FLAG_COLUMNS.includes(h as string));
 
   let matched = 0;
   let unmatched = 0;
@@ -121,7 +121,7 @@ function main() {
       flags.uses_defense_as_attack = moveData.overrideOffensiveStat === 'def' ? 'true' : '';
       flags.targets_physical_defense = moveData.overrideDefensiveStat === 'def' ? 'true' : '';
       flags.uses_target_attack =
-        (moveData as any).overrideOffensivePokemon === 'target' ? 'true' : '';
+        (moveData as Record<string, unknown>).overrideOffensivePokemon === 'target' ? 'true' : '';
     } else {
       unmatched++;
       // フラグなし

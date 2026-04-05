@@ -59,5 +59,8 @@
   "Gear Grind": { "multiHit": { "type": "fixed", "min": 2, "max": 2 } },
   "Bonemerang": { "multiHit": { "type": "fixed", "min": 2, "max": 2 } },
   "Triple Kick": { "multiHit": { "type": "escalating", "powers": [10, 20, 30] } },
-  "Triple Axel": { "multiHit": { "type": "escalating", "powers": [20, 40, 60] } }
+  "Triple Axel": { "multiHit": { "type": "escalating", "powers": [20, 40, 60] } },
+  "Facade": { "powerModifier": { "condition": "attacker_status_abnormal", "multiplier": 2.0 } },
+  "Brine": { "powerModifier": { "condition": "defender_hp_half_or_less", "multiplier": 2.0 } },
+  "Venoshock": { "powerModifier": { "condition": "defender_status_poison", "multiplier": 2.0 } }
 }

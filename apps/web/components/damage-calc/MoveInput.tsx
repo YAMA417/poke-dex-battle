@@ -44,7 +44,7 @@ interface MoveInputProps {
 
 export function MoveInput({
   pokemonName,
-  moveName,
+  moveName: _moveName,
   movePower,
   moveType,
   moveCategory,

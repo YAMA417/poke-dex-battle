@@ -126,16 +126,15 @@ export function resolveBasePower(
   }
 
   // === 持ち物による威力補正 ===
+  // 注: unconditional条件（いのちのたま等）はダメージ補正段階で適用するためスキップ
   if (attacker.itemDamageEffect?.attackerModifier) {
-    const typeEff = calcTypeEffectiveness(move.type, defender.types);
-    const multiplier = evaluateAttackerModifier(
-      attacker.itemDamageEffect.attackerModifier as ModifierRule,
-      move,
-      context,
-      typeEff
-    );
-    if (multiplier !== 1.0) {
-      power = Math.floor(power * multiplier);
+    const mod = attacker.itemDamageEffect.attackerModifier as ModifierRule;
+    if (mod.condition !== 'unconditional') {
+      const typeEff = calcTypeEffectiveness(move.type, defender.types);
+      const multiplier = evaluateAttackerModifier(mod, move, context, typeEff);
+      if (multiplier !== 1.0) {
+        power = Math.floor(power * multiplier);
+      }
     }
   } else if (attacker.item) {
     // フォールバック: 文字列比較

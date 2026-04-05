@@ -9,6 +9,7 @@ import { usePartyStore } from '@/hooks/use-party-store';
 import { PokemonSearchModal } from '@/components/pokemon/PokemonSearchModal';
 import { PokemonEditForm } from '@/components/pokemon/PokemonEditForm';
 import { ChevronRight, ChevronLeft, Plus, Trash2, Check } from 'lucide-react';
+import Image from 'next/image';
 
 type Step = 1 | 2 | 3;
 
@@ -321,11 +322,12 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                   }}
                 >
                   {species.spriteUrl ? (
-                    <img
+                    <Image
                       src={species.spriteUrl}
                       alt={species.nameJa}
                       width={56}
                       height={56}
+                      unoptimized
                       className="h-full w-full object-contain"
                     />
                   ) : (
@@ -402,11 +404,12 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
                 className={`flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-semibold transition-all ${editingIdx === i ? 'border-pokemon-blue bg-white text-pokemon-blue' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
               >
                 {species.spriteUrl ? (
-                  <img
+                  <Image
                     src={species.spriteUrl}
                     alt=""
                     width={24}
                     height={24}
+                    unoptimized
                     className="h-6 w-6 object-contain"
                   />
                 ) : (

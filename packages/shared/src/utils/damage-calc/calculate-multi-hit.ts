@@ -1,5 +1,6 @@
 import type { CalcMove, DamageResult, MultiHitPerHit } from '../../types/damage';
 import type { MultiHitInfo } from '../../types/damage-effect';
+import { simulateKoTurns, resolveRecoveryItem } from './simulate-ko-turns';
 
 /**
  * 連続技のダメージを計算する
@@ -12,13 +13,30 @@ export function calculateMultiHitDamage(
   move: CalcMove,
   multiHit: MultiHitInfo,
   hitCount: number,
-  defenderMaxHp: number
+  defenderMaxHp: number,
+  defenderItem?: string,
+  defenderTypes?: string[]
 ): DamageResult {
   if (multiHit.type === 'fixed') {
-    return calculateFixedMultiHit(singleHitCalc, move, hitCount, defenderMaxHp);
+    return calculateFixedMultiHit(
+      singleHitCalc,
+      move,
+      hitCount,
+      defenderMaxHp,
+      defenderItem,
+      defenderTypes
+    );
   }
 
-  return calculateEscalatingMultiHit(singleHitCalc, move, multiHit.powers, hitCount, defenderMaxHp);
+  return calculateEscalatingMultiHit(
+    singleHitCalc,
+    move,
+    multiHit.powers,
+    hitCount,
+    defenderMaxHp,
+    defenderItem,
+    defenderTypes
+  );
 }
 
 /** fixed型: 同じ威力を hitCount 回繰り返す */
@@ -26,7 +44,9 @@ function calculateFixedMultiHit(
   singleHitCalc: (move: CalcMove) => DamageResult,
   move: CalcMove,
   hitCount: number,
-  defenderMaxHp: number
+  defenderMaxHp: number,
+  defenderItem?: string,
+  defenderTypes?: string[]
 ): DamageResult {
   const singleResult = singleHitCalc(move);
 
@@ -44,13 +64,14 @@ function calculateFixedMultiHit(
   };
   const perHit = Array.from({ length: hitCount }, () => perHitEntry);
 
+  const recovery = resolveRecoveryItem(defenderItem, defenderTypes ?? []);
   return {
     minDamage: totalMinDamage,
     maxDamage: totalMaxDamage,
     minPercent: totalMinPercent,
     maxPercent: totalMaxPercent,
-    guaranteed: totalMaxDamage > 0 ? Math.ceil(defenderMaxHp / totalMaxDamage) : Infinity,
-    possible: totalMinDamage > 0 ? Math.ceil(defenderMaxHp / totalMinDamage) : Infinity,
+    guaranteed: simulateKoTurns(defenderMaxHp, totalMaxDamage, recovery),
+    possible: simulateKoTurns(defenderMaxHp, totalMinDamage, recovery),
     multiHit: { perHit },
     details: singleResult.details,
   };
@@ -62,7 +83,9 @@ function calculateEscalatingMultiHit(
   move: CalcMove,
   powers: number[],
   hitCount: number,
-  defenderMaxHp: number
+  defenderMaxHp: number,
+  defenderItem?: string,
+  defenderTypes?: string[]
 ): DamageResult {
   const effectiveCount = Math.min(hitCount, powers.length);
   const perHit: MultiHitPerHit[] = [];
@@ -87,13 +110,14 @@ function calculateEscalatingMultiHit(
   const totalMinPercent = Math.round((totalMinDamage / defenderMaxHp) * 100 * 10) / 10;
   const totalMaxPercent = Math.round((totalMaxDamage / defenderMaxHp) * 100 * 10) / 10;
 
+  const recovery = resolveRecoveryItem(defenderItem, defenderTypes ?? []);
   return {
     minDamage: totalMinDamage,
     maxDamage: totalMaxDamage,
     minPercent: totalMinPercent,
     maxPercent: totalMaxPercent,
-    guaranteed: totalMaxDamage > 0 ? Math.ceil(defenderMaxHp / totalMaxDamage) : Infinity,
-    possible: totalMinDamage > 0 ? Math.ceil(defenderMaxHp / totalMinDamage) : Infinity,
+    guaranteed: simulateKoTurns(defenderMaxHp, totalMaxDamage, recovery),
+    possible: simulateKoTurns(defenderMaxHp, totalMinDamage, recovery),
     multiHit: { perHit },
     details: undefined,
   };

@@ -80,22 +80,14 @@ describe('resolveEffectiveAttack', () => {
     expect(result).toBe(Math.floor(134 * 1.1)); // 147
   });
 
-  it('should apply burn to physical attacks (0.5x)', () => {
+  it('やけどは resolveEffectiveAttack では適用しない（calculate-modifier で処理）', () => {
     const burned: CalcPokemon = {
       ...attacker,
       status: 'burn',
     };
+    // やけど補正は calculate-modifier.ts に移動済み
     const result = resolveEffectiveAttack(burned, physicalMove);
-    expect(result).toBe(Math.floor(134 * 0.5)); // 67
-  });
-
-  it('should not apply burn to special attacks', () => {
-    const burned: CalcPokemon = {
-      ...attacker,
-      status: 'burn',
-    };
-    const result = resolveEffectiveAttack(burned, specialMove);
-    expect(result).toBe(137); // base spa, not affected by burn
+    expect(result).toBe(134); // やけど補正なしの素ステータス
   });
 
   it('should use spa stat for special moves', () => {
@@ -103,16 +95,15 @@ describe('resolveEffectiveAttack', () => {
     expect(result).toBe(137); // base spa
   });
 
-  it('should chain modifiers correctly', () => {
+  it('こだわりハチマキ + やけどでもここでは Band のみ適用', () => {
     const burned: CalcPokemon = {
       ...attacker,
       item: ITEM_CHOICE_BAND,
       status: 'burn',
     };
-    // Choice Band (1.5x) for physical attack, then burn (0.5x)
-    // Order: Choice Band first (134 * 1.5 = 201), then burn (201 * 0.5 = 100)
+    // やけど補正は calculate-modifier.ts に移動済みのため、ここでは Choice Band のみ
     const result = resolveEffectiveAttack(burned, physicalMove);
-    expect(result).toBe(Math.floor(Math.floor(134 * 1.5) * 0.5)); // 100
+    expect(result).toBe(Math.floor(134 * 1.5)); // 201
   });
 });
 

@@ -4,7 +4,6 @@ import type {
   AbilityData,
   ItemData,
   PokemonType,
-  MoveFlags,
   DamageEffect,
 } from '@poke-dex-battle/shared';
 

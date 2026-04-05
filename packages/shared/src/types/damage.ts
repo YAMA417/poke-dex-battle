@@ -38,7 +38,7 @@ export interface CalcPokemon {
   item?: string;
   itemId?: number;
   itemDamageEffect?: DamageEffect;
-  status?: 'burn' | 'none';
+  status?: 'burn' | 'poison' | 'paralysis' | 'none';
   currentHp?: number;
   maxHp?: number;
   teraType?: TeraType;
@@ -80,6 +80,14 @@ export interface BattleContext {
   // 場の全特性（わざわいシリーズ等の場に影響する特性を含む）
   allAttackerSideAbilities?: string[];
   allDefenderSideAbilities?: string[];
+  /** オーロラベール展開中か */
+  auroraVeil?: boolean;
+  /** フレンドガード発動中か（味方の特性） */
+  friendGuardActive?: boolean;
+  /** フラワーギフト発動中か（味方のチェリム） */
+  flowerGiftActive?: boolean;
+  /** 場に存在するオーラ特性（ダークオーラ/フェアリーオーラ等） */
+  auraAbilities?: string[];
 }
 
 /** 持ち物の種類（Phase 1: 基本10個） */

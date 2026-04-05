@@ -59,6 +59,31 @@ export function applyPowerModifierRule(
       }
       break;
 
+    case 'attacker_status_abnormal':
+      // からげんき: 攻撃側が状態異常の場合
+      if (attacker.status && attacker.status !== 'none') {
+        return Math.floor(power * rule.multiplier);
+      }
+      break;
+
+    case 'defender_hp_half_or_less':
+      // しおみず: 防御側HPが半分以下の場合
+      if (
+        defender.currentHp !== undefined &&
+        defender.maxHp !== undefined &&
+        defender.currentHp <= Math.floor(defender.maxHp / 2)
+      ) {
+        return Math.floor(power * rule.multiplier);
+      }
+      break;
+
+    case 'defender_status_poison':
+      // ベノムショック: 防御側が毒状態の場合
+      if (defender.status === 'poison') {
+        return Math.floor(power * rule.multiplier);
+      }
+      break;
+
     case 'tera_blast':
     case 'super_effective_boost':
       // calculate-modifier.ts 側で個別処理するため、ここでは何もしない

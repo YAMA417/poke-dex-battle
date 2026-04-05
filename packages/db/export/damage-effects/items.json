@@ -284,15 +284,55 @@
     "label": "弱点ダメージ x0.5"
   },
   "Eviolite": {
-    "defenderModifiers": [{ "condition": "unconditional", "multiplier": 1.5 }],
     "role": "defender",
-    "label": "防御・特防 x1.5"
+    "label": "防御・特防 x1.5",
+    "_note": "ステータス補正（resolve-effective-stat.tsで処理）。damageEffectではなくitemIs判定で適用"
   },
   "Assault Vest": {
-    "defenderModifiers": [
-      { "condition": "move_category", "category": "Special", "multiplier": 1.5 }
-    ],
     "role": "defender",
-    "label": "特防 x1.5"
+    "label": "特防 x1.5",
+    "_note": "ステータス補正（resolve-effective-stat.tsで処理）。damageEffectではなくitemIs判定で適用"
+  },
+  "Adamant Crystal": {
+    "attackerModifier": {
+      "condition": "move_type_in",
+      "types": ["Dragon", "Steel"],
+      "multiplier": 1.2
+    },
+    "role": "attacker",
+    "label": "ドラゴン/はがね技 x1.2"
+  },
+  "Lustrous Globe": {
+    "attackerModifier": {
+      "condition": "move_type_in",
+      "types": ["Dragon", "Water"],
+      "multiplier": 1.2
+    },
+    "role": "attacker",
+    "label": "ドラゴン/みず技 x1.2"
+  },
+  "Griseous Core": {
+    "attackerModifier": {
+      "condition": "move_type_in",
+      "types": ["Dragon", "Ghost"],
+      "multiplier": 1.2
+    },
+    "role": "attacker",
+    "label": "ドラゴン/ゴースト技 x1.2"
+  },
+  "Cornerstone Mask": {
+    "attackerModifier": { "condition": "unconditional", "multiplier": 1.2 },
+    "role": "attacker",
+    "label": "ダメージ x1.2"
+  },
+  "Hearthflame Mask": {
+    "attackerModifier": { "condition": "unconditional", "multiplier": 1.2 },
+    "role": "attacker",
+    "label": "ダメージ x1.2"
+  },
+  "Wellspring Mask": {
+    "attackerModifier": { "condition": "unconditional", "multiplier": 1.2 },
+    "role": "attacker",
+    "label": "ダメージ x1.2"
   }
 }

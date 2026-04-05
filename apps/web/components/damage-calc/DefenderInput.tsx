@@ -89,6 +89,10 @@ export function DefenderInput({
   dataRef.current = data;
   const onDataChangeRef = useRef(onDataChange);
   onDataChangeRef.current = onDataChange;
+  // 前のポケモン名を追跡（ポケモン変更時にアイテムをリセットするため）
+  const prevPokemonNameRef = useRef<string>('');
+  // 種族値のキャッシュ（useEffect BでpokemonData依存を外すため）
+  const baseStatsRef = useRef({ hp: 0, def: 0, spd: 0 });
 
   // EV/IV の内部 state
   const [hpEv, setHpEv] = useState(0);
@@ -216,7 +220,7 @@ export function DefenderInput({
     [megaForms, buildMegaData]
   );
 
-  // ポケモンデータ取得時に種族値・タイプ・第1特性を自動反映
+  // useEffect A: ポケモン変更時 — 種族値・タイプ・第1特性・fixedItemを反映
   // メガシンカ中はメガフォームのデータを使用するためスキップ
   useEffect(() => {
     if (!pokemonData?.baseStats) return;
@@ -230,6 +234,20 @@ export function DefenderInput({
     const spDefBase = pokemonData.baseStats.specialDefense;
     const firstAbility = pokemonData.abilities[0];
 
+    // 種族値をキャッシュ（useEffect BでpokemonData依存を外すため）
+    baseStatsRef.current = { hp: hpBase, def: defBase, spd: spDefBase };
+
+    // ポケモン変更検知
+    const currentName = pokemonData.name ?? '';
+    const pokemonChanged = currentName !== prevPokemonNameRef.current;
+    prevPokemonNameRef.current = currentName;
+
+    // fixedItem の処理
+    const fixedItem = pokemonData.fixedItemNameJa ?? null;
+
+    // アイテム決定: fixedItemがあればそれを設定、ポケモンが変わったらリセット、それ以外は現状維持
+    const itemUpdate = fixedItem ? { itemName: fixedItem } : pokemonChanged ? { itemName: '' } : {};
+
     onDataChangeRef.current({
       ...d,
       hpBaseStat: hpBase,
@@ -240,8 +258,30 @@ export function DefenderInput({
       hpStat: calcHpStat(hpBase, hpIv, hpEv, 50),
       defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
       specialDefenseStat: calcOtherStat(spDefBase, spDefIv, spDefEv, 50, d.specialDefenseModifier),
+      ...itemUpdate,
     });
-  }, [pokemonData, hpIv, hpEv, defIv, defEv, spDefIv, spDefEv]);
+    // 意図的にpokemonData/EV・IVのみに依存（ref経由で最新値を参照）
+  }, [pokemonData]);
+
+  // useEffect B: EV/IV・性格補正変更時 — ステータス実数値の再計算のみ
+  // pokemonData を依存から外し、baseStatsRef 経由で種族値を参照
+  // itemName は触らない（アイテム変更が上書きされるバグの修正）
+  useEffect(() => {
+    const { hp, def, spd } = baseStatsRef.current;
+    if (!hp) return; // 種族値未設定（ポケモン未選択）
+    const d = dataRef.current;
+
+    // メガシンカ中はベースフォームのデータ適用をスキップ
+    if (d.isMegaEvolved && d.megaFormSlug) return;
+
+    onDataChangeRef.current({
+      ...d,
+      hpStat: calcHpStat(hp, hpIv, hpEv, 50),
+      defenseStat: calcOtherStat(def, defIv, defEv, 50, d.defenseModifier),
+      specialDefenseStat: calcOtherStat(spd, spDefIv, spDefEv, 50, d.specialDefenseModifier),
+    });
+    // 意図的にpokemonData/EV・IVのみに依存（ref経由で最新値を参照）
+  }, [hpIv, hpEv, defIv, defEv, spDefIv, spDefEv]);
 
   // rerender-derived-state-no-effect: ステータスはイベントハンドラで直接計算
 
@@ -595,12 +635,13 @@ export function DefenderInput({
             </div>
           </div>
 
-          {/* 持ち物（メガシンカ中かつfixedItemありの場合はロック） */}
+          {/* 持ち物（メガシンカ中かつfixedItemありの場合、またはポケモン自体がfixedItemの場合はロック） */}
           <div className="space-y-1">
             <Label className="text-xs">持ち物</Label>
             <div
               className={
-                data.isMegaEvolved && currentMegaForm?.fixedItemNameJa
+                (data.isMegaEvolved && currentMegaForm?.fixedItemNameJa) ||
+                pokemonData?.fixedItemNameJa
                   ? 'pointer-events-none opacity-50'
                   : ''
               }

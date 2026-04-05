@@ -16,6 +16,15 @@ export const ABILITY_SHEER_FORCE = 'Sheer Force';
 export const ABILITY_STEELWORKER = 'Steelworker';
 export const ABILITY_SAND_FORCE = 'Sand Force';
 
+export const ABILITY_TOUGH_CLAWS = 'Tough Claws';
+export const ABILITY_PUNK_ROCK = 'Punk Rock';
+export const ABILITY_FLASH_FIRE = 'Flash Fire';
+export const ABILITY_TRANSISTOR = 'Transistor';
+export const ABILITY_DRAGONS_MAW = "Dragon's Maw";
+export const ABILITY_WATER_BUBBLE = 'Water Bubble';
+export const ABILITY_NEUROFORCE = 'Neuroforce';
+export const ABILITY_SHARPNESS = 'Sharpness';
+
 /** ステータス補正系 */
 export const ABILITY_HUGE_POWER = 'Huge Power';
 export const ABILITY_PURE_POWER = 'Pure Power';
@@ -26,11 +35,22 @@ export const ABILITY_PROTOSYNTHESIS = 'Protosynthesis';
 export const ABILITY_QUARK_DRIVE = 'Quark Drive';
 export const ABILITY_GUTS = 'Guts';
 export const ABILITY_FUR_COAT = 'Fur Coat';
+export const ABILITY_GORILLA_TACTICS = 'Gorilla Tactics';
+export const ABILITY_HUSTLE = 'Hustle';
+export const ABILITY_GRASS_PELT = 'Grass Pelt';
 
 /** ダメージ補正系 */
 export const ABILITY_SNIPER = 'Sniper';
 export const ABILITY_TINTED_LENS = 'Tinted Lens';
 export const ABILITY_ADAPTABILITY = 'Adaptability';
+
+/** ダブルバトル・場の特性 */
+export const ABILITY_FRIEND_GUARD = 'Friend Guard';
+export const ABILITY_FLOWER_GIFT = 'Flower Gift';
+export const ABILITY_DARK_AURA = 'Dark Aura';
+export const ABILITY_FAIRY_AURA = 'Fairy Aura';
+export const ABILITY_AURA_BREAK = 'Aura Break';
+export const ABILITY_PARENTAL_BOND = 'Parental Bond';
 
 /** 防御側ダメージ軽減系 */
 export const ABILITY_MULTISCALE = 'Multiscale';
@@ -40,6 +60,9 @@ export const ABILITY_FILTER = 'Filter';
 export const ABILITY_FLUFFY = 'Fluffy';
 export const ABILITY_THICK_FAT = 'Thick Fat';
 export const ABILITY_ICE_SCALES = 'Ice Scales';
+export const ABILITY_PURIFYING_SALT = 'Purifying Salt';
+export const ABILITY_HEATPROOF = 'Heatproof';
+export const ABILITY_PRISM_ARMOR = 'Prism Armor';
 
 /** 型破り系 */
 export const ABILITY_MOLD_BREAKER = 'Mold Breaker';
@@ -79,3 +102,16 @@ export const ITEM_PUNCHING_GLOVE = 'Punching Glove';
 /** 防御補正系 */
 export const ITEM_EVIOLITE = 'Eviolite';
 export const ITEM_ASSAULT_VEST = 'Assault Vest';
+
+/** 回復系 */
+export const ITEM_LEFTOVERS = 'Leftovers';
+export const ITEM_BLACK_SLUDGE = 'Black Sludge';
+export const ITEM_SITRUS_BERRY = 'Sitrus Berry';
+// 混乱実（6種全て同じ回復効果: HP1/3回復）
+export const CONFUSION_BERRIES = [
+  'Figy Berry',
+  'Wiki Berry',
+  'Mago Berry',
+  'Aguav Berry',
+  'Iapapa Berry',
+] as const;

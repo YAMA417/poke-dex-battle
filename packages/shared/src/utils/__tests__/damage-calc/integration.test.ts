@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ABILITY_GUTS,
   ABILITY_MULTISCALE,
+  ABILITY_PARENTAL_BOND,
   ABILITY_TECHNICIAN,
   ITEM_CHOICE_BAND,
   ITEM_LIFE_ORB,
@@ -1070,5 +1072,605 @@ describe('ダイマックス統合', () => {
     expect(vsDynamaxed.minDamage).toBe(vsNormal.minDamage);
     expect(vsDynamaxed.maxDamage).toBe(vsNormal.maxDamage);
     expect(vsDynamaxed.maxPercent).toBeCloseTo(vsNormal.maxPercent / 2, 0);
+  });
+});
+
+/**
+ * damageEffect経由のテスト（UI実動作と同等）
+ * テストでitemDamageEffectを設定し、フォールバックと同じ結果になることを検証
+ */
+describe('damageEffect経由の動作検証', () => {
+  it('いのちのたま: damageEffect経由でもフォールバックと同じ結果', () => {
+    const base: CalcPokemon = {
+      level: 50,
+      types: ['Dragon', 'Flying'],
+      stats: { hp: 0, atk: 150, def: 0, spa: 0, spd: 0, spe: 0 },
+      item: ITEM_LIFE_ORB,
+    };
+    const withDamageEffect: CalcPokemon = {
+      ...base,
+      itemDamageEffect: {
+        attackerModifier: { condition: 'unconditional', multiplier: 1.3 },
+      },
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 100, atk: 0, def: 100, spa: 0, spd: 0, spe: 0 },
+      maxHp: 100,
+    };
+    const move: CalcMove = { name: '', power: 80, type: 'Normal', category: 'Physical' };
+
+    const fallback = calculateDamageV2(base, defender, move, {});
+    const damageEffect = calculateDamageV2(withDamageEffect, defender, move, {});
+
+    // フォールバックとdamageEffect経由で同じ結果になること
+    expect(damageEffect.minDamage).toBe(fallback.minDamage);
+    expect(damageEffect.maxDamage).toBe(fallback.maxDamage);
+    // 既知の期待値
+    expect(damageEffect.minDamage).toBe(58);
+    expect(damageEffect.maxDamage).toBe(70);
+  });
+
+  it('とつげきチョッキ: damageEffect経由で特殊ダメージ減少', () => {
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 0, atk: 0, def: 0, spa: 150, spd: 0, spe: 0 },
+    };
+    const defenderBase: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 200, atk: 0, def: 100, spa: 0, spd: 100, spe: 0 },
+      maxHp: 200,
+      item: 'Assault Vest',
+    };
+    const move: CalcMove = { name: '', power: 80, type: 'Normal', category: 'Special' };
+
+    const noItem = calculateDamageV2(attacker, { ...defenderBase, item: undefined }, move, {});
+    const withItem = calculateDamageV2(attacker, defenderBase, move, {});
+
+    // とつげきチョッキありで特殊ダメージが減少すること
+    expect(withItem.maxDamage).toBeLessThan(noItem.maxDamage);
+  });
+
+  it('オーガポンのお面: damageEffect(unconditional 1.2倍)がダメージ補正で適用', () => {
+    const base: CalcPokemon = {
+      level: 50,
+      types: ['Grass', 'Fire'],
+      stats: { hp: 0, atk: 150, def: 0, spa: 0, spd: 0, spe: 0 },
+    };
+    const withMask: CalcPokemon = {
+      ...base,
+      item: 'Hearthflame Mask',
+      itemDamageEffect: {
+        attackerModifier: { condition: 'unconditional', multiplier: 1.2 },
+      },
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 200, atk: 0, def: 100, spa: 0, spd: 0, spe: 0 },
+      maxHp: 200,
+    };
+    const move: CalcMove = { name: '', power: 80, type: 'Normal', category: 'Physical' };
+
+    const noItem = calculateDamageV2(base, defender, move, {});
+    const withItem = calculateDamageV2(withMask, defender, move, {});
+
+    // お面ありでダメージが増加すること
+    expect(withItem.maxDamage).toBeGreaterThan(noItem.maxDamage);
+    // 1.2倍付近であること
+    expect(withItem.maxDamage / noItem.maxDamage).toBeCloseTo(1.2, 1);
+  });
+});
+
+/**
+ * Phase 3: エンジン改修特性の統合テスト
+ */
+describe('Phase 3: エンジン改修特性', () => {
+  // 共通ベースケース
+  const baseAttacker: CalcPokemon = {
+    level: 50,
+    types: ['Normal'],
+    stats: { hp: 200, atk: 150, def: 100, spa: 150, spd: 100, spe: 100 },
+  };
+  const baseDefender: CalcPokemon = {
+    level: 50,
+    types: ['Normal'],
+    stats: { hp: 200, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
+    maxHp: 200,
+  };
+  const basePhysicalMove: CalcMove = {
+    name: 'tackle',
+    power: 80,
+    type: 'Normal',
+    category: 'Physical',
+  };
+  const baseSpecialMove: CalcMove = {
+    name: 'hyper-voice',
+    power: 80,
+    type: 'Normal',
+    category: 'Special',
+  };
+  const baseContext: BattleContext = { isDoubleBattle: true };
+
+  // ベースダメージ（特性・コンテキスト補正なし）
+  const basePhysical = calculateDamageV2(baseAttacker, baseDefender, basePhysicalMove, baseContext);
+  const baseSpecial = calculateDamageV2(baseAttacker, baseDefender, baseSpecialMove, baseContext);
+
+  // --- ごりむちゅう (Gorilla Tactics) ---
+  describe('ごりむちゅう (Gorilla Tactics)', () => {
+    it('物理技でダメージが1.5倍になる', () => {
+      const result = calculateDamageV2(
+        { ...baseAttacker, ability: 'Gorilla Tactics' },
+        baseDefender,
+        basePhysicalMove,
+        baseContext
+      );
+      expect(result.minDamage).toBeGreaterThan(basePhysical.minDamage);
+      expect(result.maxDamage).toBeGreaterThan(basePhysical.maxDamage);
+      // 攻撃力1.5倍によるダメージ増加を確認
+      // floor(150 * 1.5) = 225 → 225/150 = 1.5倍
+      expect(result.maxDamage / basePhysical.maxDamage).toBeCloseTo(1.5, 1);
+    });
+
+    it('特殊技では補正なし', () => {
+      const result = calculateDamageV2(
+        { ...baseAttacker, ability: 'Gorilla Tactics' },
+        baseDefender,
+        baseSpecialMove,
+        baseContext
+      );
+      expect(result.maxDamage).toBe(baseSpecial.maxDamage);
+    });
+  });
+
+  // --- はりきり (Hustle) ---
+  describe('はりきり (Hustle)', () => {
+    it('物理技でダメージが1.5倍になる', () => {
+      const result = calculateDamageV2(
+        { ...baseAttacker, ability: 'Hustle' },
+        baseDefender,
+        basePhysicalMove,
+        baseContext
+      );
+      expect(result.minDamage).toBeGreaterThan(basePhysical.minDamage);
+      expect(result.maxDamage / basePhysical.maxDamage).toBeCloseTo(1.5, 1);
+    });
+
+    it('特殊技では補正なし', () => {
+      const result = calculateDamageV2(
+        { ...baseAttacker, ability: 'Hustle' },
+        baseDefender,
+        baseSpecialMove,
+        baseContext
+      );
+      expect(result.maxDamage).toBe(baseSpecial.maxDamage);
+    });
+  });
+
+  // --- くさのけがわ (Grass Pelt) ---
+  describe('くさのけがわ (Grass Pelt)', () => {
+    it('グラスフィールド時に物理ダメージが減少する', () => {
+      const result = calculateDamageV2(
+        baseAttacker,
+        { ...baseDefender, ability: 'Grass Pelt' },
+        basePhysicalMove,
+        { ...baseContext, field: 'grassy' }
+      );
+      expect(result.maxDamage).toBeLessThan(basePhysical.maxDamage);
+    });
+
+    it('グラスフィールドなしでは補正なし', () => {
+      const result = calculateDamageV2(
+        baseAttacker,
+        { ...baseDefender, ability: 'Grass Pelt' },
+        basePhysicalMove,
+        baseContext
+      );
+      expect(result.maxDamage).toBe(basePhysical.maxDamage);
+    });
+  });
+
+  // --- フラワーギフト (Flower Gift) ---
+  describe('フラワーギフト (Flower Gift)', () => {
+    it('flowerGiftActive時に物理攻撃ダメージが増加する', () => {
+      const result = calculateDamageV2(baseAttacker, baseDefender, basePhysicalMove, {
+        ...baseContext,
+        flowerGiftActive: true,
+      });
+      expect(result.minDamage).toBeGreaterThan(basePhysical.minDamage);
+      expect(result.maxDamage / basePhysical.maxDamage).toBeCloseTo(1.5, 1);
+    });
+
+    it('特殊技では攻撃側補正なし（防御側は特防1.5倍でダメージ減少）', () => {
+      const result = calculateDamageV2(baseAttacker, baseDefender, baseSpecialMove, {
+        ...baseContext,
+        flowerGiftActive: true,
+      });
+      // 特殊技では攻撃補正なし + 特防1.5倍でダメージ減少
+      expect(result.maxDamage).toBeLessThan(baseSpecial.maxDamage);
+    });
+  });
+
+  // --- オーロラベール (Aurora Veil) ---
+  describe('オーロラベール (Aurora Veil)', () => {
+    it('物理技でダメージが減少する', () => {
+      const result = calculateDamageV2(baseAttacker, baseDefender, basePhysicalMove, {
+        ...baseContext,
+        auroraVeil: true,
+      });
+      expect(result.maxDamage).toBeLessThan(basePhysical.maxDamage);
+    });
+
+    it('特殊技でダメージが減少する', () => {
+      const result = calculateDamageV2(baseAttacker, baseDefender, baseSpecialMove, {
+        ...baseContext,
+        auroraVeil: true,
+      });
+      expect(result.maxDamage).toBeLessThan(baseSpecial.maxDamage);
+    });
+
+    it('急所時はオーロラベール無効', () => {
+      const critMove: CalcMove = { ...basePhysicalMove, isCritical: true };
+      const withVeil = calculateDamageV2(baseAttacker, baseDefender, critMove, {
+        ...baseContext,
+        auroraVeil: true,
+      });
+      const withoutVeil = calculateDamageV2(baseAttacker, baseDefender, critMove, baseContext);
+      expect(withVeil.maxDamage).toBe(withoutVeil.maxDamage);
+    });
+  });
+
+  // --- フレンドガード (Friend Guard) ---
+  describe('フレンドガード (Friend Guard)', () => {
+    it('ダメージが0.75倍になる', () => {
+      const result = calculateDamageV2(baseAttacker, baseDefender, basePhysicalMove, {
+        ...baseContext,
+        friendGuardActive: true,
+      });
+      expect(result.maxDamage).toBeLessThan(basePhysical.maxDamage);
+    });
+  });
+
+  // --- ダークオーラ (Dark Aura) ---
+  describe('ダークオーラ (Dark Aura)', () => {
+    const darkMove: CalcMove = {
+      name: 'knock-off',
+      power: 80,
+      type: 'Dark',
+      category: 'Physical',
+    };
+    const baseDark = calculateDamageV2(baseAttacker, baseDefender, darkMove, baseContext);
+
+    it('悪技ダメージが増加する', () => {
+      const result = calculateDamageV2(baseAttacker, baseDefender, darkMove, {
+        ...baseContext,
+        auraAbilities: ['Dark Aura'],
+      });
+      expect(result.maxDamage).toBeGreaterThan(baseDark.maxDamage);
+    });
+
+    it('非悪技では補正なし', () => {
+      const result = calculateDamageV2(baseAttacker, baseDefender, basePhysicalMove, {
+        ...baseContext,
+        auraAbilities: ['Dark Aura'],
+      });
+      expect(result.maxDamage).toBe(basePhysical.maxDamage);
+    });
+  });
+
+  // --- フェアリーオーラ (Fairy Aura) ---
+  describe('フェアリーオーラ (Fairy Aura)', () => {
+    const fairyMove: CalcMove = {
+      name: 'moonblast',
+      power: 80,
+      type: 'Fairy',
+      category: 'Special',
+    };
+    const baseFairy = calculateDamageV2(baseAttacker, baseDefender, fairyMove, baseContext);
+
+    it('フェアリー技ダメージが増加する', () => {
+      const result = calculateDamageV2(baseAttacker, baseDefender, fairyMove, {
+        ...baseContext,
+        auraAbilities: ['Fairy Aura'],
+      });
+      expect(result.maxDamage).toBeGreaterThan(baseFairy.maxDamage);
+    });
+
+    it('非フェアリー技では補正なし', () => {
+      const result = calculateDamageV2(baseAttacker, baseDefender, basePhysicalMove, {
+        ...baseContext,
+        auraAbilities: ['Fairy Aura'],
+      });
+      expect(result.maxDamage).toBe(basePhysical.maxDamage);
+    });
+  });
+
+  // --- オーラブレイク (Aura Break) ---
+  describe('オーラブレイク (Aura Break)', () => {
+    const darkMove: CalcMove = {
+      name: 'knock-off',
+      power: 80,
+      type: 'Dark',
+      category: 'Physical',
+    };
+    const baseDark = calculateDamageV2(baseAttacker, baseDefender, darkMove, baseContext);
+
+    it('ダークオーラ + オーラブレイク時に悪技ダメージが減少する', () => {
+      const result = calculateDamageV2(baseAttacker, baseDefender, darkMove, {
+        ...baseContext,
+        auraAbilities: ['Dark Aura', 'Aura Break'],
+      });
+      // 3072/4096 ≒ 0.75 なのでダメージ減少
+      expect(result.maxDamage).toBeLessThan(baseDark.maxDamage);
+    });
+  });
+});
+
+/**
+ * Phase 4-5: 技固有効果 + メカニクス
+ */
+describe('Phase 4-5: 技固有効果 + メカニクス', () => {
+  // --- Body Press (ボディプレス) ---
+  it('Body Press: 攻撃側のdef値でダメージ計算される', () => {
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Fighting'],
+      stats: { hp: 175, atk: 100, def: 200, spa: 80, spd: 100, spe: 80 },
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 175, atk: 100, def: 120, spa: 100, spd: 100, spe: 100 },
+      maxHp: 175,
+    };
+    const move: CalcMove = {
+      name: 'Body Press',
+      power: 80,
+      type: 'Fighting',
+      category: 'Physical',
+      flags: { usesDefenseAsAttack: true },
+    };
+
+    const result = calculateDamageV2(attacker, defender, move, {});
+    // def=200 を使うため高ダメージ
+    expect(result.minDamage).toBe(152);
+    expect(result.maxDamage).toBe(180);
+
+    // フラグなしではatk=100を使うため低ダメージ
+    const noFlag = calculateDamageV2(attacker, defender, { ...move, flags: undefined }, {});
+    expect(noFlag.maxDamage).toBe(92);
+  });
+
+  // --- Foul Play (イカサマ) ---
+  it('Foul Play: 防御側のatk値でダメージ計算される', () => {
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Dark'],
+      stats: { hp: 175, atk: 80, def: 100, spa: 100, spd: 100, spe: 100 },
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 175, atk: 200, def: 120, spa: 100, spd: 100, spe: 100 },
+      maxHp: 175,
+    };
+    const move: CalcMove = {
+      name: 'Foul Play',
+      power: 95,
+      type: 'Dark',
+      category: 'Physical',
+      flags: { usesTargetAttack: true },
+    };
+
+    const result = calculateDamageV2(attacker, defender, move, {});
+    // 防御側のatk=200を使うため高ダメージ
+    expect(result.minDamage).toBe(90);
+    expect(result.maxDamage).toBe(106);
+
+    // フラグなしでは攻撃側のatk=80を使うため低ダメージ
+    const noFlag = calculateDamageV2(attacker, defender, { ...move, flags: undefined }, {});
+    expect(noFlag.maxDamage).toBe(43);
+  });
+
+  // --- Photon Geyser (フォトンゲイザー) ---
+  it('Photon Geyser: atk > spa 時に物理技になる', () => {
+    const atkHigher: CalcPokemon = {
+      level: 50,
+      types: ['Psychic'],
+      stats: { hp: 175, atk: 180, def: 100, spa: 120, spd: 100, spe: 100 },
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 120, spe: 100 },
+      maxHp: 175,
+    };
+    const move: CalcMove = {
+      name: 'Photon Geyser',
+      power: 100,
+      type: 'Psychic',
+      category: 'Special',
+    };
+
+    // atk(180) > spa(120) → 物理技として計算（def=100 を参照）
+    const result = calculateDamageV2(atkHigher, defender, move, {});
+    expect(result.minDamage).toBe(102);
+    expect(result.maxDamage).toBe(121);
+
+    // atk < spa のときは特殊技のまま（spd=120 を参照）
+    const spaHigher: CalcPokemon = {
+      ...atkHigher,
+      stats: { hp: 175, atk: 120, def: 100, spa: 180, spd: 100, spe: 100 },
+    };
+    const resultSpecial = calculateDamageV2(spaHigher, defender, move, {});
+    expect(resultSpecial.minDamage).toBe(85);
+    expect(resultSpecial.maxDamage).toBe(102);
+  });
+
+  // --- Facade (からげんき) ---
+  it('Facade: 状態異常時に威力2倍', () => {
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 175, atk: 150, def: 100, spa: 100, spd: 100, spe: 100 },
+      status: 'burn',
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 175, atk: 100, def: 120, spa: 100, spd: 100, spe: 100 },
+      maxHp: 175,
+    };
+    const move: CalcMove = {
+      name: 'Facade',
+      power: 70,
+      type: 'Normal',
+      category: 'Physical',
+      damageEffect: {
+        powerModifier: { condition: 'attacker_status_abnormal', multiplier: 2.0 },
+      },
+    };
+
+    const withBurn = calculateDamageV2(attacker, defender, move, {});
+    const noBurn = calculateDamageV2({ ...attacker, status: undefined }, defender, move, {});
+    // やけど時: 威力2倍だがやけど0.5倍補正もある → 結果はほぼ同等
+    expect(withBurn.minDamage).toBe(50);
+    expect(noBurn.minDamage).toBe(51);
+  });
+
+  // --- Brine (しおみず) ---
+  it('Brine: 防御側HP50%以下で威力2倍', () => {
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Water'],
+      stats: { hp: 175, atk: 100, def: 100, spa: 150, spd: 100, spe: 100 },
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 120, spe: 100 },
+      maxHp: 175,
+      currentHp: 80,
+    };
+    const move: CalcMove = {
+      name: 'Brine',
+      power: 65,
+      type: 'Water',
+      category: 'Special',
+      damageEffect: {
+        powerModifier: { condition: 'defender_hp_half_or_less', multiplier: 2.0 },
+      },
+    };
+
+    const halfHp = calculateDamageV2(attacker, defender, move, {});
+    const fullHp = calculateDamageV2(attacker, { ...defender, currentHp: 175 }, move, {});
+    expect(halfHp.minDamage).toBe(93);
+    expect(halfHp.maxDamage).toBe(109);
+    expect(fullHp.maxDamage).toBe(55);
+  });
+
+  // --- Venoshock (ベノムショック) ---
+  it('Venoshock: 防御側毒状態で威力2倍', () => {
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Poison'],
+      stats: { hp: 175, atk: 100, def: 100, spa: 150, spd: 100, spe: 100 },
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 175, atk: 100, def: 100, spa: 100, spd: 120, spe: 100 },
+      maxHp: 175,
+      status: 'poison',
+    };
+    const move: CalcMove = {
+      name: 'Venoshock',
+      power: 65,
+      type: 'Poison',
+      category: 'Special',
+      damageEffect: {
+        powerModifier: { condition: 'defender_status_poison', multiplier: 2.0 },
+      },
+    };
+
+    const poisoned = calculateDamageV2(attacker, defender, move, {});
+    const notPoisoned = calculateDamageV2(attacker, { ...defender, status: undefined }, move, {});
+    expect(poisoned.minDamage).toBe(93);
+    expect(poisoned.maxDamage).toBe(109);
+    expect(notPoisoned.maxDamage).toBe(55);
+  });
+
+  // --- Parental Bond (おやこあい) ---
+  it('Parental Bond: 合計ダメージが1.25倍になる', () => {
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 175, atk: 150, def: 100, spa: 100, spd: 100, spe: 100 },
+      ability: ABILITY_PARENTAL_BOND,
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 175, atk: 100, def: 120, spa: 100, spd: 100, spe: 100 },
+      maxHp: 175,
+    };
+    const move: CalcMove = {
+      name: 'Return',
+      power: 102,
+      type: 'Normal',
+      category: 'Physical',
+    };
+
+    const pb = calculateDamageV2(attacker, defender, move, {});
+    const normal = calculateDamageV2({ ...attacker, ability: undefined }, defender, move, {});
+    // おやこあい: 1発目 + 2発目(0.25倍)
+    expect(pb.minDamage).toBe(91);
+    expect(pb.maxDamage).toBe(108);
+    expect(normal.minDamage).toBe(73);
+    expect(normal.maxDamage).toBe(87);
+    // 合計 ≒ 通常の1.25倍
+    expect(pb.maxDamage).toBeGreaterThan(normal.maxDamage);
+  });
+
+  // --- やけど補正 ---
+  it('やけど補正: 物理技で0.5倍、こんじょうで無効化', () => {
+    const attacker: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 175, atk: 150, def: 100, spa: 100, spd: 100, spe: 100 },
+      status: 'burn',
+    };
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 175, atk: 100, def: 120, spa: 100, spd: 100, spe: 100 },
+      maxHp: 175,
+    };
+    const move: CalcMove = {
+      name: 'Return',
+      power: 102,
+      type: 'Normal',
+      category: 'Physical',
+    };
+
+    const burned = calculateDamageV2(attacker, defender, move, {});
+    const noBurn = calculateDamageV2({ ...attacker, status: undefined }, defender, move, {});
+    // やけどで物理ダメージが約半減
+    expect(burned.minDamage).toBe(36);
+    expect(burned.maxDamage).toBe(43);
+    expect(noBurn.maxDamage).toBe(87);
+
+    // こんじょう持ちはやけど補正なし + こんじょう1.5倍
+    const gutsAttacker: CalcPokemon = {
+      ...attacker,
+      ability: ABILITY_GUTS,
+    };
+    const gutsBurned = calculateDamageV2(gutsAttacker, defender, move, {});
+    expect(gutsBurned.minDamage).toBe(109);
+    expect(gutsBurned.maxDamage).toBe(129);
+    expect(gutsBurned.maxDamage).toBeGreaterThan(noBurn.maxDamage);
   });
 });

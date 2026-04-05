@@ -3,16 +3,16 @@
     "attackerModifier": { "condition": "move_power_lte", "threshold": 60, "multiplier": 1.5 }
   },
   "Iron Fist": {
-    "attackerModifier": { "condition": "move_flag", "flag": "isPunch", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_flag", "flag": "isPunchMove", "multiplier": 1.2 }
   },
   "Reckless": {
-    "attackerModifier": { "condition": "move_flag", "flag": "isRecoil", "multiplier": 1.2 }
+    "attackerModifier": { "condition": "move_flag", "flag": "isRecoilMove", "multiplier": 1.2 }
   },
   "Strong Jaw": {
-    "attackerModifier": { "condition": "move_flag", "flag": "isBite", "multiplier": 1.5 }
+    "attackerModifier": { "condition": "move_flag", "flag": "isBiteMove", "multiplier": 1.5 }
   },
   "Mega Launcher": {
-    "attackerModifier": { "condition": "move_flag", "flag": "isAura", "multiplier": 1.5 }
+    "attackerModifier": { "condition": "move_flag", "flag": "isAuraMove", "multiplier": 1.5 }
   },
   "Sheer Force": {
     "attackerModifier": {
@@ -22,7 +22,7 @@
     }
   },
   "Sharpness": {
-    "attackerModifier": { "condition": "move_flag", "flag": "isSlicing", "multiplier": 1.5 }
+    "attackerModifier": { "condition": "move_flag", "flag": "isSlicingMove", "multiplier": 1.5 }
   },
   "Steelworker": {
     "attackerModifier": { "condition": "move_type", "type": "Steel", "multiplier": 1.5 }
@@ -41,7 +41,7 @@
   "Filter": { "defenderModifiers": [{ "condition": "super_effective", "multiplier": 0.75 }] },
   "Fluffy": {
     "defenderModifiers": [
-      { "condition": "move_flag", "flag": "isContact", "multiplier": 0.5 },
+      { "condition": "move_flag", "flag": "isContactMove", "multiplier": 0.5 },
       { "condition": "move_type", "type": "Fire", "multiplier": 2.0 }
     ]
   },
@@ -58,5 +58,37 @@
   "Tinted Lens": {
     "attackerModifier": { "condition": "not_very_effective_boost", "multiplier": 2.0 }
   },
-  "Sniper": { "attackerModifier": { "condition": "critical_boost", "multiplier": 1.5 } }
+  "Sniper": { "attackerModifier": { "condition": "critical_boost", "multiplier": 1.5 } },
+  "Tough Claws": {
+    "attackerModifier": { "condition": "move_flag", "flag": "isContactMove", "multiplier": 1.3 }
+  },
+  "Punk Rock": {
+    "attackerModifier": { "condition": "move_flag", "flag": "isSoundMove", "multiplier": 1.3 },
+    "defenderModifiers": [{ "condition": "move_flag", "flag": "isSoundMove", "multiplier": 0.5 }]
+  },
+  "Flash Fire": {
+    "attackerModifier": { "condition": "move_type", "type": "Fire", "multiplier": 1.5 }
+  },
+  "Transistor": {
+    "attackerModifier": { "condition": "move_type", "type": "Electric", "multiplier": 1.3 }
+  },
+  "Dragon's Maw": {
+    "attackerModifier": { "condition": "move_type", "type": "Dragon", "multiplier": 1.5 }
+  },
+  "Water Bubble": {
+    "attackerModifier": { "condition": "move_type", "type": "Water", "multiplier": 2.0 },
+    "defenderModifiers": [{ "condition": "move_type", "type": "Fire", "multiplier": 0.5 }]
+  },
+  "Purifying Salt": {
+    "defenderModifiers": [{ "condition": "move_type", "type": "Ghost", "multiplier": 0.5 }]
+  },
+  "Heatproof": {
+    "defenderModifiers": [{ "condition": "move_type", "type": "Fire", "multiplier": 0.5 }]
+  },
+  "Prism Armor": {
+    "defenderModifiers": [{ "condition": "super_effective", "multiplier": 0.75 }]
+  },
+  "Neuroforce": {
+    "attackerModifier": { "condition": "super_effective", "multiplier": 1.25 }
+  }
 }

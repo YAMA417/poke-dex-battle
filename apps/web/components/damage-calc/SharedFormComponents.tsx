@@ -218,12 +218,6 @@ const TERA_TYPE_OPTIONS: { value: TeraType; label: string }[] = [
   { value: 'Stellar', label: 'ステラ' },
 ];
 
-/** テラタイプの表示名を取得（ステラ対応） */
-function getTeraTypeDisplayName(type: TeraType): string {
-  if (type === 'Stellar') return 'ステラ';
-  return getTypeDisplayName(type, 'ja');
-}
-
 interface TerastalControlProps {
   idPrefix: string;
   isTerastallized: boolean;

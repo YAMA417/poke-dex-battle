@@ -16,6 +16,8 @@ import {
   isSpreadMoveTarget,
   moveIs,
   resolveGroupItem,
+  simulateKoTurns,
+  resolveRecoveryItem,
 } from '@poke-dex-battle/shared';
 import {
   useAllMoves,
@@ -93,18 +95,21 @@ const DEFAULT_DEFENDER_DATA: DefenderData = {
 function combineDamage(
   damageA: DamageResultType,
   damageB: DamageResultType,
-  defenderHp: number
+  defenderHp: number,
+  defenderItem?: string,
+  defenderTypes?: string[]
 ): DamageResultType {
   const minDamage = damageA.minDamage + damageB.minDamage;
   const maxDamage = damageA.maxDamage + damageB.maxDamage;
+  const recovery = resolveRecoveryItem(defenderItem, defenderTypes ?? []);
 
   return {
     minDamage,
     maxDamage,
     minPercent: damageA.minPercent + damageB.minPercent,
     maxPercent: damageA.maxPercent + damageB.maxPercent,
-    guaranteed: maxDamage > 0 ? Math.ceil(defenderHp / maxDamage) : Infinity,
-    possible: minDamage > 0 ? Math.ceil(defenderHp / minDamage) : Infinity,
+    guaranteed: simulateKoTurns(defenderHp, maxDamage, recovery),
+    possible: simulateKoTurns(defenderHp, minDamage, recovery),
   };
 }
 
@@ -451,7 +456,16 @@ export function DamageCalculator() {
         ? {
             attackerAOnly: t1A,
             attackerBOnly: t1B,
-            combined: t1A && t1B ? combineDamage(t1A, t1B, defenderData1.hpStat) : null,
+            combined:
+              t1A && t1B
+                ? combineDamage(
+                    t1A,
+                    t1B,
+                    defenderData1.hpStat,
+                    defenderData1.itemName || undefined,
+                    defenderData1.pokemonTypes
+                  )
+                : null,
           }
         : null;
 
@@ -460,7 +474,16 @@ export function DamageCalculator() {
         ? {
             attackerAOnly: t2A,
             attackerBOnly: t2B,
-            combined: t2A && t2B ? combineDamage(t2A, t2B, defenderData2.hpStat) : null,
+            combined:
+              t2A && t2B
+                ? combineDamage(
+                    t2A,
+                    t2B,
+                    defenderData2.hpStat,
+                    defenderData2.itemName || undefined,
+                    defenderData2.pokemonTypes
+                  )
+                : null,
           }
         : null;
 

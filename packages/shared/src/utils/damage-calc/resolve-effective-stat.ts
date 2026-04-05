@@ -1,7 +1,10 @@
 import {
   ABILITY_FUR_COAT,
+  ABILITY_GORILLA_TACTICS,
+  ABILITY_GRASS_PELT,
   ABILITY_GUTS,
   ABILITY_HADRON_ENGINE,
+  ABILITY_HUSTLE,
   ABILITY_ORICHALCUM_PULSE,
   ABILITY_PROTOSYNTHESIS,
   ABILITY_QUARK_DRIVE,
@@ -19,7 +22,7 @@ import {
   ITEM_MUSCLE_BAND,
   ITEM_WISE_GLASSES,
 } from '../../constants/damage-calc-names';
-import type { BattleContext, CalcMove, CalcPokemon } from '../../types/damage';
+import type { BattleContext, CalcMove, CalcPokemon, StatStage } from '../../types/damage';
 import { getStatStageMultiplier } from '../damage-calc';
 import { abilityIs, itemIs } from '../normalize-id';
 
@@ -37,12 +40,26 @@ export function resolveEffectiveAttack(
   attacker: CalcPokemon,
   move: CalcMove,
   context?: BattleContext,
-  opponentAbility?: string
+  opponentAbility?: string,
+  defender?: CalcPokemon
 ): number {
   // 物理か特殊かで使用するステータスを選択
   const isPhysical = move.category === 'Physical';
-  const baseStat = isPhysical ? attacker.stats.atk : attacker.stats.spa;
-  const stage = isPhysical ? (attacker.boosts?.atk ?? 0) : (attacker.boosts?.spa ?? 0);
+
+  // ボディプレス: 攻撃側のぼうぎょでダメージ計算
+  // イカサマ: 防御側のこうげきでダメージ計算
+  let baseStat: number;
+  let stage: StatStage;
+  if (move.flags?.usesDefenseAsAttack) {
+    baseStat = attacker.stats.def;
+    stage = attacker.boosts?.def ?? 0;
+  } else if (move.flags?.usesTargetAttack && defender) {
+    baseStat = defender.stats.atk;
+    stage = defender.boosts?.atk ?? 0;
+  } else {
+    baseStat = isPhysical ? attacker.stats.atk : attacker.stats.spa;
+    stage = isPhysical ? (attacker.boosts?.atk ?? 0) : (attacker.boosts?.spa ?? 0);
+  }
 
   // ランク補正を計算
   const multiplier = getStatStageMultiplier(stage);
@@ -122,6 +139,21 @@ export function resolveEffectiveAttack(
     finalAttack = Math.floor(finalAttack * 1.5);
   }
 
+  // ごりむちゅう (Gorilla Tactics): 物理攻撃1.5倍
+  if (abilityIs(attacker.ability, ABILITY_GORILLA_TACTICS) && isPhysical) {
+    finalAttack = Math.floor(finalAttack * 1.5);
+  }
+
+  // はりきり (Hustle): 物理攻撃1.5倍
+  if (abilityIs(attacker.ability, ABILITY_HUSTLE) && isPhysical) {
+    finalAttack = Math.floor(finalAttack * 1.5);
+  }
+
+  // フラワーギフト (Flower Gift): 味方のチェリムの特性で晴れ時に物理攻撃1.5倍
+  if (context?.flowerGiftActive && isPhysical) {
+    finalAttack = Math.floor(finalAttack * 1.5);
+  }
+
   // === わざわいシリーズ（場にいるポケモンの特性が相手側全体に影響） ===
   // 防御側サイドの全特性をチェック（味方含む）
   const defenderSideAbilities = context?.allDefenderSideAbilities ?? [];
@@ -154,11 +186,6 @@ export function resolveEffectiveAttack(
     (itemIs(attacker.item, ITEM_WISE_GLASSES) && !isPhysical)
   ) {
     finalAttack = Math.floor(finalAttack * 1.1);
-  }
-
-  // やけど: 物理攻撃を0.5倍（こんじょう持ちは除く）
-  if (attacker.status === 'burn' && isPhysical && !abilityIs(attacker.ability, ABILITY_GUTS)) {
-    finalAttack = Math.floor(finalAttack * 0.5);
   }
 
   return finalAttack;
@@ -216,6 +243,20 @@ export function resolveEffectiveDefense(
   // ファーコート (Fur Coat): 物理防御を2倍
   if (abilityIs(defender.ability, ABILITY_FUR_COAT) && usesPhysicalDef) {
     finalDefense = Math.floor(finalDefense * 2);
+  }
+
+  // くさのけがわ (Grass Pelt): グラスフィールド時に物理防御1.5倍
+  if (
+    abilityIs(defender.ability, ABILITY_GRASS_PELT) &&
+    usesPhysicalDef &&
+    context?.field === 'grassy'
+  ) {
+    finalDefense = Math.floor(finalDefense * 1.5);
+  }
+
+  // フラワーギフト (Flower Gift): 味方のチェリムの特性で晴れ時に特防1.5倍
+  if (context?.flowerGiftActive && !usesPhysicalDef) {
+    finalDefense = Math.floor(finalDefense * 1.5);
   }
 
   // こだいかっせい (Protosynthesis) / クォークチャージ (Quark Drive): 防御側の補正

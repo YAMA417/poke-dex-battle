@@ -1,6 +1,6 @@
 import { db } from '@poke-dex-battle/db';
-import { learnsets, moves, pokemon } from '@poke-dex-battle/db/schema';
-import { eq, inArray } from 'drizzle-orm';
+import { learnsets, pokemon } from '@poke-dex-battle/db/schema';
+import { eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ pokemon: string }> }) {

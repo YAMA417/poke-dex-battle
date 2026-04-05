@@ -1,8 +1,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { calcActualStats } from '@poke-dex-battle/shared';
-import type { BaseStats, Stats, Nature } from '@poke-dex-battle/shared';
 import Link from 'next/link';
 import { Zap, Users, BarChart3 } from 'lucide-react';
 

@@ -1,4 +1,5 @@
 import {
+  ABILITY_GUTS,
   ABILITY_MOLD_BREAKER,
   ABILITY_SNIPER,
   ABILITY_TERAVOLT,
@@ -9,7 +10,7 @@ import {
 import { getTypeResistBerryType } from '../../constants/item-type-map';
 import { calcTypeEffectiveness } from '../../constants/types';
 import type { BattleContext, CalcMove, CalcPokemon } from '../../types/damage';
-import type { ModifierRule, PowerModifierRule } from '../../types/damage-effect';
+import type { ModifierRule } from '../../types/damage-effect';
 import { isPokemonType } from '../../types/pokemon';
 import {
   calculateDefenderAbilityModifier,
@@ -179,14 +180,46 @@ export function calculateModifier(
     otherModifiers.push(screenModifier);
   }
 
-  // いのちのたま
+  // オーロラベール (Aurora Veil): 物理・特殊両方に壁補正（急所で無効）
+  if (context.auroraVeil && !move.isCritical) {
+    otherModifiers.push(screenModifier);
+  }
+
+  // いのちのたま等（unconditional条件のアイテムはダメージ補正段階で適用）
   if (attacker.itemDamageEffect?.attackerModifier) {
-    const mod = attacker.itemDamageEffect.attackerModifier;
+    const mod = attacker.itemDamageEffect.attackerModifier as ModifierRule;
     if (mod.condition === 'unconditional') {
       otherModifiers.push(mod.multiplier);
     }
   } else if (itemIs(attacker.item, ITEM_LIFE_ORB)) {
     otherModifiers.push(1.3);
+  }
+
+  // フレンドガード (Friend Guard): 味方の特性でダメージ0.75倍
+  if (context.friendGuardActive) {
+    otherModifiers.push(0.75);
+  }
+
+  // ダークオーラ / フェアリーオーラ / オーラブレイク
+  const auras = context.auraAbilities ?? [];
+  const hasDarkAura = auras.includes('Dark Aura');
+  const hasFairyAura = auras.includes('Fairy Aura');
+  const hasAuraBreak = auras.includes('Aura Break');
+
+  if (hasDarkAura && move.type === 'Dark') {
+    otherModifiers.push(hasAuraBreak ? 3072 / 4096 : 5448 / 4096);
+  }
+  if (hasFairyAura && move.type === 'Fairy') {
+    otherModifiers.push(hasAuraBreak ? 3072 / 4096 : 5448 / 4096);
+  }
+
+  // やけど: 物理技かつこんじょう以外 → 0.5倍
+  if (
+    attacker.status === 'burn' &&
+    move.category === 'Physical' &&
+    !abilityIs(attacker.ability, ABILITY_GUTS)
+  ) {
+    otherModifiers.push(0.5);
   }
 
   // かたやぶり系
