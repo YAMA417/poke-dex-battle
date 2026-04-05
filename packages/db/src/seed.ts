@@ -333,6 +333,7 @@ interface RegulationDef {
   toDate: string | null;
   isDefault: boolean;
   includePokemonCategories: string[];
+  includePokemonSlugs?: string[];
 }
 
 async function seedRegulations(): Promise<number> {
@@ -366,21 +367,43 @@ async function seedRegulations(): Promise<number> {
 
     console.log(`  ${def.name} (id=${reg.id}): ポケモン登録中...`);
 
-    // includePokemonCategories に該当する最終進化ポケモンIDを取得
+    // includePokemonSlugs が指定されている場合は slug ベースで対象を絞る
+    // 指定がなければ従来通り includePokemonCategories で動的生成
     type PokemonCategory = (typeof pokemon.$inferSelect)['category'];
     type FormType = (typeof pokemon.$inferSelect)['formType'];
-    const categories = def.includePokemonCategories as PokemonCategory[];
-    const TEAM_SLOT_FORM_TYPES: FormType[] = ['base', 'variant'];
-    const pkIds = await db
-      .select({ id: pokemon.id })
-      .from(pokemon)
-      .where(
-        and(
-          inArray(pokemon.category, categories),
-          eq(pokemon.nfe, false),
-          inArray(pokemon.formType, TEAM_SLOT_FORM_TYPES)
-        )
-      );
+
+    let pkIds: { id: number }[];
+
+    if (def.includePokemonSlugs && def.includePokemonSlugs.length > 0) {
+      // slug → name_en マップを構築
+      const pkCsv = parseCsv(resolve(EXPORT_DIR, 'pokemon.csv'));
+      const slugToName = new Map(pkCsv.map((r) => [r.slug, r.name_en]));
+      const targetNames = def.includePokemonSlugs
+        .map((s) => slugToName.get(s))
+        .filter((n): n is string => !!n);
+
+      const TEAM_SLOT_FORM_TYPES: FormType[] = ['base', 'variant'];
+      pkIds = await db
+        .select({ id: pokemon.id })
+        .from(pokemon)
+        .where(
+          and(inArray(pokemon.name, targetNames), inArray(pokemon.formType, TEAM_SLOT_FORM_TYPES))
+        );
+      console.log(`    slug指定: ${def.includePokemonSlugs.length}件 → DB一致: ${pkIds.length}件`);
+    } else {
+      const categories = def.includePokemonCategories as PokemonCategory[];
+      const TEAM_SLOT_FORM_TYPES: FormType[] = ['base', 'variant'];
+      pkIds = await db
+        .select({ id: pokemon.id })
+        .from(pokemon)
+        .where(
+          and(
+            inArray(pokemon.category, categories),
+            eq(pokemon.nfe, false),
+            inArray(pokemon.formType, TEAM_SLOT_FORM_TYPES)
+          )
+        );
+    }
 
     const rpData = pkIds.map((p) => ({ regulationId: reg.id, pokemonId: p.id }));
 
