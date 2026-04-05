@@ -4,7 +4,7 @@ import { Pokemon } from '@poke-dex-battle/shared';
 import {
   calcActualStats,
   calcEvContributionToActualStats,
-  MAX_EV_CONTRIBUTION_TO_ACTUAL_STATS,
+  MAX_EV_TOTAL,
   splitActualStatsByEvContribution,
 } from '@poke-dex-battle/shared';
 import type { BaseStats, Nature, Stats } from '@poke-dex-battle/shared';
@@ -129,28 +129,16 @@ export function ActualStatsDisplay({
   onStatInputChange,
   onStatInputBlur,
 }: ActualStatsDisplayProps) {
-  const actual = calcActualStats(
-    baseStats,
-    pokemon.ivs,
-    pokemon.evs,
-    pokemon.level,
-    pokemon.nature
-  );
+  const actual = calcActualStats(baseStats, pokemon.evs, pokemon.nature);
 
   // EV増加分を表示する場合、基本値とEV増加分を計算
   const splitStats = showEvContribution
-    ? splitActualStatsByEvContribution(
-        baseStats,
-        pokemon.ivs,
-        pokemon.evs,
-        pokemon.level,
-        pokemon.nature
-      )
+    ? splitActualStatsByEvContribution(baseStats, pokemon.evs, pokemon.nature)
     : null;
 
   const NATURE_UP_DOWN = getNatureEffect(pokemon.nature);
   const evContribution = calcEvContributionToActualStats(pokemon.evs);
-  const isEvContributionAtMax = evContribution >= MAX_EV_CONTRIBUTION_TO_ACTUAL_STATS;
+  const isEvContributionAtMax = evContribution >= MAX_EV_TOTAL;
 
   const stats: { key: keyof Stats; label: string; barColor: string }[] = [
     { key: 'hp', label: 'H', barColor: 'bg-red-400' },
@@ -170,10 +158,7 @@ export function ActualStatsDisplay({
           <span
             className={`font-bold tabular-nums ${isEvContributionAtMax ? 'text-red-500' : 'text-gray-700'}`}
           >
-            {evContribution}{' '}
-            <span className="font-normal text-gray-400">
-              / {MAX_EV_CONTRIBUTION_TO_ACTUAL_STATS}
-            </span>
+            {evContribution} <span className="font-normal text-gray-400">/ {MAX_EV_TOTAL}</span>
           </span>
         </div>
         <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
@@ -182,7 +167,7 @@ export function ActualStatsDisplay({
               isEvContributionAtMax ? 'bg-red-400' : 'bg-pokemon-blue'
             }`}
             style={{
-              width: `${Math.min(100, Math.round((evContribution / MAX_EV_CONTRIBUTION_TO_ACTUAL_STATS) * 100))}%`,
+              width: `${Math.min(100, Math.round((evContribution / MAX_EV_TOTAL) * 100))}%`,
             }}
           />
         </div>

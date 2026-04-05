@@ -49,235 +49,125 @@ export function getNatureModifier(nature: Nature, stat: keyof Omit<Stats, 'hp'>)
 }
 
 /**
- * HP実数値を計算
- * HP = (種族値×2 + 個体値 + 努力値÷4) × レベル÷100 + レベル + 10
+ * HP実数値を計算（チャンピオンズ仕様）
+ * HP = 種族値 + 75 + 能力P
+ * @param base - HP種族値
+ * @param ev - 能力ポイント（0〜32）
  */
-export function calcHpStat(base: number, iv: number, ev: number, level: number): number {
-  return Math.floor(((base * 2 + iv + Math.floor(ev / 4)) * level) / 100) + level + 10;
+export function calcHpStat(base: number, ev: number): number {
+  return base + 75 + ev;
 }
 
 /**
- * HP以外の実数値を計算
- * 能力値 = ((種族値×2 + 個体値 + 努力値÷4) × レベル÷100 + 5) × 性格補正
+ * HP以外の実数値を計算（チャンピオンズ仕様）
+ * 能力値 = floor((種族値 + 20 + 能力P) * 性格補正)
+ * @param base - 種族値
+ * @param ev - 能力ポイント（0〜32）
+ * @param natureModifier - 性格補正値（0.9 / 1.0 / 1.1）
  */
-export function calcOtherStat(
-  base: number,
-  iv: number,
-  ev: number,
-  level: number,
-  natureModifier: number
-): number {
-  return Math.floor(
-    (Math.floor(((base * 2 + iv + Math.floor(ev / 4)) * level) / 100) + 5) * natureModifier
-  );
+export function calcOtherStat(base: number, ev: number, natureModifier: number): number {
+  return Math.floor((base + 20 + ev) * natureModifier);
 }
 
 /**
- * HP実数値から努力値を逆算（最小EVを返す）
- * 到達不可能な場合は最も近いEV（252）を返す
+ * HP実数値から能力ポイントを逆算
+ * @param targetStat - 目標HP実数値
+ * @param base - HP種族値
+ * @returns 能力ポイント（0〜32にクランプ）
  */
-export function reverseCalcHpEv(
-  targetStat: number,
-  base: number,
-  iv: number,
-  level: number
-): number {
-  for (let ev = 0; ev <= 252; ev += 4) {
-    if (calcHpStat(base, iv, ev, level) >= targetStat) {
-      return ev;
-    }
-  }
-  return 252;
+export function reverseCalcHpEv(targetStat: number, base: number): number {
+  return Math.max(0, Math.min(32, targetStat - base - 75));
 }
 
 /**
- * HP以外の実数値から努力値を逆算（最小EVを返す）
- * 到達不可能な場合は最も近いEV（252）を返す
+ * HP以外の実数値から能力ポイントを逆算（最小EVを返す）
+ * 到達不可能な場合は最も近いEV（32）を返す
+ * @param targetStat - 目標実数値
+ * @param base - 種族値
+ * @param natureModifier - 性格補正値
+ * @returns 能力ポイント（0〜32）
  */
 export function reverseCalcOtherEv(
   targetStat: number,
   base: number,
-  iv: number,
-  level: number,
   natureModifier: number
 ): number {
-  for (let ev = 0; ev <= 252; ev += 4) {
-    if (calcOtherStat(base, iv, ev, level, natureModifier) >= targetStat) {
+  for (let ev = 0; ev <= 32; ev += 1) {
+    if (calcOtherStat(base, ev, natureModifier) >= targetStat) {
       return ev;
     }
   }
-  return 252;
+  return 32;
 }
 
 /**
- * 全ステータスの実数値を計算
+ * 能力ポイントを旧努力値（EV）に換算（UI表示用）
+ * @param abilityPoint - 能力ポイント（0〜32）
+ * @returns 旧仕様のEV値（0〜252）
  */
-export function calcActualStats(
-  baseStats: BaseStats,
-  ivs: Stats,
-  evs: Stats,
-  level: number,
-  nature: Nature
-): Stats {
+export function toClassicEv(abilityPoint: number): number {
+  if (abilityPoint <= 0) return 0;
+  return (abilityPoint - 1) * 8 + 4;
+}
+
+/**
+ * 全ステータスの実数値を計算（チャンピオンズ仕様）
+ * @param baseStats - 種族値
+ * @param evs - 能力ポイント
+ * @param nature - 性格
+ */
+export function calcActualStats(baseStats: BaseStats, evs: Stats, nature: Nature): Stats {
   return {
-    hp: calcHpStat(baseStats.hp, ivs.hp, evs.hp, level),
-    attack: calcOtherStat(
-      baseStats.attack,
-      ivs.attack,
-      evs.attack,
-      level,
-      getNatureModifier(nature, 'attack')
-    ),
-    defense: calcOtherStat(
-      baseStats.defense,
-      ivs.defense,
-      evs.defense,
-      level,
-      getNatureModifier(nature, 'defense')
-    ),
+    hp: calcHpStat(baseStats.hp, evs.hp),
+    attack: calcOtherStat(baseStats.attack, evs.attack, getNatureModifier(nature, 'attack')),
+    defense: calcOtherStat(baseStats.defense, evs.defense, getNatureModifier(nature, 'defense')),
     specialAttack: calcOtherStat(
       baseStats.specialAttack,
-      ivs.specialAttack,
       evs.specialAttack,
-      level,
       getNatureModifier(nature, 'specialAttack')
     ),
     specialDefense: calcOtherStat(
       baseStats.specialDefense,
-      ivs.specialDefense,
       evs.specialDefense,
-      level,
       getNatureModifier(nature, 'specialDefense')
     ),
-    speed: calcOtherStat(
-      baseStats.speed,
-      ivs.speed,
-      evs.speed,
-      level,
-      getNatureModifier(nature, 'speed')
-    ),
+    speed: calcOtherStat(baseStats.speed, evs.speed, getNatureModifier(nature, 'speed')),
   };
 }
 
 /**
- * EV配置が規則内か検証（総EV≤510、各ステータス≤252）
- */
-export function isValidEvAllocation(evs: Stats): boolean {
-  const total = Object.values(evs).reduce((sum, val) => sum + val, 0);
-  return (
-    total <= 510 &&
-    evs.hp <= 252 &&
-    evs.attack <= 252 &&
-    evs.defense <= 252 &&
-    evs.specialAttack <= 252 &&
-    evs.specialDefense <= 252 &&
-    evs.speed <= 252
-  );
-}
-
-/**
- * 実数値から「最も近い実現可能なEV」を見つける（単一ステータス）
- * 到達不可能な場合も、最も近い値を返す（到達不可なら0）
- */
-export function findClosestRealizableEv(
-  targetStat: number,
-  base: number,
-  iv: number,
-  level: number,
-  natureModifier: number,
-  isHp: boolean
-): { ev: number; actualStat: number } {
-  const maxEv = 252;
-  let bestEv = 0;
-  let bestStat = isHp
-    ? calcHpStat(base, iv, 0, level)
-    : calcOtherStat(base, iv, 0, level, natureModifier);
-
-  for (let ev = 0; ev <= maxEv; ev += 4) {
-    const actual = isHp
-      ? calcHpStat(base, iv, ev, level)
-      : calcOtherStat(base, iv, ev, level, natureModifier);
-
-    if (actual === targetStat) {
-      // 完全一致
-      return { ev, actualStat: actual };
-    }
-
-    if (actual < targetStat) {
-      // より近い値を記録
-      bestEv = ev;
-      bestStat = actual;
-    } else {
-      // targetStat を超えた → 終了
-      break;
-    }
-  }
-
-  return { ev: bestEv, actualStat: bestStat };
-}
-
-/**
- * 単一ステータスのEVから寄与実数値を計算（ヘルパー関数）
- * EV 0-3: 0
- * EV 4: 1
- * EV 5-11: 1
- * EV 12: 2
- * EV 13-19: 2
- * EV 20: 3
- * ...計算式: EV < 4 ? 0 : 1 + floor((EV - 4) / 8)
- */
-function calculateSingleEvContribution(ev: number): number {
-  if (ev < 4) return 0;
-  return 1 + Math.floor((ev - 4) / 8);
-}
-
-/**
- * EVから寄与される実数値の合計を計算
- * 各ステータスのEVを新仕様で計算して合計
- * EV0-3で0、EV4で1増加、以降8刻みで+1
- * @param evs - 努力値オブジェクト
- * @returns EVから寄与される実数値の合計（最大66）
+ * 能力ポイントから寄与される合計を計算（チャンピオンズ仕様）
+ * 単純に各ステータスの能力ポイントを合算する
+ * @param evs - 能力ポイントオブジェクト
+ * @returns 能力ポイントの合計（最大 6 * 32 = 192、実際の上限は66）
  */
 export function calcEvContributionToActualStats(evs: Stats): number {
-  return (
-    calculateSingleEvContribution(evs.hp) +
-    calculateSingleEvContribution(evs.attack) +
-    calculateSingleEvContribution(evs.defense) +
-    calculateSingleEvContribution(evs.specialAttack) +
-    calculateSingleEvContribution(evs.specialDefense) +
-    calculateSingleEvContribution(evs.speed)
-  );
+  return evs.hp + evs.attack + evs.defense + evs.specialAttack + evs.specialDefense + evs.speed;
 }
 
 /**
- * 実数値をEV＝0の基本値とEV増加分に分割する
+ * 実数値を能力P=0の基本値と能力P増加分に分割する（チャンピオンズ仕様）
  * @param baseStats - 種族値
- * @param ivs - 個体値
- * @param evs - 努力値
- * @param level - レベル
+ * @param evs - 能力ポイント
  * @param nature - 性格
  * @returns 各ステータスの { baseValue, evContribution } を含むオブジェクト
  */
 export function splitActualStatsByEvContribution(
   baseStats: BaseStats,
-  ivs: Stats,
   evs: Stats,
-  level: number,
   nature: Nature
 ): Record<keyof Stats, { baseValue: number; evContribution: number }> {
-  // EV=0の状態での基本値を計算
+  // 能力P=0の状態での基本値を計算
   const baseValues = calcActualStats(
     baseStats,
-    ivs,
     { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0 },
-    level,
     nature
   );
 
   // 現在の実数値を計算
-  const currentValues = calcActualStats(baseStats, ivs, evs, level, nature);
+  const currentValues = calcActualStats(baseStats, evs, nature);
 
-  // 差分を計算（EV増加分）
+  // 差分を計算（能力P増加分）
   return {
     hp: {
       baseValue: baseValues.hp,
@@ -304,4 +194,43 @@ export function splitActualStatsByEvContribution(
       evContribution: currentValues.speed - baseValues.speed,
     },
   };
+}
+
+/**
+ * 実数値から「最も近い実現可能な能力P」を見つける（チャンピオンズ仕様）
+ * @param targetStat - 目標実数値
+ * @param base - 種族値
+ * @param natureModifier - 性格補正値（HPの場合は無視される）
+ * @param isHp - HPかどうか
+ * @returns 最も近い能力Pと実際の実数値
+ */
+export function findClosestRealizableEv(
+  targetStat: number,
+  base: number,
+  natureModifier: number,
+  isHp: boolean
+): { ev: number; actualStat: number } {
+  const maxEv = 32;
+  let bestEv = 0;
+  let bestStat = isHp ? calcHpStat(base, 0) : calcOtherStat(base, 0, natureModifier);
+
+  for (let ev = 0; ev <= maxEv; ev += 1) {
+    const actual = isHp ? calcHpStat(base, ev) : calcOtherStat(base, ev, natureModifier);
+
+    if (actual === targetStat) {
+      // 完全一致
+      return { ev, actualStat: actual };
+    }
+
+    if (actual < targetStat) {
+      // より近い値を記録
+      bestEv = ev;
+      bestStat = actual;
+    } else {
+      // targetStat を超えた → 終了
+      break;
+    }
+  }
+
+  return { ev: bestEv, actualStat: bestStat };
 }

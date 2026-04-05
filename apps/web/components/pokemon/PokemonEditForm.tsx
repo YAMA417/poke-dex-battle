@@ -157,7 +157,6 @@ export function PokemonEditForm({
   function handleActualStatChange(stat: keyof Stats, targetStat: number) {
     const isHp = stat === 'hp';
     const baseStat = species.baseStats[stat];
-    const iv = pokemon.ivs[stat];
     const natureModifier = isHp
       ? 1
       : getNatureModifier(pokemon.nature, stat as keyof Omit<Stats, 'hp'>);
@@ -166,8 +165,6 @@ export function PokemonEditForm({
     const { ev: newEv, actualStat } = findClosestRealizableEv(
       targetStat,
       baseStat,
-      iv,
-      pokemon.level,
       natureModifier,
       isHp
     );
@@ -181,10 +178,10 @@ export function PokemonEditForm({
 
     if (targetStat < 1) {
       errors[stat] = '1 以上の値が必要です';
-    } else if (newEv > 252) {
-      errors[stat] = `最大252EVで、実数値${actualStat}に調整しました`;
-    } else if (newTotal > 510) {
-      errors[stat] = `EV合計が超過しています（現在: ${newTotal}）`;
+    } else if (newEv > 32) {
+      errors[stat] = `最大32ポイントで、実数値${actualStat}に調整しました`;
+    } else if (newTotal > 66) {
+      errors[stat] = `能力ポイント合計が超過しています（現在: ${newTotal}）`;
     }
 
     setActualStatErrors(errors);
@@ -343,7 +340,19 @@ export function PokemonEditForm({
       {/* ── 個体値 ── */}
       <section className="space-y-2">
         <h4 className="border-b pb-1 text-sm font-bold text-gray-700">個体値 (IV)</h4>
-        <IVInputGrid ivs={pokemon.ivs} onChange={(ivs) => onChange({ ivs })} />
+        <IVInputGrid
+          ivs={
+            pokemon.ivs ?? {
+              hp: 31,
+              attack: 31,
+              defense: 31,
+              specialAttack: 31,
+              specialDefense: 31,
+              speed: 31,
+            }
+          }
+          onChange={(ivs) => onChange({ ivs })}
+        />
       </section>
 
       {/* ── 努力値 ── */}

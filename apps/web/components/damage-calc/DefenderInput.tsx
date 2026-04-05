@@ -151,19 +151,13 @@ export function DefenderInput({
         specialDefenseBaseStat: spDefBase,
         pokemonTypes: megaForm.types,
         abilityName: firstAbility?.nameJa ?? d.abilityName,
-        hpStat: calcHpStat(hpBase, hpIv, hpEv, 50),
-        defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
-        specialDefenseStat: calcOtherStat(
-          spDefBase,
-          spDefIv,
-          spDefEv,
-          50,
-          d.specialDefenseModifier
-        ),
+        hpStat: calcHpStat(hpBase, hpEv),
+        defenseStat: calcOtherStat(defBase, defEv, d.defenseModifier),
+        specialDefenseStat: calcOtherStat(spDefBase, spDefEv, d.specialDefenseModifier),
         ...(fixedItemName ? { itemName: fixedItemName } : {}),
       };
     },
-    [hpIv, hpEv, defIv, defEv, spDefIv, spDefEv]
+    [hpEv, defEv, spDefEv]
   );
 
   const handleMegaToggle = useCallback(
@@ -187,15 +181,9 @@ export function DefenderInput({
           specialDefenseBaseStat: spDefBase,
           pokemonTypes: pokemonData.types,
           abilityName: firstAbility?.nameJa ?? '',
-          hpStat: calcHpStat(hpBase, hpIv, hpEv, 50),
-          defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
-          specialDefenseStat: calcOtherStat(
-            spDefBase,
-            spDefIv,
-            spDefEv,
-            50,
-            d.specialDefenseModifier
-          ),
+          hpStat: calcHpStat(hpBase, hpEv),
+          defenseStat: calcOtherStat(defBase, defEv, d.defenseModifier),
+          specialDefenseStat: calcOtherStat(spDefBase, spDefEv, d.specialDefenseModifier),
           itemName: '',
         });
       } else {
@@ -206,7 +194,7 @@ export function DefenderInput({
         });
       }
     },
-    [megaForms, buildMegaData, pokemonData, hpIv, hpEv, defIv, defEv, spDefIv, spDefEv]
+    [megaForms, buildMegaData, pokemonData, hpEv, defEv, spDefEv]
   );
 
   const handleMegaVariantChange = useCallback(
@@ -255,9 +243,9 @@ export function DefenderInput({
       specialDefenseBaseStat: spDefBase,
       pokemonTypes: pokemonData.types,
       abilityName: firstAbility?.nameJa ?? '',
-      hpStat: calcHpStat(hpBase, hpIv, hpEv, 50),
-      defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
-      specialDefenseStat: calcOtherStat(spDefBase, spDefIv, spDefEv, 50, d.specialDefenseModifier),
+      hpStat: calcHpStat(hpBase, hpEv),
+      defenseStat: calcOtherStat(defBase, defEv, d.defenseModifier),
+      specialDefenseStat: calcOtherStat(spDefBase, spDefEv, d.specialDefenseModifier),
       ...itemUpdate,
     });
     // 意図的にpokemonData/EV・IVのみに依存（ref経由で最新値を参照）
@@ -276,9 +264,9 @@ export function DefenderInput({
 
     onDataChangeRef.current({
       ...d,
-      hpStat: calcHpStat(hp, hpIv, hpEv, 50),
-      defenseStat: calcOtherStat(def, defIv, defEv, 50, d.defenseModifier),
-      specialDefenseStat: calcOtherStat(spd, spDefIv, spDefEv, 50, d.specialDefenseModifier),
+      hpStat: calcHpStat(hp, hpEv),
+      defenseStat: calcOtherStat(def, defEv, d.defenseModifier),
+      specialDefenseStat: calcOtherStat(spd, spDefEv, d.specialDefenseModifier),
     });
     // 意図的にpokemonData/EV・IVのみに依存（ref経由で最新値を参照）
   }, [hpIv, hpEv, defIv, defEv, spDefIv, spDefEv]);
@@ -399,8 +387,8 @@ export function DefenderInput({
                   value={data.hpStat}
                   onChange={(e) => {
                     const targetStat = Math.max(1, parseInt(e.target.value) || 1);
-                    const newEv = reverseCalcHpEv(targetStat, data.hpBaseStat, hpIv, 50);
-                    const actualStat = calcHpStat(data.hpBaseStat, hpIv, newEv, 50);
+                    const newEv = reverseCalcHpEv(targetStat, data.hpBaseStat);
+                    const actualStat = calcHpStat(data.hpBaseStat, newEv);
                     setHpEv(newEv);
                     onDataChange({ ...data, hpStat: actualStat });
                   }}
@@ -414,9 +402,9 @@ export function DefenderInput({
                 value={hpEv}
                 onChange={(newEv) => {
                   setHpEv(newEv);
-                  onDataChange({ ...data, hpStat: calcHpStat(data.hpBaseStat, hpIv, newEv, 50) });
+                  onDataChange({ ...data, hpStat: calcHpStat(data.hpBaseStat, newEv) });
                 }}
-                calcStatFn={(ev) => calcHpStat(data.hpBaseStat, hpIv, ev, 50)}
+                calcStatFn={(ev) => calcHpStat(data.hpBaseStat, ev)}
               />
             </div>
           </div>
@@ -436,15 +424,11 @@ export function DefenderInput({
                     const newEv = reverseCalcOtherEv(
                       targetStat,
                       data.defenseBaseStat,
-                      defIv,
-                      50,
                       data.defenseModifier
                     );
                     const actualStat = calcOtherStat(
                       data.defenseBaseStat,
-                      defIv,
                       newEv,
-                      50,
                       data.defenseModifier
                     );
                     setDefEv(newEv);
@@ -461,7 +445,7 @@ export function DefenderInput({
                   onDataChange({
                     ...data,
                     defenseModifier: mod,
-                    defenseStat: calcOtherStat(data.defenseBaseStat, defIv, defEv, 50, mod),
+                    defenseStat: calcOtherStat(data.defenseBaseStat, defEv, mod),
                   })
                 }
               />
@@ -472,18 +456,10 @@ export function DefenderInput({
                   setDefEv(newEv);
                   onDataChange({
                     ...data,
-                    defenseStat: calcOtherStat(
-                      data.defenseBaseStat,
-                      defIv,
-                      newEv,
-                      50,
-                      data.defenseModifier
-                    ),
+                    defenseStat: calcOtherStat(data.defenseBaseStat, newEv, data.defenseModifier),
                   });
                 }}
-                calcStatFn={(ev) =>
-                  calcOtherStat(data.defenseBaseStat, defIv, ev, 50, data.defenseModifier)
-                }
+                calcStatFn={(ev) => calcOtherStat(data.defenseBaseStat, ev, data.defenseModifier)}
               />
             </div>
           </div>
@@ -503,15 +479,11 @@ export function DefenderInput({
                     const newEv = reverseCalcOtherEv(
                       targetStat,
                       data.specialDefenseBaseStat,
-                      spDefIv,
-                      50,
                       data.specialDefenseModifier
                     );
                     const actualStat = calcOtherStat(
                       data.specialDefenseBaseStat,
-                      spDefIv,
                       newEv,
-                      50,
                       data.specialDefenseModifier
                     );
                     setSpDefEv(newEv);
@@ -528,13 +500,7 @@ export function DefenderInput({
                   onDataChange({
                     ...data,
                     specialDefenseModifier: mod,
-                    specialDefenseStat: calcOtherStat(
-                      data.specialDefenseBaseStat,
-                      spDefIv,
-                      spDefEv,
-                      50,
-                      mod
-                    ),
+                    specialDefenseStat: calcOtherStat(data.specialDefenseBaseStat, spDefEv, mod),
                   })
                 }
               />
@@ -547,21 +513,13 @@ export function DefenderInput({
                     ...data,
                     specialDefenseStat: calcOtherStat(
                       data.specialDefenseBaseStat,
-                      spDefIv,
                       newEv,
-                      50,
                       data.specialDefenseModifier
                     ),
                   });
                 }}
                 calcStatFn={(ev) =>
-                  calcOtherStat(
-                    data.specialDefenseBaseStat,
-                    spDefIv,
-                    ev,
-                    50,
-                    data.specialDefenseModifier
-                  )
+                  calcOtherStat(data.specialDefenseBaseStat, ev, data.specialDefenseModifier)
                 }
               />
             </div>
@@ -693,7 +651,7 @@ export function DefenderInput({
             onChange={(e) => {
               const iv = Math.max(0, Math.min(31, parseInt(e.target.value) || 0));
               setHpIv(iv);
-              onDataChange({ ...data, hpStat: calcHpStat(data.hpBaseStat, iv, hpEv, 50) });
+              onDataChange({ ...data, hpStat: calcHpStat(data.hpBaseStat, hpEv) });
             }}
             className="h-7 text-xs"
           />
@@ -712,13 +670,7 @@ export function DefenderInput({
               setDefIv(iv);
               onDataChange({
                 ...data,
-                defenseStat: calcOtherStat(
-                  data.defenseBaseStat,
-                  iv,
-                  defEv,
-                  50,
-                  data.defenseModifier
-                ),
+                defenseStat: calcOtherStat(data.defenseBaseStat, defEv, data.defenseModifier),
               });
             }}
             className="h-7 text-xs"
@@ -740,9 +692,7 @@ export function DefenderInput({
                 ...data,
                 specialDefenseStat: calcOtherStat(
                   data.specialDefenseBaseStat,
-                  iv,
                   spDefEv,
-                  50,
                   data.specialDefenseModifier
                 ),
               });

@@ -126,9 +126,9 @@ export function AttackerInput({
   const baseStatsRef = useRef({ atk: 0, spa: 0, def: 0 });
 
   // EV/IV の内部 state
-  const [attackEv, setAttackEv] = useState(252);
+  const [attackEv, setAttackEv] = useState(32);
   const [attackIv, setAttackIv] = useState(31);
-  const [spAtkEv, setSpAtkEv] = useState(252);
+  const [spAtkEv, setSpAtkEv] = useState(32);
   const [spAtkIv, setSpAtkIv] = useState(31);
   const [defEv, setDefEv] = useState(0);
   const [defIv, setDefIv] = useState(31);
@@ -195,13 +195,13 @@ export function AttackerInput({
         defenseBaseStat: defBase,
         pokemonTypes: megaForm.types,
         abilityName: firstAbility?.nameJa ?? d.abilityName,
-        attackStat: calcOtherStat(atkBase, attackIv, attackEv, 50, d.attackModifier),
-        specialAttackStat: calcOtherStat(spAtkBase, spAtkIv, spAtkEv, 50, d.specialAttackModifier),
-        defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
+        attackStat: calcOtherStat(atkBase, attackEv, d.attackModifier),
+        specialAttackStat: calcOtherStat(spAtkBase, spAtkEv, d.specialAttackModifier),
+        defenseStat: calcOtherStat(defBase, defEv, d.defenseModifier),
         ...(fixedItemName ? { itemName: fixedItemName } : {}),
       };
     },
-    [attackIv, attackEv, spAtkIv, spAtkEv, defIv, defEv]
+    [attackEv, spAtkEv, defEv]
   );
 
   const handleMegaToggle = useCallback(
@@ -225,15 +225,9 @@ export function AttackerInput({
           defenseBaseStat: defBase,
           pokemonTypes: pokemonData.types,
           abilityName: firstAbility?.nameJa ?? '',
-          attackStat: calcOtherStat(atkBase, attackIv, attackEv, 50, d.attackModifier),
-          specialAttackStat: calcOtherStat(
-            spAtkBase,
-            spAtkIv,
-            spAtkEv,
-            50,
-            d.specialAttackModifier
-          ),
-          defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
+          attackStat: calcOtherStat(atkBase, attackEv, d.attackModifier),
+          specialAttackStat: calcOtherStat(spAtkBase, spAtkEv, d.specialAttackModifier),
+          defenseStat: calcOtherStat(defBase, defEv, d.defenseModifier),
           itemName: '',
         });
       } else {
@@ -244,7 +238,7 @@ export function AttackerInput({
         });
       }
     },
-    [megaForms, buildMegaData, pokemonData, attackIv, attackEv, spAtkIv, spAtkEv, defIv, defEv]
+    [megaForms, buildMegaData, pokemonData, attackEv, spAtkEv, defEv]
   );
 
   const handleMegaVariantChange = useCallback(
@@ -293,9 +287,9 @@ export function AttackerInput({
       defenseBaseStat: defBase,
       pokemonTypes: pokemonData.types,
       abilityName: firstAbility?.nameJa ?? '',
-      attackStat: calcOtherStat(atkBase, attackIv, attackEv, 50, d.attackModifier),
-      specialAttackStat: calcOtherStat(spAtkBase, spAtkIv, spAtkEv, 50, d.specialAttackModifier),
-      defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
+      attackStat: calcOtherStat(atkBase, attackEv, d.attackModifier),
+      specialAttackStat: calcOtherStat(spAtkBase, spAtkEv, d.specialAttackModifier),
+      defenseStat: calcOtherStat(defBase, defEv, d.defenseModifier),
       ...itemUpdate,
     });
     // 意図的にpokemonData/EV・IVのみに依存（ref経由で最新値を参照）
@@ -314,9 +308,9 @@ export function AttackerInput({
 
     onDataChangeRef.current({
       ...d,
-      attackStat: calcOtherStat(atk, attackIv, attackEv, 50, d.attackModifier),
-      specialAttackStat: calcOtherStat(spa, spAtkIv, spAtkEv, 50, d.specialAttackModifier),
-      defenseStat: calcOtherStat(def, defIv, defEv, 50, d.defenseModifier),
+      attackStat: calcOtherStat(atk, attackEv, d.attackModifier),
+      specialAttackStat: calcOtherStat(spa, spAtkEv, d.specialAttackModifier),
+      defenseStat: calcOtherStat(def, defEv, d.defenseModifier),
     });
     // 意図的にpokemonData/EV・IVのみに依存（ref経由で最新値を参照）
   }, [attackIv, attackEv, spAtkIv, spAtkEv, defIv, defEv]);
@@ -560,15 +554,11 @@ export function AttackerInput({
                       const newEv = reverseCalcOtherEv(
                         targetStat,
                         data.defenseBaseStat,
-                        defIv,
-                        50,
                         data.defenseModifier
                       );
                       const actualStat = calcOtherStat(
                         data.defenseBaseStat,
-                        defIv,
                         newEv,
-                        50,
                         data.defenseModifier
                       );
                       setDefEv(newEv);
@@ -577,10 +567,9 @@ export function AttackerInput({
                       const baseStat = isPhysical
                         ? data.attackBaseStat
                         : data.specialAttackBaseStat;
-                      const iv = isPhysical ? attackIv : spAtkIv;
                       const mod = isPhysical ? data.attackModifier : data.specialAttackModifier;
-                      const newEv = reverseCalcOtherEv(targetStat, baseStat, iv, 50, mod);
-                      const actualStat = calcOtherStat(baseStat, iv, newEv, 50, mod);
+                      const newEv = reverseCalcOtherEv(targetStat, baseStat, mod);
+                      const actualStat = calcOtherStat(baseStat, newEv, mod);
                       if (isPhysical) {
                         setAttackEv(newEv);
                         onDataChange({ ...data, attackStat: actualStat });
@@ -602,25 +591,19 @@ export function AttackerInput({
                     onDataChange({
                       ...data,
                       defenseModifier: mod,
-                      defenseStat: calcOtherStat(data.defenseBaseStat, defIv, defEv, 50, mod),
+                      defenseStat: calcOtherStat(data.defenseBaseStat, defEv, mod),
                     });
                   } else if (isPhysical) {
                     onDataChange({
                       ...data,
                       attackModifier: mod,
-                      attackStat: calcOtherStat(data.attackBaseStat, attackIv, attackEv, 50, mod),
+                      attackStat: calcOtherStat(data.attackBaseStat, attackEv, mod),
                     });
                   } else {
                     onDataChange({
                       ...data,
                       specialAttackModifier: mod,
-                      specialAttackStat: calcOtherStat(
-                        data.specialAttackBaseStat,
-                        spAtkIv,
-                        spAtkEv,
-                        50,
-                        mod
-                      ),
+                      specialAttackStat: calcOtherStat(data.specialAttackBaseStat, spAtkEv, mod),
                     });
                   }
                 }}
@@ -633,25 +616,13 @@ export function AttackerInput({
                     setDefEv(newEv);
                     onDataChange({
                       ...data,
-                      defenseStat: calcOtherStat(
-                        data.defenseBaseStat,
-                        defIv,
-                        newEv,
-                        50,
-                        data.defenseModifier
-                      ),
+                      defenseStat: calcOtherStat(data.defenseBaseStat, newEv, data.defenseModifier),
                     });
                   } else if (isPhysical) {
                     setAttackEv(newEv);
                     onDataChange({
                       ...data,
-                      attackStat: calcOtherStat(
-                        data.attackBaseStat,
-                        attackIv,
-                        newEv,
-                        50,
-                        data.attackModifier
-                      ),
+                      attackStat: calcOtherStat(data.attackBaseStat, newEv, data.attackModifier),
                     });
                   } else {
                     setSpAtkEv(newEv);
@@ -659,9 +630,7 @@ export function AttackerInput({
                       ...data,
                       specialAttackStat: calcOtherStat(
                         data.specialAttackBaseStat,
-                        spAtkIv,
                         newEv,
-                        50,
                         data.specialAttackModifier
                       ),
                     });
@@ -669,13 +638,11 @@ export function AttackerInput({
                 }}
                 calcStatFn={(ev) => {
                   if (usesDefenseAsAttack) {
-                    return calcOtherStat(data.defenseBaseStat, defIv, ev, 50, data.defenseModifier);
+                    return calcOtherStat(data.defenseBaseStat, ev, data.defenseModifier);
                   }
                   return calcOtherStat(
                     isPhysical ? data.attackBaseStat : data.specialAttackBaseStat,
-                    isPhysical ? attackIv : spAtkIv,
                     ev,
-                    50,
                     isPhysical ? data.attackModifier : data.specialAttackModifier
                   );
                 }}
@@ -806,25 +773,13 @@ export function AttackerInput({
                 setDefIv(iv);
                 onDataChange({
                   ...data,
-                  defenseStat: calcOtherStat(
-                    data.defenseBaseStat,
-                    iv,
-                    defEv,
-                    50,
-                    data.defenseModifier
-                  ),
+                  defenseStat: calcOtherStat(data.defenseBaseStat, defEv, data.defenseModifier),
                 });
               } else if (isPhysical) {
                 setAttackIv(iv);
                 onDataChange({
                   ...data,
-                  attackStat: calcOtherStat(
-                    data.attackBaseStat,
-                    iv,
-                    attackEv,
-                    50,
-                    data.attackModifier
-                  ),
+                  attackStat: calcOtherStat(data.attackBaseStat, attackEv, data.attackModifier),
                 });
               } else {
                 setSpAtkIv(iv);
@@ -832,9 +787,7 @@ export function AttackerInput({
                   ...data,
                   specialAttackStat: calcOtherStat(
                     data.specialAttackBaseStat,
-                    iv,
                     spAtkEv,
-                    50,
                     data.specialAttackModifier
                   ),
                 });

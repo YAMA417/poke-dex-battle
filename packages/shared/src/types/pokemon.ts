@@ -119,7 +119,7 @@ export interface Pokemon {
   ability: string;
   teraType: PokemonType;
   item?: string;
-  ivs: Stats;
+  ivs?: Stats;
   evs: Stats;
   moves: Move[];
   memo?: string;

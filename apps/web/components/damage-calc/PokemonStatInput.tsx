@@ -29,21 +29,21 @@ export function PokemonStatInput({
 }: PokemonStatInputProps) {
   const [mode, setMode] = useState<'manual' | 'auto'>('auto');
   const [iv, setIv] = useState(31);
-  const [ev, setEv] = useState(252);
+  const [ev, setEv] = useState(32);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
   // natureModifier or baseStat が変更されたら自動で再計算
   useEffect(() => {
     if (mode === 'auto') {
-      const calculated = calcOtherStat(baseStat, iv, ev, level, natureModifier);
+      const calculated = calcOtherStat(baseStat, ev, natureModifier);
       onChangeRef.current(calculated);
     }
   }, [natureModifier, baseStat, mode, iv, ev, level]);
 
   const handleModeToggle = () => {
     if (mode === 'manual') {
-      const calculated = calcOtherStat(baseStat, iv, ev, level, natureModifier);
+      const calculated = calcOtherStat(baseStat, ev, natureModifier);
       onChange(calculated);
       setMode('auto');
     } else {
@@ -54,7 +54,7 @@ export function PokemonStatInput({
   const handleIvChange = (newIv: number) => {
     setIv(newIv);
     if (mode === 'auto') {
-      const calculated = calcOtherStat(baseStat, newIv, ev, level, natureModifier);
+      const calculated = calcOtherStat(baseStat, ev, natureModifier);
       onChange(calculated);
     }
   };
@@ -62,7 +62,7 @@ export function PokemonStatInput({
   const handleEvChange = (newEv: number) => {
     setEv(newEv);
     if (mode === 'auto') {
-      const calculated = calcOtherStat(baseStat, iv, newEv, level, natureModifier);
+      const calculated = calcOtherStat(baseStat, newEv, natureModifier);
       onChange(calculated);
     }
   };
@@ -114,11 +114,11 @@ export function PokemonStatInput({
                 id={`${statType}-ev`}
                 type="number"
                 min={0}
-                max={252}
-                step={4}
+                max={32}
+                step={1}
                 value={ev}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleEvChange(Math.max(0, Math.min(252, parseInt(e.target.value) || 0)))
+                  handleEvChange(Math.max(0, Math.min(32, parseInt(e.target.value) || 0)))
                 }
               />
             </div>

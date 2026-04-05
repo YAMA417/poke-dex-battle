@@ -24,7 +24,6 @@ const DEFAULT_POKEMON = (species: PokemonSpeciesData): Pokemon => ({
   ability: species.abilities[0]?.name ?? '',
   teraType: species.types[0],
   item: undefined,
-  ivs: { hp: 31, attack: 31, defense: 31, specialAttack: 31, specialDefense: 31, speed: 31 },
   evs: { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0 },
   moves: [],
   actualStats: undefined,
