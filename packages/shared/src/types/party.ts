@@ -7,7 +7,7 @@ export const MAX_ABILITY_POINT_PER_STAT = 32;
 export const MAX_MOVE_COUNT = 4;
 
 /** レギュレーション */
-export type Regulation = 'Champions';
+export type Regulation = string;
 
 /** パーティ */
 export interface Party {
