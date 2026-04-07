@@ -1,4 +1,5 @@
-import type { PokemonType } from './pokemon';
+import type { DamageEffect } from './damage-effect';
+import type { PokemonType, TeraType } from './pokemon';
 
 /** 天候 */
 export type Weather = 'none' | 'sun' | 'rain' | 'sandstorm' | 'snow';
@@ -8,56 +9,6 @@ export type Field = 'none' | 'electric' | 'grassy' | 'misty' | 'psychic';
 
 /** 能力ランク（-6〜+6） */
 export type StatStage = -6 | -5 | -4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6;
-
-/** 能力ランクの状態 */
-export interface StatStages {
-  attack: StatStage;
-  defense: StatStage;
-  specialAttack: StatStage;
-  specialDefense: StatStage;
-  speed: StatStage;
-}
-
-/** バトル状況 */
-export interface BattleCondition {
-  weather: Weather;
-  field: Field;
-  attackerStatStages: StatStages;
-  defenderStatStages: StatStages;
-  // ダブルバトル用
-  isDoubleBattle?: boolean;
-  isSpreadMove?: boolean; // 全体技かどうか
-  isHelpingHand?: boolean; // てだすけ使用中か
-  // その他の状態
-  isCriticalHit?: boolean;
-  attackerTerastallized?: boolean; // テラスタル使用中か
-  attackerAbility?: string;
-  defenderAbility?: string;
-  attackerItem?: string;
-  defenderItem?: string;
-  attackerBurned?: boolean; // やけど状態（物理攻撃0.5倍）
-  // 壁
-  reflect?: boolean; // リフレクター（物理ダメージ0.5倍）
-  lightScreen?: boolean; // ひかりのかべ（特殊ダメージ0.5倍）
-  // 場の全特性（わざわいシリーズ等、味方を含む全ポケモンの特性）
-  allAttackerSideAbilities?: string[];
-  allDefenderSideAbilities?: string[];
-}
-
-/** 特性の種類（Phase 1: 基本10個） */
-export type Ability =
-  // 攻撃側
-  | 'Technician' // テクニシャン
-  | 'Iron Fist' // てつのこぶし
-  | 'Reckless' // すてみ
-  | 'Huge Power' // ちからもち
-  | 'Pure Power' // ヨガパワー（ちからもちと同じ効果）
-  // 防御側
-  | 'Multiscale' // マルチスケイル
-  | 'Solid Rock' // ハードロック
-  | 'Filter' // フィルター
-  | 'Fluffy' // もふもふ
-  | 'Thick Fat'; // あついしぼう
 
 /**
  * ダメージ計算用のポケモン型（新エンジン）
@@ -82,24 +33,37 @@ export interface CalcPokemon {
     spe?: StatStage;
   };
   ability?: string;
+  abilityId?: number;
+  abilityDamageEffect?: DamageEffect;
   item?: string;
-  status?: 'burn' | 'none';
+  itemId?: number;
+  itemDamageEffect?: DamageEffect;
+  status?: 'burn' | 'poison' | 'paralysis' | 'none';
   currentHp?: number;
   maxHp?: number;
-  teraType?: PokemonType;
+  teraType?: TeraType;
   isTerastallized?: boolean;
+  isMegaEvolved?: boolean;
+  isDynamaxed?: boolean;
+  isStellarBoostUsed?: boolean;
 }
 
 /**
  * ダメージ計算用の技型（新エンジン）
  */
 export interface CalcMove {
+  id?: number;
   name: string;
   power: number;
   type: PokemonType;
   category: 'Physical' | 'Special';
   isCritical?: boolean;
+  isZMove?: boolean;
+  isDynamaxMove?: boolean;
   flags?: MoveFlags;
+  damageEffect?: DamageEffect;
+  /** 連続技のヒット数（UI側から指定） */
+  hitCount?: number;
 }
 
 /**
@@ -116,6 +80,14 @@ export interface BattleContext {
   // 場の全特性（わざわいシリーズ等の場に影響する特性を含む）
   allAttackerSideAbilities?: string[];
   allDefenderSideAbilities?: string[];
+  /** オーロラベール展開中か */
+  auroraVeil?: boolean;
+  /** フレンドガード発動中か（味方の特性） */
+  friendGuardActive?: boolean;
+  /** フラワーギフト発動中か（味方のチェリム） */
+  flowerGiftActive?: boolean;
+  /** 場に存在するオーラ特性（ダークオーラ/フェアリーオーラ等） */
+  auraAbilities?: string[];
 }
 
 /** 持ち物の種類（Phase 1: 基本10個） */
@@ -143,32 +115,21 @@ export interface MoveFlags {
   usesDefenseAsAttack?: boolean; // 攻撃側の防御で計算（ボディプレス）
   targetsPhysicalDefense?: boolean; // 特殊技だが防御側の物理防御で計算（サイコショック等）
   usesTargetAttack?: boolean; // 防御側の攻撃で計算（イカサマ）
+  isSlicingMove?: boolean; // 切る技か（きれあじ用）
+  isSoundMove?: boolean; // 音技か
+  isBulletMove?: boolean; // 弾技か（ぼうだん用）
+  isWindMove?: boolean; // 風技か（かぜのり用）
+  isPriorityMove?: boolean; // 先制技か
+  isMultiHitMove?: boolean; // 連続技か
+  isVariablePowerMove?: boolean; // 可変威力技か
 }
 
-/** ダメージ計算の入力 */
-export interface DamageCalculationInput {
-  // 技情報
-  moveName?: string; // 技の英語名（天候依存の威力変動判定用）
-  movePower: number;
-  moveType: PokemonType;
-  moveCategory: 'Physical' | 'Special';
-
-  // 攻撃側
-  attackerLevel: number;
-  attackerAttack: number; // 物理攻撃 or 特殊攻撃の実数値
-  attackerTypes: PokemonType[]; // タイプ一致判定用
-  attackerTeraType?: PokemonType; // テラスタイプ
-  // 技の分類
-  moveFlags?: MoveFlags;
-
-  // 防御側
-  defenderCurrentHp?: number;
-  defenderMaxHp?: number;
-  defenderDefense: number; // 物理防御 or 特殊防御の実数値
-  defenderTypes: PokemonType[]; // タイプ相性判定用
-
-  // バトル状況
-  condition: BattleCondition;
+/** 連続技の各ヒット情報 */
+export interface MultiHitPerHit {
+  minDamage: number;
+  maxDamage: number;
+  minPercent: number;
+  maxPercent: number;
 }
 
 /** ダメージ計算結果 */
@@ -184,6 +145,11 @@ export interface DamageResult {
   // 確定数（何発で倒せるか）
   guaranteed: number; // 最大ダメージでの確定数
   possible: number; // 最小ダメージでの確定数
+
+  /** 連続技の内訳（multiHit技のみ） */
+  multiHit?: {
+    perHit: MultiHitPerHit[];
+  };
 
   // デバッグ用の詳細情報
   details?: {

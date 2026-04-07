@@ -2,19 +2,29 @@
 
 import { useHydrationSafe } from '@/hooks/useHydrationSafe';
 import type {
-  DamageCalculationInput,
+  BattleContext,
+  CalcMove,
+  CalcPokemon,
   DamageResult as DamageResultType,
   Field,
+  StatStage,
   Weather,
 } from '@poke-dex-battle/shared';
 import {
-  calculateDamage,
+  calculateDamageV2,
   getAbilityConditionEffect,
-  getMoveFlags,
   isSpreadMoveTarget,
   moveIs,
+  resolveGroupItem,
+  simulateKoTurns,
+  resolveRecoveryItem,
 } from '@poke-dex-battle/shared';
-import { useAllMoves, useAllAbilities, useAllItems } from '@/hooks/useApiData';
+import {
+  useAllMoves,
+  useAllAbilities,
+  useAllItems,
+  useDefaultRegulation,
+} from '@/hooks/useApiData';
 import { toMoveData, toAbilityData, toItemData } from '@/lib/api-adapters';
 import type { DoubleBattleResult } from '@/types/damage';
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
@@ -49,6 +59,15 @@ const DEFAULT_ATTACKER_DATA: AttackerData = {
   abilityName: '',
   itemName: '',
   isBurned: false,
+  isMegaEvolved: false,
+  megaFormSlug: null,
+  isTerastallized: false,
+  teraType: null,
+  isStellarBoostUsed: false,
+  isZMove: false,
+  isDynamaxed: false,
+  hitCount: undefined,
+  moveMultiHit: undefined,
 };
 
 const DEFAULT_DEFENDER_DATA: DefenderData = {
@@ -66,28 +85,45 @@ const DEFAULT_DEFENDER_DATA: DefenderData = {
   specialDefenseRank: 0,
   abilityName: '',
   itemName: '',
+  isMegaEvolved: false,
+  megaFormSlug: null,
+  isTerastallized: false,
+  teraType: null,
+  isDynamaxed: false,
 };
 
 function combineDamage(
   damageA: DamageResultType,
   damageB: DamageResultType,
-  defenderHp: number
+  defenderHp: number,
+  defenderItem?: string,
+  defenderTypes?: string[]
 ): DamageResultType {
   const minDamage = damageA.minDamage + damageB.minDamage;
   const maxDamage = damageA.maxDamage + damageB.maxDamage;
+  const recovery = resolveRecoveryItem(defenderItem, defenderTypes ?? []);
 
   return {
     minDamage,
     maxDamage,
     minPercent: damageA.minPercent + damageB.minPercent,
     maxPercent: damageA.maxPercent + damageB.maxPercent,
-    guaranteed: maxDamage > 0 ? Math.ceil(defenderHp / maxDamage) : Infinity,
-    possible: minDamage > 0 ? Math.ceil(defenderHp / minDamage) : Infinity,
+    guaranteed: simulateKoTurns(defenderHp, maxDamage, recovery),
+    possible: simulateKoTurns(defenderHp, minDamage, recovery),
   };
 }
 
 export function DamageCalculator() {
   const isMounted = useHydrationSafe();
+
+  // レギュレーション取得 → バトルシステムフラグ算出
+  const { data: regulation } = useDefaultRegulation();
+  const battleSystems = regulation?.battleSystems ?? [];
+  const showMega = battleSystems.includes('mega');
+  const showTerastal = battleSystems.includes('terastal');
+  const showZMove = battleSystems.includes('zmove');
+  const showDynamax = battleSystems.includes('dynamax');
+  const regulationSlug = regulation?.name;
 
   // API経由で全データを取得し、名前→データのMapを構築
   const { data: allMovesRaw } = useAllMoves();
@@ -124,6 +160,17 @@ export function DamageCalculator() {
     return map;
   }, [allItemsRaw]);
 
+  // 英語名→ItemData マップ
+  const itemByName = useMemo(() => {
+    if (!allItemsRaw) return new Map<string, ReturnType<typeof toItemData>>();
+    const map = new Map<string, ReturnType<typeof toItemData>>();
+    for (const row of allItemsRaw) {
+      const id = toItemData(row);
+      if (id) map.set(id.name, id);
+    }
+    return map;
+  }, [allItemsRaw]);
+
   const [attackerAData, setAttackerAData] = useState<AttackerData>(DEFAULT_ATTACKER_DATA);
   const [attackerBData, setAttackerBData] = useState<AttackerData>(DEFAULT_ATTACKER_DATA);
   const [defenderData1, setDefenderData1] = useState<DefenderData>(DEFAULT_DEFENDER_DATA);
@@ -137,7 +184,6 @@ export function DamageCalculator() {
   const [isLightScreen, setIsLightScreen] = useState(false);
 
   const [isDetailNumbersOpen, setIsDetailNumbersOpen] = useState(false);
-  const [isDetailSettingsOpen, setIsDetailSettingsOpen] = useState(false);
 
   // 特性→天候/フィールドの自動連動（手動変更は保持、特性由来の値が変わったときのみ自動更新）
   const prevAbilityWeatherRef = useRef<Weather>('none');
@@ -222,113 +268,186 @@ export function DamageCalculator() {
       attacker: AttackerData,
       defender: DefenderData,
       isSpread: boolean
-    ): DamageCalculationInput => {
+    ): {
+      attacker: CalcPokemon;
+      defender: CalcPokemon;
+      move: CalcMove;
+      context: BattleContext;
+    } | null => {
       const isPhysical = attacker.moveCategory === 'Physical';
       // 技の英語名とフラグを取得
       const moveData = attacker.moveName ? (moveByNameJa.get(attacker.moveName) ?? null) : null;
       const moveEnglishName = moveData?.name || '';
-      const moveFlags = getMoveFlags(moveEnglishName, moveData?.shortDesc);
+      // DB由来のフラグを使用（デフォルト値はフォールバック用）
+      const defaultFlags = {
+        isPunchMove: false,
+        isRecoilMove: false,
+        isBiteMove: false,
+        isAuraMove: false,
+        hasSecondaryEffect: false,
+        usesDefenseAsAttack: false,
+        targetsPhysicalDefense: false,
+        usesTargetAttack: false,
+      } as const;
+      const moveFlags = moveData?.flags ?? defaultFlags;
 
       // ワイドフォース: サイコフィールド時は全体技化（防御側2体いる場合のみ）
       const isExpandingForcePsychic =
         moveIs(moveEnglishName, 'Expanding Force') && field === 'psychic' && bothDefendersPresent;
       const effectiveIsSpread = isSpread || isExpandingForcePsychic;
 
-      // 特殊技のステータス参照を解決
-      let attackerAttack: number;
-      let defenderDefense: number;
-      if (moveFlags.usesDefenseAsAttack) {
-        // ボディプレス: 攻撃側の防御実数値を使用
-        attackerAttack = attacker.defenseStat;
-      } else {
-        attackerAttack = isPhysical ? attacker.attackStat : attacker.specialAttackStat;
+      // 攻撃側の特性・アイテムのダメージエフェクトを取得
+      const attackerAbilityData = attacker.abilityName
+        ? abilityByNameJa.get(attacker.abilityName)
+        : null;
+      // 攻撃側アイテム解決（グループプレースホルダー対応）
+      let resolvedAttackerItemName = attacker.itemName || '';
+      if (resolvedAttackerItemName === '__type_boost__') {
+        resolvedAttackerItemName = resolveGroupItem('type_boost', attacker.moveType) ?? '';
       }
-      if (moveFlags.targetsPhysicalDefense) {
-        // サイコショック等: 特殊技だが防御側の物理防御を使用
-        defenderDefense = defender.defenseStat;
-      } else {
-        defenderDefense = isPhysical ? defender.defenseStat : defender.specialDefenseStat;
+      const attackerItemData = resolvedAttackerItemName
+        ? (itemByName.get(resolvedAttackerItemName) ?? itemByNameJa.get(resolvedAttackerItemName))
+        : null;
+
+      // 攻撃側ポケモン構築
+      const attackerPokemon: CalcPokemon = {
+        level: 50,
+        types: attacker.pokemonTypes,
+        stats: {
+          hp: 0, // ダメージ計算に不要
+          atk: moveFlags.usesDefenseAsAttack
+            ? attacker.defenseStat // ボディプレス: 防御実数値を使う
+            : isPhysical
+              ? attacker.attackStat
+              : 0,
+          def: 0,
+          spa: isPhysical ? 0 : attacker.specialAttackStat,
+          spd: 0,
+          spe: 0,
+        },
+        boosts: {
+          atk: (moveFlags.usesDefenseAsAttack
+            ? attacker.defenseRank
+            : isPhysical
+              ? attacker.attackRank
+              : 0) as StatStage,
+          spa: (isPhysical ? 0 : attacker.specialAttackRank) as StatStage,
+        },
+        ability: attackerAbilityData?.name || undefined,
+        abilityDamageEffect: attackerAbilityData?.damageEffect ?? undefined,
+        item: attackerItemData?.name || attacker.itemName || undefined,
+        itemDamageEffect: attackerItemData?.damageEffect ?? undefined,
+        status: attacker.isBurned ? 'burn' : 'none',
+        teraType: attacker.isTerastallized ? (attacker.teraType ?? undefined) : undefined,
+        isTerastallized: attacker.isTerastallized,
+        isStellarBoostUsed: attacker.isStellarBoostUsed,
+      };
+
+      // 防御側の特性・アイテムのダメージエフェクトを取得
+      const defenderAbilityData = defender.abilityName
+        ? abilityByNameJa.get(defender.abilityName)
+        : null;
+      // 防御側アイテム解決（グループプレースホルダー対応）
+      let resolvedDefenderItemName = defender.itemName || '';
+      if (resolvedDefenderItemName === '__type_resist_berry__') {
+        resolvedDefenderItemName = resolveGroupItem('type_resist_berry', attacker.moveType) ?? '';
+      } else if (resolvedDefenderItemName === '__confusion_berry__') {
+        resolvedDefenderItemName = resolveGroupItem('confusion_berry', '') ?? '';
       }
+      const defenderItemData = resolvedDefenderItemName
+        ? (itemByName.get(resolvedDefenderItemName) ?? itemByNameJa.get(resolvedDefenderItemName))
+        : null;
+
+      // 防御側ポケモン構築
+      const defenderPokemon: CalcPokemon = {
+        level: 50,
+        types: defender.pokemonTypes,
+        stats: {
+          hp: defender.hpStat,
+          atk: 0,
+          def: defender.defenseStat,
+          spa: 0,
+          spd: defender.specialDefenseStat,
+          spe: 0,
+        },
+        boosts: {
+          def: defender.defenseRank as StatStage,
+          spd: defender.specialDefenseRank as StatStage,
+        },
+        ability: defenderAbilityData?.name || undefined,
+        abilityDamageEffect: defenderAbilityData?.damageEffect ?? undefined,
+        item: defenderItemData?.name || defender.itemName || undefined,
+        itemDamageEffect: defenderItemData?.damageEffect ?? undefined,
+        maxHp: defender.hpStat,
+        teraType: defender.isTerastallized ? (defender.teraType ?? undefined) : undefined,
+        isTerastallized: defender.isTerastallized,
+        isDynamaxed: defender.isDynamaxed,
+      };
+
+      // 技構築
+      const calcMove: CalcMove = {
+        id: moveData?.id,
+        name: moveEnglishName,
+        power: attacker.movePower,
+        type: attacker.moveType,
+        category: attacker.moveCategory,
+        isCritical: isCriticalHit,
+        isZMove: attacker.isZMove,
+        isDynamaxMove: attacker.isDynamaxed,
+        flags: moveFlags,
+        damageEffect: moveData?.damageEffect ?? undefined,
+        hitCount: attacker.hitCount,
+      };
+
+      // バトルコンテキスト構築
+      const battleContext: BattleContext = {
+        weather,
+        field,
+        isDoubleBattle: true,
+        isSpreadMove: effectiveIsSpread,
+        isHelpingHand,
+        reflect: isReflect,
+        lightScreen: isLightScreen,
+        allAttackerSideAbilities,
+        allDefenderSideAbilities,
+      };
 
       return {
-        moveName: moveEnglishName,
-        movePower: attacker.movePower,
-        moveType: attacker.moveType,
-        moveCategory: attacker.moveCategory,
-        moveFlags,
-        attackerLevel: 50,
-        attackerAttack,
-        attackerTypes: attacker.pokemonTypes,
-        defenderDefense,
-        defenderTypes: defender.pokemonTypes,
-        defenderMaxHp: defender.hpStat,
-        condition: {
-          weather,
-          field,
-          attackerStatStages: {
-            attack: moveFlags.usesDefenseAsAttack
-              ? attacker.defenseRank
-              : isPhysical
-                ? attacker.attackRank
-                : 0,
-            defense: 0,
-            specialAttack: moveFlags.usesDefenseAsAttack
-              ? 0
-              : isPhysical
-                ? 0
-                : attacker.specialAttackRank,
-            specialDefense: 0,
-            speed: 0,
-          },
-          defenderStatStages: {
-            attack: 0,
-            defense: isPhysical || moveFlags.targetsPhysicalDefense ? defender.defenseRank : 0,
-            specialAttack: 0,
-            specialDefense:
-              !isPhysical && !moveFlags.targetsPhysicalDefense ? defender.specialDefenseRank : 0,
-            speed: 0,
-          },
-          isDoubleBattle: true,
-          isHelpingHand,
-          isSpreadMove: effectiveIsSpread,
-          isCriticalHit,
-          attackerAbility: attacker.abilityName
-            ? abilityByNameJa.get(attacker.abilityName)?.name || undefined
-            : undefined,
-          defenderAbility: defender.abilityName
-            ? abilityByNameJa.get(defender.abilityName)?.name || undefined
-            : undefined,
-          attackerItem: attacker.itemName
-            ? itemByNameJa.get(attacker.itemName)?.name || attacker.itemName
-            : undefined,
-          defenderItem: defender.itemName
-            ? itemByNameJa.get(defender.itemName)?.name || defender.itemName
-            : undefined,
-          attackerBurned: attacker.isBurned,
-          reflect: isReflect,
-          lightScreen: isLightScreen,
-          allAttackerSideAbilities,
-          allDefenderSideAbilities,
-        },
+        attacker: attackerPokemon,
+        defender: defenderPokemon,
+        move: calcMove,
+        context: battleContext,
       };
+    };
+
+    /** makeInput → calculateDamageV2 を呼ぶヘルパー */
+    const calcDamage = (
+      attackerData: AttackerData,
+      defenderData: DefenderData,
+      isSpread: boolean
+    ): DamageResultType | null => {
+      const result = makeInput(attackerData, defenderData, isSpread);
+      if (!result) return null;
+      const { attacker: a, defender: d, move: m, context: c } = result;
+      return calculateDamageV2(a, d, m, c);
     };
 
     // 各ペアリングを個別に計算（準備ができているもののみ）
     const t1A =
       attackerAReady && defender1Ready
-        ? calculateDamage(makeInput(attackerAData, defenderData1, autoSpreadA))
+        ? calcDamage(attackerAData, defenderData1, autoSpreadA)
         : null;
     const t1B =
       attackerBReady && defender1Ready
-        ? calculateDamage(makeInput(attackerBData, defenderData1, autoSpreadB))
+        ? calcDamage(attackerBData, defenderData1, autoSpreadB)
         : null;
     const t2A =
       attackerAReady && defender2Ready
-        ? calculateDamage(makeInput(attackerAData, defenderData2, autoSpreadA))
+        ? calcDamage(attackerAData, defenderData2, autoSpreadA)
         : null;
     const t2B =
       attackerBReady && defender2Ready
-        ? calculateDamage(makeInput(attackerBData, defenderData2, autoSpreadB))
+        ? calcDamage(attackerBData, defenderData2, autoSpreadB)
         : null;
 
     const target1 =
@@ -336,7 +455,16 @@ export function DamageCalculator() {
         ? {
             attackerAOnly: t1A,
             attackerBOnly: t1B,
-            combined: t1A && t1B ? combineDamage(t1A, t1B, defenderData1.hpStat) : null,
+            combined:
+              t1A && t1B
+                ? combineDamage(
+                    t1A,
+                    t1B,
+                    defenderData1.hpStat,
+                    defenderData1.itemName || undefined,
+                    defenderData1.pokemonTypes
+                  )
+                : null,
           }
         : null;
 
@@ -345,7 +473,16 @@ export function DamageCalculator() {
         ? {
             attackerAOnly: t2A,
             attackerBOnly: t2B,
-            combined: t2A && t2B ? combineDamage(t2A, t2B, defenderData2.hpStat) : null,
+            combined:
+              t2A && t2B
+                ? combineDamage(
+                    t2A,
+                    t2B,
+                    defenderData2.hpStat,
+                    defenderData2.itemName || undefined,
+                    defenderData2.pokemonTypes
+                  )
+                : null,
           }
         : null;
 
@@ -370,6 +507,7 @@ export function DamageCalculator() {
     moveByNameJa,
     abilityByNameJa,
     itemByNameJa,
+    itemByName,
   ]);
 
   // 攻撃側 ↔ 防御側 入れ替え
@@ -379,36 +517,37 @@ export function DamageCalculator() {
     const oldDefender1 = defenderData1;
     const oldDefender2 = defenderData2;
 
-    // 防御側 → 攻撃側（ポケモン名・特性・持ち物を移し、技はリセット）
+    // 防御側 → 攻撃側（ポケモン名・特性を移し、技・持ち物はリセット）
+    // 攻撃側/防御側でアイテムリストが異なるためitemNameはクリア
     setAttackerAData({
       ...DEFAULT_ATTACKER_DATA,
       pokemonName: oldDefender1.pokemonName,
       pokemonTypes: oldDefender1.pokemonTypes,
       abilityName: oldDefender1.abilityName,
-      itemName: oldDefender1.itemName,
+      itemName: '',
     });
     setAttackerBData({
       ...DEFAULT_ATTACKER_DATA,
       pokemonName: oldDefender2.pokemonName,
       pokemonTypes: oldDefender2.pokemonTypes,
       abilityName: oldDefender2.abilityName,
-      itemName: oldDefender2.itemName,
+      itemName: '',
     });
 
-    // 攻撃側 → 防御側（ポケモン名・特性・持ち物を移す）
+    // 攻撃側 → 防御側（ポケモン名・特性を移し、持ち物はクリア）
     setDefenderData1({
       ...DEFAULT_DEFENDER_DATA,
       pokemonName: oldAttackerA.pokemonName,
       pokemonTypes: oldAttackerA.pokemonTypes,
       abilityName: oldAttackerA.abilityName,
-      itemName: oldAttackerA.itemName,
+      itemName: '',
     });
     setDefenderData2({
       ...DEFAULT_DEFENDER_DATA,
       pokemonName: oldAttackerB.pokemonName,
       pokemonTypes: oldAttackerB.pokemonTypes,
       abilityName: oldAttackerB.abilityName,
-      itemName: oldAttackerB.itemName,
+      itemName: '',
     });
   }, [attackerAData, attackerBData, defenderData1, defenderData2]);
 
@@ -426,13 +565,21 @@ export function DamageCalculator() {
             data={attackerAData}
             onDataChange={setAttackerAData}
             idKey="attacker-a"
-            displayMode="compact"
+            showMega={showMega}
+            showTerastal={showTerastal}
+            showZMove={showZMove}
+            showDynamax={showDynamax}
+            regulationSlug={regulationSlug}
           />
           <AttackerInput
             data={attackerBData}
             onDataChange={setAttackerBData}
             idKey="attacker-b"
-            displayMode="compact"
+            showMega={showMega}
+            showTerastal={showTerastal}
+            showZMove={showZMove}
+            showDynamax={showDynamax}
+            regulationSlug={regulationSlug}
           />
         </div>
 
@@ -466,13 +613,19 @@ export function DamageCalculator() {
             data={defenderData1}
             onDataChange={setDefenderData1}
             idKey="target-1"
-            displayMode="compact"
+            showMega={showMega}
+            showTerastal={showTerastal}
+            showDynamax={showDynamax}
+            regulationSlug={regulationSlug}
           />
           <DefenderInput
             data={defenderData2}
             onDataChange={setDefenderData2}
             idKey="target-2"
-            displayMode="compact"
+            showMega={showMega}
+            showTerastal={showTerastal}
+            showDynamax={showDynamax}
+            regulationSlug={regulationSlug}
           />
         </div>
       </div>
@@ -492,48 +645,6 @@ export function DamageCalculator() {
         onReflectChange={setIsReflect}
         onLightScreenChange={setIsLightScreen}
       />
-
-      {/* 詳細設定（折りたたみ）— IV、能力ランクのみ */}
-      <div>
-        <button
-          type="button"
-          onClick={() => setIsDetailSettingsOpen((prev) => !prev)}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border py-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          {isDetailSettingsOpen ? '詳細設定を隠す' : '▼ 詳細設定（個体値・ランク）'}
-        </button>
-
-        {isDetailSettingsOpen && (
-          <div className="mt-4 space-y-4 duration-200 animate-in fade-in slide-in-from-top-2">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <AttackerInput
-                data={attackerAData}
-                onDataChange={setAttackerAData}
-                idKey="attacker-a-detail"
-                displayMode="full"
-              />
-              <AttackerInput
-                data={attackerBData}
-                onDataChange={setAttackerBData}
-                idKey="attacker-b-detail"
-                displayMode="full"
-              />
-              <DefenderInput
-                data={defenderData1}
-                onDataChange={setDefenderData1}
-                idKey="target-1-detail"
-                displayMode="full"
-              />
-              <DefenderInput
-                data={defenderData2}
-                onDataChange={setDefenderData2}
-                idKey="target-2-detail"
-                displayMode="full"
-              />
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

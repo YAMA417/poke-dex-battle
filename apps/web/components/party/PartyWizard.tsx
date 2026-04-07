@@ -1,16 +1,25 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Regulation, Pokemon, PokemonSpeciesData } from '@poke-dex-battle/shared';
-import { useAllPokemon, useAllItems } from '@/hooks/useApiData';
+import type { Pokemon, PokemonSpeciesData } from '@poke-dex-battle/shared';
+import { isPokemonType } from '@poke-dex-battle/shared';
+import {
+  useAllPokemon,
+  useAllItems,
+  useRegulations,
+  type RegulationData,
+} from '@/hooks/useApiData';
 import { toSpeciesData } from '@/lib/api-adapters';
 import { usePartyStore } from '@/hooks/use-party-store';
 import { PokemonSearchModal } from '@/components/pokemon/PokemonSearchModal';
-import { PokemonEditForm } from '@/components/pokemon/PokemonEditForm';
-import { ChevronRight, ChevronLeft, Plus, Trash2, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
+import { WizardStep1Regulation } from '@/components/party/wizard/WizardStep1Regulation';
+import { WizardStep2Selection } from '@/components/party/wizard/WizardStep2Selection';
+import { WizardStep3Edit } from '@/components/party/wizard/WizardStep3Edit';
+import { WizardStep4Save } from '@/components/party/wizard/WizardStep4Save';
 
-type Step = 1 | 2 | 3;
+type Step = 1 | 2 | 3 | 4;
 
 const DEFAULT_POKEMON = (species: PokemonSpeciesData): Pokemon => ({
   id: '',
@@ -23,17 +32,17 @@ const DEFAULT_POKEMON = (species: PokemonSpeciesData): Pokemon => ({
   ability: species.abilities[0]?.name ?? '',
   teraType: species.types[0],
   item: undefined,
-  ivs: { hp: 31, attack: 31, defense: 31, specialAttack: 31, specialDefense: 31, speed: 31 },
-  evs: { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0 },
+  abilityPoints: { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0 },
   moves: [],
   actualStats: undefined,
   spriteUrl: species.spriteUrl,
 });
 
 const STEPS: { label: string; desc: string }[] = [
-  { label: 'パーティ情報', desc: '名前・レギュレーション・メモを設定' },
+  { label: 'レギュレーション', desc: 'バトルルールを選択' },
   { label: 'ポケモン選択', desc: '最大6匹を追加（後から変更可）' },
   { label: 'ポケモン編集', desc: '各ポケモンの詳細設定' },
+  { label: 'パーティ情報', desc: '名前・メモを設定して保存' },
 ];
 
 interface PartyWizardProps {
@@ -41,21 +50,47 @@ interface PartyWizardProps {
   initialPartyId?: string;
 }
 
-export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
+export function PartyWizard({ mode, initialPartyId }: PartyWizardProps): React.JSX.Element {
   const router = useRouter();
   const { createParty, updateParty, addPokemon, removePokemon, getParty } = usePartyStore();
 
   const existingParty = initialPartyId ? getParty(initialPartyId) : undefined;
 
-  // Step 1 state
-  const [partyName, setPartyName] = useState(existingParty?.name ?? '');
-  const [regulation, setRegulation] = useState<Regulation>(existingParty?.regulation ?? 'SV');
+  // レギュレーション一覧を取得
+  const { data: allRegulations } = useRegulations();
 
-  // レギュレーション → DB regulation ID マッピング
-  const regulationDbId = regulation === 'SV' ? 'sv-reg-i' : undefined;
+  // Step 1 state: レギュレーション選択
+  const [regulation, setRegulation] = useState<string>(existingParty?.regulation ?? '');
+  const [selectedRegulation, setSelectedRegulation] = useState<RegulationData | null>(null);
+
+  // 編集モードの初回マウント: レギュレーション自動設定 & Step2へスキップ
+  const [editModeSkipped, setEditModeSkipped] = useState(false);
+  useEffect(() => {
+    if (mode === 'edit' && existingParty && allRegulations && !editModeSkipped) {
+      const found = allRegulations.find((r) => r.name === existingParty.regulation);
+      if (found) {
+        setRegulation(found.name);
+        setSelectedRegulation(found);
+      }
+      setStep(2);
+      setEditModeSkipped(true);
+    }
+  }, [mode, existingParty, allRegulations, editModeSkipped]);
+
+  // 新規作成モード: レギュレーション選択時に自動設定
+  useEffect(() => {
+    if (mode === 'create' && allRegulations && allRegulations.length > 0 && !regulation) {
+      const first = allRegulations[0];
+      setRegulation(first.name);
+      setSelectedRegulation(first);
+    }
+  }, [mode, allRegulations, regulation]);
+
+  // レギュレーション名からAPI取得用のポケモンプール連動
+  const regulationName = selectedRegulation?.name;
 
   // API経由でレギュレーション対応ポケモンを取得
-  const { data: allPokemonRaw } = useAllPokemon(regulationDbId);
+  const { data: allPokemonRaw } = useAllPokemon(regulationName);
   const allPokemonByName = useMemo(() => {
     if (!allPokemonRaw) return new Map<string, PokemonSpeciesData>();
     const map = new Map<string, PokemonSpeciesData>();
@@ -75,12 +110,14 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
     if (!allItemsRaw) return new Map<string, string>();
     const map = new Map<string, string>();
     for (const row of allItemsRaw) {
-      if (row.id && row.nameJa) map.set(row.id, row.nameJa);
+      if (row.id && row.nameJa) map.set(String(row.id), row.nameJa);
       if (row.name && row.nameJa) map.set(row.name, row.nameJa);
     }
     return map;
   }, [allItemsRaw]);
 
+  // Step 4 state: パーティ情報
+  const [partyName, setPartyName] = useState(existingParty?.name ?? '');
   const [memo, setMemo] = useState(existingParty?.memo ?? '');
 
   // Step 2/3 state
@@ -100,22 +137,55 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [editingIdx, setEditingIdx] = useState<number>(0);
+
+  // Step2: 差し替えモード用 state
+  const [replacingIdx, setReplacingIdx] = useState<number | null>(null);
+
+  // フォームバリエーション逆引き用に全ポケモン（レギュレーション制限なし）を取得
+  const { data: allPokemonUnfiltered } = useAllPokemon();
+
+  // 選択中ポケモンのフォームバリエーション（メガ等）の fixedItem を収集
+  const editingPokemonFixedItems = useMemo(() => {
+    if (!allPokemonUnfiltered || pokemons.length === 0) return new Set<string>();
+    const editingSpecies = pokemons[editingIdx]?.species;
+    if (!editingSpecies) return new Set<string>();
+
+    const names = new Set<string>();
+    // ベースフォームの fixedItem
+    if (editingSpecies.fixedItem) names.add(editingSpecies.fixedItem);
+
+    // 全ポケモンからベースフォームIDが一致するフォームの fixedItem を収集
+    const baseRow = allPokemonUnfiltered.find((r) => r.name === editingSpecies.name);
+    if (baseRow) {
+      for (const row of allPokemonUnfiltered) {
+        if (row.baseFormId === baseRow.id && row.fixedItem) {
+          names.add(row.fixedItem);
+        }
+      }
+    }
+    return names;
+  }, [allPokemonUnfiltered, pokemons, editingIdx]);
   const [step, setStep] = useState<Step>(1);
 
   const [partyId, setPartyId] = useState<string | undefined>(initialPartyId);
 
-  const step1Valid = partyName.trim().length > 0;
   const step2Valid = pokemons.length > 0;
+  const step4Valid = partyName.trim().length > 0;
 
-  function handleSpeciesSelect(species: PokemonSpeciesData) {
+  function handleRegulationSelect(reg: RegulationData): void {
+    setRegulation(reg.name);
+    setSelectedRegulation(reg);
+  }
+
+  function handleSpeciesSelect(species: PokemonSpeciesData): void {
     const poke = DEFAULT_POKEMON(species);
     // 固定アイテム・固定テラスタイプを自動設定
     if (species.fixedItem) {
       poke.item =
         species.fixedItemNameJa ?? itemNameJaMap.get(species.fixedItem) ?? species.fixedItem;
     }
-    if (species.fixedTeraType) {
-      poke.teraType = species.fixedTeraType as PokemonSpeciesData['types'][number];
+    if (species.fixedTeraType && isPokemonType(species.fixedTeraType)) {
+      poke.teraType = species.fixedTeraType;
     }
     // genderRate に応じた初期性別を設定
     if (species.genderRate === -1) {
@@ -125,17 +195,29 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
     } else if (species.genderRate === 8) {
       poke.gender = 'female';
     }
-    setPokemons((prev) => {
-      const next = [...prev, { pokemon: poke, species }];
-      // Step3 表示中は追加したポケモンを自動的に選択
-      if (step === 3) {
-        setEditingIdx(next.length - 1);
-      }
-      return next;
-    });
+
+    if (replacingIdx !== null) {
+      // 差し替えモード: 指定インデックスのポケモンを入れ替え
+      setPokemons((prev) => {
+        const next = [...prev];
+        next[replacingIdx] = { pokemon: poke, species };
+        return next;
+      });
+      setReplacingIdx(null);
+    } else {
+      // 追加モード
+      setPokemons((prev) => {
+        const next = [...prev, { pokemon: poke, species }];
+        // Step3 表示中は追加したポケモンを自動的に選択
+        if (step === 3) {
+          setEditingIdx(next.length - 1);
+        }
+        return next;
+      });
+    }
   }
 
-  function handlePokemonChange(idx: number, data: Partial<Pokemon>) {
+  function handlePokemonChange(idx: number, data: Partial<Pokemon>): void {
     setPokemons((prev) => {
       const next = [...prev];
       next[idx] = { ...next[idx], pokemon: { ...next[idx].pokemon, ...data } };
@@ -143,16 +225,20 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
     });
   }
 
-  function handleRemovePokemon(idx: number) {
+  function handleRemovePokemon(idx: number): void {
     setPokemons((prev) => prev.filter((_, i) => i !== idx));
     if (editingIdx >= idx && editingIdx > 0) setEditingIdx(editingIdx - 1);
   }
 
-  function handleSave() {
+  function handleSave(): void {
     // パーティ保存
     let savedId = partyId;
     if (!savedId) {
-      const created = createParty({ name: partyName.trim(), regulation, memo: memo || undefined });
+      const created = createParty({
+        name: partyName.trim(),
+        regulation,
+        memo: memo || undefined,
+      });
       savedId = created.id;
       setPartyId(savedId);
     } else {
@@ -172,10 +258,22 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
     router.push(`/parties/${savedId}`);
   }
 
+  // Step2のdisabledIds: 差し替えモード時は自分自身を除外
+  const searchDisabledIds = useMemo(() => {
+    const ids = pokemons.map((p) => p.species.id);
+    if (replacingIdx !== null) {
+      const replacingId = pokemons[replacingIdx]?.species.id;
+      return ids.filter((id) => id !== replacingId);
+    }
+    return ids;
+  }, [pokemons, replacingIdx]);
+
   return (
-    <div className="mx-auto max-w-2xl">
+    <div
+      className={`mx-auto ${step === 3 ? 'max-w-5xl' : 'max-w-2xl'} transition-all duration-300`}
+    >
       {/* ステップインジケータ */}
-      <div className="mb-8 flex items-center gap-0">
+      <div className="mx-auto mb-8 flex max-w-2xl items-center gap-0">
         {STEPS.map((s, i) => {
           const stepNum = (i + 1) as Step;
           const isActive = step === stepNum;
@@ -210,213 +308,92 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps) {
         })}
       </div>
 
-      {/* Step 1: パーティ情報 */}
+      {/* Step 1: レギュレーション選択 */}
       {step === 1 && (
-        <div className="animate-fadeIn space-y-5 rounded-2xl bg-white p-6 shadow">
-          <div>
-            <h3 className="mb-1 text-lg font-bold text-gray-800">{STEPS[0].label}</h3>
-            <p className="text-sm text-gray-400">{STEPS[0].desc}</p>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">
-              パーティ名 <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              value={partyName}
-              onChange={(e) => setPartyName(e.target.value)}
-              placeholder="例: 晴れパ 最新版"
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pokemon-blue"
-            />
-          </div>
-          <div>
-            <label className="mb-2 block text-xs font-semibold text-gray-600">
-              レギュレーション
-            </label>
-            <div className="flex gap-3">
-              {(['SV', 'Champions'] as Regulation[]).map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => setRegulation(r)}
-                  className={`flex-1 rounded-xl border-2 py-2.5 text-sm font-semibold transition-all ${regulation === r ? 'border-pokemon-blue bg-pokemon-blue text-white shadow' : 'border-gray-200 text-gray-500 hover:border-pokemon-blue'}`}
-                >
-                  {r === 'SV' ? 'スカーレット・バイオレット' : 'チャンピオンズ'}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">メモ（任意）</label>
-            <textarea
-              value={memo}
-              onChange={(e) => setMemo(e.target.value)}
-              rows={2}
-              placeholder="パーティのコンセプトなど"
-              className="w-full resize-none rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pokemon-blue"
-            />
-          </div>
-          <div className="flex justify-end pt-2">
-            <button
-              disabled={!step1Valid}
-              onClick={() => setStep(2)}
-              className={`flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold transition-all ${step1Valid ? 'bg-pokemon-blue text-white shadow hover:bg-blue-700 hover:shadow-lg' : 'cursor-not-allowed bg-gray-100 text-gray-300'}`}
-            >
-              次へ <ChevronRight size={16} />
-            </button>
-          </div>
-        </div>
+        <WizardStep1Regulation
+          label={STEPS[0].label}
+          desc={STEPS[0].desc}
+          regulation={regulation}
+          allRegulations={allRegulations}
+          onRegulationSelect={handleRegulationSelect}
+          onNext={() => setStep(2)}
+        />
       )}
 
       {/* Step 2: ポケモン選択 */}
       {step === 2 && (
-        <div className="animate-fadeIn space-y-5 rounded-2xl bg-white p-6 shadow">
-          <div>
-            <h3 className="mb-1 text-lg font-bold text-gray-800">{STEPS[1].label}</h3>
-            <p className="text-sm text-gray-400">{STEPS[1].desc}</p>
-          </div>
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-            {pokemons.map(({ species }, i) => (
-              <div key={i} className="group relative flex flex-col items-center gap-1">
-                <div
-                  className="flex aspect-square w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-gray-100 bg-gray-50 transition-all hover:border-pokemon-blue"
-                  onClick={() => {
-                    setEditingIdx(i);
-                    setStep(3);
-                  }}
-                >
-                  {species.spriteUrl ? (
-                    <img
-                      src={species.spriteUrl}
-                      alt={species.nameJa}
-                      width={56}
-                      height={56}
-                      className="h-full w-full object-contain"
-                    />
-                  ) : (
-                    <span className="text-lg font-bold text-gray-300">
-                      {species.nameJa.charAt(0)}
-                    </span>
-                  )}
-                </div>
-                <span className="w-full truncate text-center text-[10px] font-medium text-gray-600">
-                  {species.nameJa}
-                </span>
-                <button
-                  onClick={() => handleRemovePokemon(i)}
-                  className="absolute -right-1.5 -top-1.5 hidden h-5 w-5 items-center justify-center rounded-full bg-red-400 text-white group-hover:flex"
-                >
-                  <Trash2 size={10} />
-                </button>
-              </div>
-            ))}
-            {pokemons.length < 6 && (
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition-all hover:border-pokemon-blue hover:bg-blue-50"
-              >
-                <Plus size={20} className="text-gray-300" />
-                <span className="text-[10px] text-gray-300">追加</span>
-              </button>
-            )}
-          </div>
-          <div className="flex justify-between pt-2">
-            <button
-              onClick={() => setStep(1)}
-              className="flex items-center gap-1 text-sm text-gray-400 transition-colors hover:text-gray-600"
-            >
-              <ChevronLeft size={16} /> 戻る
-            </button>
-            <div className="flex gap-2">
-              <button
-                disabled={!step2Valid}
-                onClick={handleSave}
-                className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${step2Valid ? 'border border-green-400 text-green-600 hover:bg-green-50' : 'cursor-not-allowed text-gray-300'}`}
-              >
-                <Check size={16} /> このまま保存
-              </button>
-              <button
-                disabled={!step2Valid}
-                onClick={() => setStep(3)}
-                className={`flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold transition-all ${step2Valid ? 'bg-pokemon-blue text-white shadow hover:bg-blue-700' : 'cursor-not-allowed bg-gray-100 text-gray-300'}`}
-              >
-                各ポケモンを詳細設定 <ChevronRight size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
+        <WizardStep2Selection
+          label={STEPS[1].label}
+          desc={STEPS[1].desc}
+          pokemons={pokemons}
+          isValid={step2Valid}
+          mode={mode}
+          onReplace={(i) => {
+            setReplacingIdx(i);
+            setSearchOpen(true);
+          }}
+          onAdd={() => {
+            setReplacingIdx(null);
+            setSearchOpen(true);
+          }}
+          onRemove={handleRemovePokemon}
+          onBack={() => {
+            if (mode === 'edit') {
+              // 編集モードではStep1を飛ばしてポケモン一覧に戻る
+              router.back();
+            } else {
+              setStep(1);
+            }
+          }}
+          onNext={() => setStep(3)}
+        />
       )}
 
       {/* Step 3: ポケモン詳細編集 */}
-      {step === 3 && pokemons.length > 0 && (
-        <div className="animate-fadeIn overflow-hidden rounded-2xl bg-white shadow">
-          {/* ポケモン切り替えタブ */}
-          <div className="flex overflow-x-auto border-b border-gray-100 bg-gray-50/50">
-            {pokemons.map(({ species }, i) => (
-              <button
-                key={i}
-                onClick={() => setEditingIdx(i)}
-                className={`flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2 text-xs font-semibold transition-all ${editingIdx === i ? 'border-pokemon-blue bg-white text-pokemon-blue' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-              >
-                {species.spriteUrl ? (
-                  <img
-                    src={species.spriteUrl}
-                    alt=""
-                    width={24}
-                    height={24}
-                    className="h-6 w-6 object-contain"
-                  />
-                ) : (
-                  <span className="flex h-6 w-6 items-center justify-center text-xs text-gray-400">
-                    {species.nameJa.charAt(0)}
-                  </span>
-                )}
-                {species.nameJa}
-              </button>
-            ))}
-            {pokemons.length < 6 && (
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="flex shrink-0 items-center gap-1 border-b-2 border-transparent px-3 py-2 text-xs text-gray-300 transition-all hover:text-pokemon-blue"
-              >
-                <Plus size={14} /> 追加
-              </button>
-            )}
-          </div>
-          <div className="max-h-[60vh] overflow-y-auto p-6">
-            {pokemons[editingIdx] && (
-              <PokemonEditForm
-                key={editingIdx}
-                pokemon={pokemons[editingIdx].pokemon}
-                species={pokemons[editingIdx].species}
-                items={allItemsRaw ?? []}
-                onChange={(data) => handlePokemonChange(editingIdx, data)}
-              />
-            )}
-          </div>
-          <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50/50 px-6 py-4">
-            <button
-              onClick={() => setStep(2)}
-              className="flex items-center gap-1 text-sm text-gray-400 transition-colors hover:text-gray-600"
-            >
-              <ChevronLeft size={16} /> ポケモン一覧
-            </button>
-            <button
-              onClick={handleSave}
-              className="flex items-center gap-2 rounded-xl bg-green-500 px-6 py-2.5 text-sm font-bold text-white shadow transition-all hover:bg-green-600 hover:shadow-lg"
-            >
-              <Check size={16} /> {mode === 'create' ? '保存して完了' : '変更を保存'}
-            </button>
-          </div>
-        </div>
+      {step === 3 && (
+        <WizardStep3Edit
+          pokemons={pokemons}
+          editingIdx={editingIdx}
+          items={allItemsRaw ?? []}
+          battleSystems={selectedRegulation?.battleSystems ?? []}
+          allPokemonFixedItems={editingPokemonFixedItems}
+          onEditingIdxChange={setEditingIdx}
+          onAdd={() => {
+            setReplacingIdx(null);
+            setSearchOpen(true);
+          }}
+          onPokemonChange={handlePokemonChange}
+          onBack={() => setStep(2)}
+          onNext={() => setStep(4)}
+        />
+      )}
+
+      {/* Step 4: パーティ情報・保存 */}
+      {step === 4 && (
+        <WizardStep4Save
+          label={STEPS[3].label}
+          desc={STEPS[3].desc}
+          partyName={partyName}
+          regulation={regulation}
+          memo={memo}
+          mode={mode}
+          isValid={step4Valid}
+          onPartyNameChange={setPartyName}
+          onMemoChange={setMemo}
+          onBack={() => setStep(3)}
+          onSave={handleSave}
+        />
       )}
 
       <PokemonSearchModal
         open={searchOpen}
-        onClose={() => setSearchOpen(false)}
+        onClose={() => {
+          setSearchOpen(false);
+          setReplacingIdx(null);
+        }}
         onSelect={handleSpeciesSelect}
-        disabledIds={pokemons.map((p) => p.species.id)}
-        regulation={regulationDbId}
+        disabledIds={searchDisabledIds}
+        regulation={regulationName}
       />
     </div>
   );

@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import {
+  ABILITY_IRON_FIST,
+  ABILITY_MULTISCALE,
+  ABILITY_RECKLESS,
+  ABILITY_TECHNICIAN,
+  ITEM_EXPERT_BELT,
+  ITEM_NORMAL_GEM,
+  ITEM_PUNCHING_GLOVE,
+} from '../../../constants/damage-calc-names';
 import type { BattleContext, CalcMove, CalcPokemon } from '../../../types/damage';
 import { resolveBasePower } from '../../damage-calc/resolve-base-power';
 
@@ -8,7 +17,7 @@ describe('resolveBasePower', () => {
     level: 50,
     types: ['Dragon'],
     stats: { hp: 133, atk: 134, def: 95, spa: 137, spd: 95, spe: 114 },
-    ability: 'Multiscale',
+    ability: ABILITY_MULTISCALE,
   };
 
   const gabriasu: CalcPokemon = {
@@ -46,7 +55,7 @@ describe('resolveBasePower', () => {
   it('should apply Technician modifier for moves with power <= 60', () => {
     const technician: CalcPokemon = {
       ...kairoyu,
-      ability: 'Technician',
+      ability: ABILITY_TECHNICIAN,
     };
     const move: CalcMove = {
       name: 'Quick Attack',
@@ -62,7 +71,7 @@ describe('resolveBasePower', () => {
   it('should not apply Technician for moves with power > 60', () => {
     const technician: CalcPokemon = {
       ...kairoyu,
-      ability: 'Technician',
+      ability: ABILITY_TECHNICIAN,
     };
     const move: CalcMove = {
       name: 'Slash',
@@ -78,7 +87,7 @@ describe('resolveBasePower', () => {
   it('should apply Iron Fist modifier for punch moves (1.2x)', () => {
     const ironFist: CalcPokemon = {
       ...kairoyu,
-      ability: 'Iron Fist',
+      ability: ABILITY_IRON_FIST,
     };
     const move: CalcMove = {
       name: 'Mach Punch',
@@ -95,7 +104,7 @@ describe('resolveBasePower', () => {
   it('should apply Reckless modifier for recoil moves (1.2x)', () => {
     const reckless: CalcPokemon = {
       ...kairoyu,
-      ability: 'Reckless',
+      ability: ABILITY_RECKLESS,
     };
     const move: CalcMove = {
       name: 'Double-Edge',
@@ -112,7 +121,7 @@ describe('resolveBasePower', () => {
   it('should apply Expert Belt modifier for super effective moves', () => {
     const withItem: CalcPokemon = {
       ...kairoyu,
-      item: 'Expert Belt',
+      item: ITEM_EXPERT_BELT,
     };
     const move: CalcMove = {
       name: 'Ice Beam',
@@ -129,7 +138,7 @@ describe('resolveBasePower', () => {
   it('should not apply Expert Belt for neutral damage', () => {
     const withItem: CalcPokemon = {
       ...kairoyu,
-      item: 'Expert Belt',
+      item: ITEM_EXPERT_BELT,
     };
     const move: CalcMove = {
       name: 'Normal Attack',
@@ -146,7 +155,7 @@ describe('resolveBasePower', () => {
   it('should apply Normal Gem modifier for Normal type moves', () => {
     const withGem: CalcPokemon = {
       ...kairoyu,
-      item: 'Normal Gem',
+      item: ITEM_NORMAL_GEM,
     };
     const move: CalcMove = {
       name: 'Hyper Beam',
@@ -162,7 +171,7 @@ describe('resolveBasePower', () => {
   it('should apply Punching Glove modifier for punch moves (1.1x)', () => {
     const withGlove: CalcPokemon = {
       ...kairoyu,
-      item: 'Punching Glove',
+      item: ITEM_PUNCHING_GLOVE,
     };
     const move: CalcMove = {
       name: 'Close Combat',
@@ -179,7 +188,7 @@ describe('resolveBasePower', () => {
   it('should chain multiple modifiers (Technician + Helping Hand)', () => {
     const technician: CalcPokemon = {
       ...kairoyu,
-      ability: 'Technician',
+      ability: ABILITY_TECHNICIAN,
     };
     const move: CalcMove = {
       name: 'Quick Attack',

@@ -8,20 +8,18 @@ const app = new Hono();
 app.post('/stats', async (c) => {
   const body = await c.req.json();
 
-  const { baseStats, ivs, evs, level, nature } = body as {
+  const { baseStats, abilityPoints, nature } = body as {
     baseStats: BaseStats;
-    ivs: Stats;
-    evs: Stats;
-    level: number;
+    abilityPoints: Stats;
     nature: Nature;
   };
 
-  const actualStats = calcActualStats(baseStats, ivs, evs, level, nature);
+  const actualStats = calcActualStats(baseStats, abilityPoints, nature);
 
   return c.json({
     data: {
       actualStats,
-      input: { baseStats, ivs, evs, level, nature },
+      input: { baseStats, abilityPoints, nature },
     },
   });
 });

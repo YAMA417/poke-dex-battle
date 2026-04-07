@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ABILITY_MULTISCALE, ITEM_LIFE_ORB } from '../../../constants/damage-calc-names';
 import type { BattleContext, CalcMove, CalcPokemon } from '../../../types/damage';
 import { calculateModifier } from '../../damage-calc/calculate-modifier';
 
@@ -7,7 +8,7 @@ describe('calculateModifier', () => {
     level: 50,
     types: ['Dragon'],
     stats: { hp: 133, atk: 134, def: 95, spa: 137, spd: 95, spe: 114 },
-    ability: 'Multiscale',
+    ability: ABILITY_MULTISCALE,
   };
 
   const defender: CalcPokemon = {
@@ -180,7 +181,7 @@ describe('calculateModifier', () => {
     const baseDamage = 60;
     const attackerWithOrb: CalcPokemon = {
       ...attacker,
-      item: 'Life Orb',
+      item: ITEM_LIFE_ORB,
     };
     const result = calculateModifier(baseDamage, attackerWithOrb, defender, move, context);
     // Life Orb applies 1.3x to all moves. Uses applyOtherModifiers() with 4096 rounding
@@ -194,7 +195,7 @@ describe('calculateModifier', () => {
     const baseDamage = 60;
     const defenderWithMS: CalcPokemon = {
       ...defender,
-      ability: 'Multiscale',
+      ability: ABILITY_MULTISCALE,
       currentHp: 123,
       maxHp: 123,
     };
@@ -210,7 +211,7 @@ describe('calculateModifier', () => {
     const baseDamage = 60;
     const defenderWithMS: CalcPokemon = {
       ...defender,
-      ability: 'Multiscale',
+      ability: ABILITY_MULTISCALE,
       currentHp: 100,
       maxHp: 123,
     };

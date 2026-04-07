@@ -13,6 +13,9 @@ packages/shared/src/data/showdown/
 # Turbo
 .turbo/
 
+# MCP
+.mcp.json
+
 # Environment
 .env
 .env.local
@@ -41,6 +44,7 @@ yarn-error.*
 
 # Testing
 coverage/
+.playwright-mcp/
 
 # TypeScript
 *.tsbuildinfo

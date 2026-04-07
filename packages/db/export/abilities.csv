@@ -1,0 +1,411 @@
+﻿slug,num,name_en,name_ja,short_desc_en,short_desc_ja,include
+stench,1,Stench,あくしゅう,This Pokemon's attacks without a chance to flinch gain a 10% chance to flinch.,臭い　においを　放つことによって 攻撃した　ときに　相手を ひるませることが　ある。,○
+drizzle,2,Drizzle,あめふらし,"On switch-in, this Pokemon summons Rain Dance.",登場　したときに 天気を　雨に　する。,○
+speed-boost,3,Speed Boost,かそく,This Pokemon's Speed is raised 1 stage at the end of each full turn on the field.,毎ターン　素早さが　上がる。,○
+battle-armor,4,Battle Armor,カブトアーマー,This Pokemon cannot be struck by a critical hit.,硬い　甲羅に　守られて 相手の　攻撃が 急所に　当たらない。,○
+sturdy,5,Sturdy,がんじょう,"If this Pokemon is at full HP, it survives one hit with at least 1 HP. Immune to OHKO.",相手の　技を　受けても 一撃で　倒されることが　ない。 一撃必殺技も　効かない。,○
+damp,6,Damp,しめりけ,Prevents Explosion/Mind Blown/Misty Explosion/Self-Destruct/Aftermath while active.,あたりを　湿らせることに　よって じばく　などの　爆発する　技を だれも　使えなくなる。,○
+limber,7,Limber,じゅうなん,This Pokemon cannot be paralyzed. Gaining this Ability while paralyzed cures it.,柔軟な　体によって まひ状態に　ならない。,○
+sand-veil,8,Sand Veil,すながくれ,"If Sandstorm is active, this Pokemon's evasiveness is 1.25x; immunity to Sandstorm.",砂あらしの　とき 回避率が　上がる。,○
+static,9,Static,せいでんき,30% chance a Pokemon making contact with this Pokemon will be paralyzed.,静電気を　体に　まとい 触った　相手を まひさせる　ことがある。,○
+volt-absorb,10,Volt Absorb,ちくでん,This Pokemon heals 1/4 of its max HP when hit by Electric moves; Electric immunity.,でんきタイプの　技を　受けると ダメージを　受けずに　回復する。,○
+water-absorb,11,Water Absorb,ちょすい,This Pokemon heals 1/4 of its max HP when hit by Water moves; Water immunity.,みずタイプの　技を　受けると ダメージを　受けずに　回復する。,○
+oblivious,12,Oblivious,どんかん,This Pokemon cannot be infatuated or taunted. Immune to Intimidate.,鈍感なので メロメロや　ちょうはつ状態に ならない。,○
+cloud-nine,13,Cloud Nine,ノーてんき,"While this Pokemon is active, the effects of weather conditions are disabled.",あらゆる　天気の　影響が なくなって　しまう。,○
+compound-eyes,14,Compound Eyes,ふくがん,This Pokemon's moves have their accuracy multiplied by 1.3.,複眼を　持っているため 技の　命中率が　上がる。,○
+insomnia,15,Insomnia,ふみん,This Pokemon cannot fall asleep. Gaining this Ability while asleep cures it.,眠れない　体質　なので ねむり状態に　ならない。,○
+color-change,16,Color Change,へんしょく,"This Pokemon's type changes to the type of a move it's hit by, unless it has the type.",相手から　受けた　技の　タイプに 自分の　タイプが　変化　する。,○
+immunity,17,Immunity,めんえき,This Pokemon cannot be poisoned. Gaining this Ability while poisoned cures it.,体内に　免疫を　持っているため どく状態に　ならない。,○
+flash-fire,18,Flash Fire,もらいび,This Pokemon's Fire attacks do 1.5x damage if hit by one Fire move; Fire immunity.,ほのおタイプの　技を　受けると 炎を　もらい　自分が　出す ほのおタイプの　技が　強くなる。,○
+shield-dust,19,Shield Dust,りんぷん,This Pokemon is not affected by the secondary effect of another Pokemon's attack.,りんぷんに　守られて 技の　追加効果を　受けなくなる。,○
+own-tempo,20,Own Tempo,マイペース,This Pokemon cannot be confused. Immune to Intimidate.,マイペースなので こんらん状態に　ならない。,○
+suction-cups,21,Suction Cups,きゅうばん,This Pokemon cannot be forced to switch out by another Pokemon's attack or item.,吸盤で　地面に　張り付き ポケモンを　入れ替えさせる 技や　道具が　効かなくなる。,○
+intimidate,22,Intimidate,いかく,"On switch-in, this Pokemon lowers the Attack of opponents by 1 stage.",登場　したとき　威嚇して 相手を　萎縮させ 相手の　攻撃を　下げて　しまう。,○
+shadow-tag,23,Shadow Tag,かげふみ,Prevents foes from choosing to switch unless they also have this Ability.,相手の　影を　踏み 逃げたり　交代　できなくする。,○
+rough-skin,24,Rough Skin,さめはだ,Pokemon making contact with this Pokemon lose 1/8 of their max HP.,攻撃を　受けたとき 自分に　触れた　相手を ざらざらの　肌で　キズつける。,○
+wonder-guard,25,Wonder Guard,ふしぎなまもり,This Pokemon can only be damaged by supereffective moves and indirect damage.,効果バツグンの　技しか 当たらない　不思議な　力。,○
+levitate,26,Levitate,ふゆう,This Pokemon is immune to Ground; Gravity/Ingrain/Smack Down/Iron Ball nullify it.,地面から　浮くことによって じめんタイプの　技を　受けない。,○
+effect-spore,27,Effect Spore,ほうし,30% chance of poison/paralysis/sleep on others making contact with this Pokemon.,攻撃で　自分に　触れた　相手を どくや　まひや　ねむり状態に する　ことがある。,○
+synchronize,28,Synchronize,シンクロ,"If another Pokemon burns/poisons/paralyzes this Pokemon, it also gets that status.",自分が　なってしまった どくや　まひや　やけどを 相手に　うつす。,○
+clear-body,29,Clear Body,クリアボディ,Prevents other Pokemon from lowering this Pokemon's stat stages.,相手の　技や　特性で 能力を　下げられない。,○
+natural-cure,30,Natural Cure,しぜんかいふく,This Pokemon has its non-volatile status condition cured when it switches out.,手持ちに　ひっこむと 状態異常が　治る。,○
+lightning-rod,31,Lightning Rod,ひらいしん,This Pokemon draws Electric moves to itself to raise Sp. Atk by 1; Electric immunity.,でんきタイプの　技を　自分に 寄せつけ　ダメージを　受けずに 特攻が　上がる。,○
+serene-grace,32,Serene Grace,てんのめぐみ,This Pokemon's moves have their secondary effect chance doubled.,天の恵みの　おかげで 技の　追加効果が　でやすい。,○
+swift-swim,33,Swift Swim,すいすい,"If Rain Dance is active, this Pokemon's Speed is doubled.",天気が　雨のとき 素早さが　上がる。,○
+chlorophyll,34,Chlorophyll,ようりょくそ,"If Sunny Day is active, this Pokemon's Speed is doubled.",天気が　晴れのとき 素早さが　上がる。,○
+illuminate,35,Illuminate,はっこう,This Pokemon's accuracy can't be lowered by others; ignores their evasiveness stat.,あたりを　明るくする　ことで 野生の　ポケモンに 遭遇　しやすくなる。,○
+trace,36,Trace,トレース,"On switch-in, or when it can, this Pokemon copies a random adjacent foe's Ability.",登場　したとき 相手の　特性を　トレースして 同じ　特性に　なる。,○
+huge-power,37,Huge Power,ちからもち,This Pokemon's Attack is doubled.,物理攻撃の 威力が　２倍になる。,○
+poison-point,38,Poison Point,どくのトゲ,30% chance a Pokemon making contact with this Pokemon will be poisoned.,自分に　触った　相手を どく状態に　することがある。,○
+inner-focus,39,Inner Focus,せいしんりょく,This Pokemon cannot be made to flinch. Immune to Intimidate.,鍛えられた　精神に　よって 相手の　攻撃に　ひるまない。,○
+magma-armor,40,Magma Armor,マグマのよろい,This Pokemon cannot be frozen. Gaining this Ability while frozen cures it.,熱い　マグマを　身にまとい こおり状態に　ならない。,○
+water-veil,41,Water Veil,みずのベール,This Pokemon cannot be burned. Gaining this Ability while burned cures it.,水のベールを　身にまとい やけど状態に　ならない。,○
+magnet-pull,42,Magnet Pull,じりょく,Prevents opposing Steel-type Pokemon from choosing to switch out.,はがねタイプの　ポケモンを 磁力で　引きつけて 逃げられなくする。,○
+soundproof,43,Soundproof,ぼうおん,"This Pokemon is immune to sound-based moves, unless it used the move.",音を　遮断　することに　よって 音の　攻撃を　受けない。,○
+rain-dish,44,Rain Dish,あめうけざら,"If Rain Dance is active, this Pokemon heals 1/16 of its max HP each turn.",天気が　雨のとき 少しずつ　ＨＰを　回復する。,○
+sand-stream,45,Sand Stream,すなおこし,"On switch-in, this Pokemon summons Sandstorm.",登場　したとき 天気を　砂あらしにする。,○
+pressure,46,Pressure,プレッシャー,"If this Pokemon is the target of a foe's move, that move loses one additional PP.",プレッシャーを　あたえて 相手の　使う　技の　ＰＰを 多く　減らす。,○
+thick-fat,47,Thick Fat,あついしぼう,Fire-/Ice-type moves against this Pokemon deal damage with a halved offensive stat.,厚い　脂肪で　守られているので ほのおタイプと　こおりタイプの 技の　ダメージを　半減させる。,○
+early-bird,48,Early Bird,はやおき,This Pokemon's sleep counter drops by 2 instead of 1.,ねむり状態に　なっても ２倍の　早さで 目覚める　ことが　できる。,○
+flame-body,49,Flame Body,ほのおのからだ,30% chance a Pokemon making contact with this Pokemon will be burned.,自分に　触った　相手を やけど状態に　する　ことがある。,○
+run-away,50,Run Away,にげあし,No competitive use.,野生の　ポケモンから 必ず　逃げられる。,○
+keen-eye,51,Keen Eye,するどいめ,This Pokemon's accuracy can't be lowered by others; ignores their evasiveness stat.,鋭い　目の　おかげで 命中率を　下げられない。,○
+hyper-cutter,52,Hyper Cutter,かいりきバサミ,Prevents other Pokemon from lowering this Pokemon's Attack stat stage.,力自慢の　ハサミを　持っているので 相手に　攻撃を　下げられない。,○
+pickup,53,Pickup,ものひろい,"If this Pokemon has no item, it finds one used by an adjacent Pokemon this turn.",相手の　使った　道具を 拾ってくることが　ある。 冒険中も　拾ってくる。,○
+truant,54,Truant,なまけ,This Pokemon skips every other turn instead of using a move.,技を　出すと 次の　ターンは　休んでしまう。,○
+hustle,55,Hustle,はりきり,This Pokemon's Attack is 1.5x and accuracy of its physical attacks is 0.8x.,自分の　攻撃が　高くなるが 命中率が　下がる。,○
+cute-charm,56,Cute Charm,メロメロボディ,30% chance of infatuating Pokemon of the opposite gender if they make contact.,自分に　触った　相手を メロメロに　することが　ある。,○
+plus,57,Plus,プラス,"If an active ally has this Ability or the Minus Ability, this Pokemon's Sp. Atk is 1.5x.",プラスか　マイナスの　特性を　持つ ポケモンが　仲間に　いると 自分の　特攻が　上がる。,○
+minus,58,Minus,マイナス,"If an active ally has this Ability or the Plus Ability, this Pokemon's Sp. Atk is 1.5x.",プラスか　マイナスの　特性を　持つ ポケモンが　仲間に　いると 自分の　特攻が　上がる。,○
+forecast,59,Forecast,てんきや,"Castform's type changes to the current weather condition's type, except Sandstorm.",天気の　影響を　受けて みずタイプ　ほのおタイプ　こおりタイプの どれかに　変化する。,○
+sticky-hold,60,Sticky Hold,ねんちゃく,This Pokemon cannot lose its held item due to another Pokemon's Ability or attack.,粘着質の　体に 道具が　くっついているため 相手に　道具を　奪われない。,○
+shed-skin,61,Shed Skin,だっぴ,This Pokemon has a 33% chance to have its status cured at the end of each turn.,体の　皮を　脱ぎ捨てることで 状態異常を 治すことが　ある。,○
+guts,62,Guts,こんじょう,"If this Pokemon is statused, its Attack is 1.5x; ignores burn halving physical damage.",状態異常に　なると 根性を　だして 攻撃が　上がる。,○
+marvel-scale,63,Marvel Scale,ふしぎなうろこ,"If this Pokemon has a non-volatile status condition, its Defense is multiplied by 1.5.",状態異常に　なると 不思議なウロコが　反応して 防御が　上がる。,○
+liquid-ooze,64,Liquid Ooze,ヘドロえき,This Pokemon damages those draining HP from it for as much as they would heal.,ヘドロ液を　吸い取った　相手は 強烈な　悪臭で ダメージを　受けて　ＨＰを　減らす。,○
+overgrow,65,Overgrow,しんりょく,"At 1/3 or less of its max HP, this Pokemon's offensive stat is 1.5x with Grass attacks.",ＨＰが　減ったとき くさタイプの　技の 威力が　上がる。,○
+blaze,66,Blaze,もうか,"At 1/3 or less of its max HP, this Pokemon's offensive stat is 1.5x with Fire attacks.",ＨＰが　減ったとき ほのおタイプの　技の 威力が　上がる。,○
+torrent,67,Torrent,げきりゅう,"At 1/3 or less of its max HP, this Pokemon's offensive stat is 1.5x with Water attacks.",ＨＰが　減ったとき みずタイプの　技の 威力が　上がる。,○
+swarm,68,Swarm,むしのしらせ,"At 1/3 or less of its max HP, this Pokemon's offensive stat is 1.5x with Bug attacks.",ＨＰが　減ったとき むしタイプの　技の 威力が　上がる。,○
+rock-head,69,Rock Head,いしあたま,This Pokemon does not take recoil damage besides Struggle/Life Orb/crash damage.,反動を　受ける　技を　出しても ＨＰが　減らない。,○
+drought,70,Drought,ひでり,"On switch-in, this Pokemon summons Sunny Day.",登場　したときに 天気を　晴れに　する。,○
+arena-trap,71,Arena Trap,ありじごく,Prevents opposing Pokemon from choosing to switch out unless they are airborne.,戦闘で　相手を 逃げられなくする。,○
+vital-spirit,72,Vital Spirit,やるき,This Pokemon cannot fall asleep. Gaining this Ability while asleep cures it.,やる気を　だすことに　よって ねむり状態に　ならない。,○
+white-smoke,73,White Smoke,しろいけむり,Prevents other Pokemon from lowering this Pokemon's stat stages.,白い煙に　守られて 相手に　能力を　下げられない。,○
+pure-power,74,Pure Power,ヨガパワー,This Pokemon's Attack is doubled.,ヨガの　力で 物理攻撃の　威力が ２倍に　なる。,○
+shell-armor,75,Shell Armor,シェルアーマー,This Pokemon cannot be struck by a critical hit.,硬い　殻に　守られ 相手の　攻撃が 急所に　当たらない。,○
+air-lock,76,Air Lock,エアロック,"While this Pokemon is active, the effects of weather conditions are disabled.",あらゆる　天気の　影響が 消えて　しまう。,○
+tangled-feet,77,Tangled Feet,ちどりあし,This Pokemon's evasiveness is doubled as long as it is confused.,こんらん状態の　ときは 回避率が　アップする。,○
+motor-drive,78,Motor Drive,でんきエンジン,This Pokemon's Speed is raised 1 stage if hit by an Electric move; Electric immunity.,でんきタイプの　技を　受けると ダメージを　受けずに 素早さが　上がる。,○
+rivalry,79,Rivalry,とうそうしん,This Pokemon's attacks do 1.25x on same gender targets; 0.75x on opposite gender.,性別が　同じだと 闘争心を　燃やして　強くなる。 性別が　違うと　弱くなる。,○
+steadfast,80,Steadfast,ふくつのこころ,"If this Pokemon flinches, its Speed is raised by 1 stage.",ひるむ　たびに 不屈の心を　燃やして 素早さが　上がる。,○
+snow-cloak,81,Snow Cloak,ゆきがくれ,"If Snow is active, this Pokemon's evasiveness is 1.25x.",天気が　あられのとき 回避率が　上がる。,○
+gluttony,82,Gluttony,くいしんぼう,This Pokemon eats Berries at 1/2 max HP or less instead of their usual 1/4 max HP.,ＨＰが　少なくなったら　食べる きのみを　ＨＰ　半分の 時に　食べてしまう。,○
+anger-point,83,Anger Point,いかりのつぼ,"If this Pokemon (not its substitute) takes a critical hit, its Attack is raised 12 stages.",急所に　攻撃が　当たると 怒りくるって　攻撃力が 最大に　なる。,○
+unburden,84,Unburden,かるわざ,"Speed is doubled on held item loss; boost is lost if it switches, gets new item/Ability.",持っていた　道具が　なくなると 素早さが　上がる。,○
+heatproof,85,Heatproof,たいねつ,Fire damage against this Pokemon is dealt with 1/2 offensive stat; 1/2 burn damage.,耐熱の　体に　よって ほのおタイプの　技の 威力を　半減させる。,○
+simple,86,Simple,たんじゅん,"When one of this Pokemon's stat stages is raised or lowered, the amount is doubled.",能力　変化が いつもの　２倍に　なる。,○
+dry-skin,87,Dry Skin,かんそうはだ,"This Pokemon is healed 1/4 by Water, 1/8 by Rain; is hurt 1.25x by Fire, 1/8 by Sun.",天気が　雨の時や　みずタイプの 技で　ＨＰが　回復し　はれの時や ほのおタイプの　技で　減ってしまう。,○
+download,88,Download,ダウンロード,"On switch-in, Attack or Sp. Atk is raised 1 stage based on the foes' weaker Defense.",相手の　防御と　特防を　くらべて 低い　ほうの　能力に　あわせて 自分の　攻撃か　特攻を　上げる。,○
+iron-fist,89,Iron Fist,てつのこぶし,This Pokemon's punch-based attacks have 1.2x power. Sucker Punch is not boosted.,パンチを　使う　技の 威力が　上がる。,○
+poison-heal,90,Poison Heal,ポイズンヒール,This Pokemon is healed by 1/8 of its max HP each turn when poisoned; no HP loss.,どく状態に　なると ＨＰが　減らずに　増えていく。,○
+adaptability,91,Adaptability,てきおうりょく,This Pokemon's same-type attack bonus (STAB) is 2 instead of 1.5.,自分と　おなじ　タイプの 技の　威力が　上がる。,○
+skill-link,92,Skill Link,スキルリンク,This Pokemon's multi-hit attacks always hit the maximum number of times.,連続技を　使うと　いつも 最高回数　出すことが　できる。,○
+hydration,93,Hydration,うるおいボディ,This Pokemon has its status cured at the end of each turn if Rain Dance is active.,天気が　雨のとき 状態異常が　治る。,○
+solar-power,94,Solar Power,サンパワー,"If Sunny Day is active, this Pokemon's Sp. Atk is 1.5x; loses 1/8 max HP per turn.",天気が　晴れると 特攻が　上がるが 毎ターン　ＨＰが　減る。,○
+quick-feet,95,Quick Feet,はやあし,"If this Pokemon is statused, its Speed is 1.5x; ignores Speed drop from paralysis.",状態異常に　なると 素早さが　上がる。,○
+normalize,96,Normalize,ノーマルスキン,This Pokemon's moves are changed to be Normal type and have 1.2x power.,どんな　タイプの　技でも すべて　ノーマルタイプに　なる。 威力が　少し　上がる。,○
+sniper,97,Sniper,スナイパー,"If this Pokemon strikes with a critical hit, the damage is multiplied by 1.5.",攻撃を　急所に　当てると 威力が　さらに　上がる。,○
+magic-guard,98,Magic Guard,マジックガード,This Pokemon can only be damaged by direct attacks.,攻撃　以外では ダメージを　受けない。,○
+no-guard,99,No Guard,ノーガード,Every move used by or against this Pokemon will always hit.,ノーガード戦法に　よって お互いの　出す　技が かならず　当たる　ようになる。,○
+stall,100,Stall,あとだし,This Pokemon moves last among Pokemon using the same or greater priority moves.,技を　出す　順番が かならず　最後に　なる。,○
+technician,101,Technician,テクニシャン,"This Pokemon's moves of 60 power or less have 1.5x power, including Struggle.",威力が　低い　技の 威力を　高くして　攻撃できる。,○
+leaf-guard,102,Leaf Guard,リーフガード,"If Sunny Day is active, this Pokemon cannot be statused and Rest will fail for it.",天気が　晴れのときは 状態異常に　ならない。,○
+klutz,103,Klutz,ぶきよう,"This Pokemon's held item has no effect, except Macho Brace. Fling cannot be used.",持っている　道具を 使うことが　できない。,○
+mold-breaker,104,Mold Breaker,かたやぶり,This Pokemon's moves and their effects ignore the Abilities of other Pokemon.,相手の　特性に ジャマされる　ことなく　相手に 技を　出すことが　できる。,○
+super-luck,105,Super Luck,きょううん,This Pokemon's critical hit ratio is raised by 1 stage.,強運を　持っているため 相手の　急所に 攻撃が　当たりやすい。,○
+aftermath,106,Aftermath,ゆうばく,"If this Pokemon is KOed with a contact move, that move's user loses 1/4 its max HP.",ひんしに　なったとき 触った　相手に ダメージを　あたえる。,○
+anticipation,107,Anticipation,きけんよち,"On switch-in, this Pokemon shudders if any foe has a supereffective or OHKO move.",相手の　持つ　危険な　技を 察知する　ことができる。,○
+forewarn,108,Forewarn,よちむ,"On switch-in, this Pokemon is alerted to the foes' move with the highest power.",登場　したとき 相手の　持つ　技を ひとつだけ　読み取る。,○
+unaware,109,Unaware,てんねん,This Pokemon ignores other Pokemon's stat stages when taking or doing damage.,相手の　能力の　変化を 無視して　攻撃が　できる。,○
+tinted-lens,110,Tinted Lens,いろめがね,This Pokemon's attacks that are not very effective on a target deal double damage.,効果が　いまひとつの　技を 通常の　威力で 出すことが　できる。,○
+filter,111,Filter,フィルター,This Pokemon receives 3/4 damage from supereffective attacks.,効果バツグンに　なってしまう 攻撃の　威力を 弱める　ことが　できる。,○
+slow-start,112,Slow Start,スロースタート,"On switch-in, this Pokemon's Attack and Speed are halved for 5 turns.",５ターンの　あいだ 攻撃と　素早さが 半分に　なる。,○
+scrappy,113,Scrappy,きもったま,"Fighting, Normal moves hit Ghost. Immune to Intimidate.",ゴーストタイプの　ポケモンに ノーマルタイプと　かくとうタイプの 技を　当てることが　できる。,○
+storm-drain,114,Storm Drain,よびみず,This Pokemon draws Water moves to itself to raise Sp. Atk by 1; Water immunity.,みずタイプの　技を　自分に　よせつけ ダメージは　受けずに　特攻が　上がる。,○
+ice-body,115,Ice Body,アイスボディ,"If Snow is active, this Pokemon heals 1/16 of its max HP each turn.",天気が　あられのとき　ＨＰを 少しずつ　回復　する。,○
+solid-rock,116,Solid Rock,ハードロック,This Pokemon receives 3/4 damage from supereffective attacks.,効果バツグンに　なってしまう 攻撃の　威力を 弱める　ことが　できる。,○
+snow-warning,117,Snow Warning,ゆきふらし,"On switch-in, this Pokemon summons Snow.",登場　したときに 天気を　あられに　する。,○
+honey-gather,118,Honey Gather,みつあつめ,No competitive use.,戦闘が　終わったとき あまいミツを　拾うことが　ある。,○
+frisk,119,Frisk,おみとおし,"On switch-in, this Pokemon identifies the held items of all opposing Pokemon.",登場　したとき 相手の　持ち物を 見通すことが　できる。,○
+reckless,120,Reckless,すてみ,This Pokemon's attacks with recoil or crash damage have 1.2x power; not Struggle.,反動で　ダメージを 受ける　技の　威力が　上がる。,○
+multitype,121,Multitype,マルチタイプ,"If this Pokemon is an Arceus, its type changes to match its held Plate.",持っている　プレートや Ｚクリスタルの　タイプによって 自分の　タイプが　変わる。,○
+flower-gift,122,Flower Gift,フラワーギフト,"If user is Cherrim and Sunny Day is active, it and allies' Attack and Sp. Def are 1.5x.",天気が　晴れのとき 自分と　味方の　攻撃と 特防の　能力が　上がる。,○
+bad-dreams,123,Bad Dreams,ナイトメア,Causes sleeping foes to lose 1/8 of their max HP at the end of each turn.,ねむり状態の　相手に ダメージを　あたえる。,○
+pickpocket,124,Pickpocket,わるいてぐせ,"If this Pokemon has no item and is hit by a contact move, it steals the attacker's item.",触られた　相手の　道具を 盗んで　しまう。,○
+sheer-force,125,Sheer Force,ちからずく,This Pokemon's attacks with secondary effects have 1.3x power; nullifies the effects.,技の　追加効果は　なくなるが そのぶん　高い　威力で 技を　出すことが　できる。,○
+contrary,126,Contrary,あまのじゃく,"If this Pokemon has a stat stage raised it is lowered instead, and vice versa.",能力の　変化が　逆転して 上がるときに　下がり 下がるときに　上がる。,○
+unnerve,127,Unnerve,きんちょうかん,"While this Pokemon is active, it prevents opposing Pokemon from using their Berries.",相手を　緊張させて きのみを　食べられなく　させる。,○
+defiant,128,Defiant,まけんき,This Pokemon's Attack is raised by 2 for each of its stats that is lowered by a foe.,能力を　下げられると 攻撃が　ぐーんと　上がる。,○
+defeatist,129,Defeatist,よわき,"While this Pokemon has 1/2 or less of its max HP, its Attack and Sp. Atk are halved.",ＨＰが　半分に　なると 弱気に　なって　攻撃と 特攻が　半減する。,○
+cursed-body,130,Cursed Body,のろわれボディ,"If this Pokemon is hit by an attack, there is a 30% chance that move gets disabled.",攻撃を　受けると　相手の　技を かなしばり状態に することが　ある。,○
+healer,131,Healer,いやしのこころ,30% chance this Pokemon's ally has its status cured at the end of each turn.,状態異常の　味方を たまに　治してあげる。,○
+friend-guard,132,Friend Guard,フレンドガード,This Pokemon's allies receive 3/4 damage from other Pokemon's attacks.,味方の　ダメージを 減らすことが　できる。,○
+weak-armor,133,Weak Armor,くだけるよろい,"If a physical attack hits this Pokemon, Defense is lowered by 1, Speed is raised by 2.",物理技で　ダメージを　受けると 防御が　下がり 素早さが　ぐーんと　上がる。,○
+heavy-metal,134,Heavy Metal,ヘヴィメタル,This Pokemon's weight is doubled.,自分の　重さが ２倍に　なる。,○
+light-metal,135,Light Metal,ライトメタル,This Pokemon's weight is halved.,自分の　重さが 半分に　なる。,○
+multiscale,136,Multiscale,マルチスケイル,"If this Pokemon is at full HP, damage taken from attacks is halved.",ＨＰが　満タンの　ときに 受ける　ダメージが　少なくなる。,○
+toxic-boost,137,Toxic Boost,どくぼうそう,"While this Pokemon is poisoned, its physical attacks have 1.5x power.",どく状態に　なったとき 物理技の　威力が　上がる。,○
+flare-boost,138,Flare Boost,ねつぼうそう,"While this Pokemon is burned, its special attacks have 1.5x power.",やけど状態に　なったとき 特殊技の　威力が　上がる。,○
+harvest,139,Harvest,しゅうかく,"If last item used is a Berry, 50% chance to restore it each end of turn. 100% in Sun.",使った　きのみを 何回も　作りだす。,○
+telepathy,140,Telepathy,テレパシー,This Pokemon does not take damage from attacks made by its allies.,味方の　攻撃を　読み取って 技を　回避する。,○
+moody,141,Moody,ムラっけ,Boosts a random stat (except accuracy/evasion) +2 and another stat -1 every turn.,毎ターン　能力の　どれかが ぐーんと　上がって　どれかが　下がる。,○
+overcoat,142,Overcoat,ぼうじん,"This Pokemon is immune to powder moves, Sandstorm damage, and Effect Spore.",すなあらしや　あられなどの ダメージを　受けない。 粉の　技を　受けない。,○
+poison-touch,143,Poison Touch,どくしゅ,This Pokemon's contact moves have a 30% chance of poisoning.,触る　だけで　相手を どく　状態に　することがある。,○
+regenerator,144,Regenerator,さいせいりょく,"This Pokemon restores 1/3 of its maximum HP, rounded down, when it switches out.",手持ちに　引っ込むと ＨＰが　少し　回復する。,○
+big-pecks,145,Big Pecks,はとむね,Prevents other Pokemon from lowering this Pokemon's Defense stat stage.,防御を　下げる 効果を　受けない。,○
+sand-rush,146,Sand Rush,すなかき,"If Sandstorm is active, this Pokemon's Speed is doubled; immunity to Sandstorm.",天気が　すなあらし　のとき 素早さが　上がる。,○
+wonder-skin,147,Wonder Skin,ミラクルスキン,Status moves with accuracy checks are 50% accurate when used on this Pokemon.,変化技を　受けにくい 体に　なっている。,○
+analytic,148,Analytic,アナライズ,This Pokemon's attacks have 1.3x power if it is the last to move in a turn.,いちばん　最後に　技を　出すと 技の　威力が　上がる。,○
+illusion,149,Illusion,イリュージョン,This Pokemon appears as the last Pokemon in the party until it takes direct damage.,手持ちの　いちばん　うしろに　いる ポケモンに　なりきって　登場して 相手を　化かす。,○
+imposter,150,Imposter,かわりもの,"On switch-in, this Pokemon Transforms into the opposing Pokemon that is facing it.",目の前の　ポケモンに 変身　してしまう。,○
+infiltrator,151,Infiltrator,すりぬけ,Moves ignore substitutes and foe's Reflect/Light Screen/Safeguard/Mist/Aurora Veil.,相手の　壁や　身代わりを すりぬけて　攻撃　できる,○
+mummy,152,Mummy,ミイラ,Pokemon making contact with this Pokemon have their Ability changed to Mummy.,相手に　触られると 相手を　ミイラに　してしまう。,○
+moxie,153,Moxie,じしんかじょう,This Pokemon's Attack is raised by 1 stage if it attacks and KOes another Pokemon.,相手を　倒すと 自信が　ついて 攻撃が　上がる。,○
+justified,154,Justified,せいぎのこころ,This Pokemon's Attack is raised by 1 stage after it is damaged by a Dark-type move.,あくタイプの　攻撃を　受けると 正義感で　攻撃が　上がる。,○
+rattled,155,Rattled,びびり,"Speed is raised 1 stage if hit by a Bug-, Dark-, or Ghost-type attack, or Intimidated.",あくタイプと　ゴーストタイプと むしタイプの　技を　受けると びびって　素早さが　上がる。,○
+magic-bounce,156,Magic Bounce,マジックミラー,This Pokemon blocks certain Status moves and bounces them back to the user.,相手に　だされた　変化技を　受けずに そのまま　返す　ことが　できる。,○
+sap-sipper,157,Sap Sipper,そうしょく,This Pokemon's Attack is raised 1 stage if hit by a Grass move; Grass immunity.,くさタイプの　技を　受けると ダメージを　受けずに 攻撃が　上がる。,○
+prankster,158,Prankster,いたずらごころ,"This Pokemon's Status moves have priority raised by 1, but Dark types are immune.",変化技を　先制で 出すことが　できる。,○
+sand-force,159,Sand Force,すなのちから,This Pokemon's Ground/Rock/Steel attacks do 1.3x in Sandstorm; immunity to it.,天気が　すなあらしの　とき いわタイプと　じめんタイプと はがねタイプの　威力が　上がる。,○
+iron-barbs,160,Iron Barbs,てつのトゲ,Pokemon making contact with this Pokemon lose 1/8 of their max HP.,自分に　触った　相手に 鉄のトゲで　ダメージを　あたえる。,○
+zen-mode,161,Zen Mode,ダルマモード,"If Darmanitan, at end of turn changes Mode to Standard if > 1/2 max HP, else Zen.",ＨＰが　半分　以下に　なると 姿が　変化する。,○
+victory-star,162,Victory Star,しょうりのほし,This Pokemon and its allies' moves have their accuracy multiplied by 1.1.,自分や　味方の 命中率が　上がる。,○
+turboblaze,163,Turboblaze,ターボブレイズ,This Pokemon's moves and their effects ignore the Abilities of other Pokemon.,相手の　特性に　ジャマされず 相手に　技を　出すことが　できる。,○
+teravolt,164,Teravolt,テラボルテージ,This Pokemon's moves and their effects ignore the Abilities of other Pokemon.,相手の　特性に　ジャマされず 相手に　技を　出すことが　できる。,○
+aroma-veil,165,Aroma Veil,アロマベール,"Protects user/allies from Attract, Disable, Encore, Heal Block, Taunt, and Torment.",自分と　味方への　メンタル 攻撃を　防ぐことが　できる。,○
+flower-veil,166,Flower Veil,フラワーベール,This side's Grass types can't have stats lowered or status inflicted by other Pokemon.,味方の　草ポケモンは 能力が　下がらず 状態異常にも　ならない。,○
+cheek-pouch,167,Cheek Pouch,ほおぶくろ,"If this Pokemon eats a Berry, it restores 1/3 of its max HP after the Berry's effect.",どんな　きのみでも 食べると　ＨＰも　回復する。,○
+protean,168,Protean,へんげんじざい,This Pokemon's type changes to the type of the move it is using. Once per switch-in.,自分が　出す　技と 同じ　タイプに　変化する。,○
+fur-coat,169,Fur Coat,ファーコート,This Pokemon's Defense is doubled.,相手から　受ける　物理技の ダメージが　半分に　なる。,○
+magician,170,Magician,マジシャン,"If this Pokemon has no item, it steals the item off a Pokemon it hits with an attack.",技を　当てた　相手の 道具を　奪ってしまう。,○
+bulletproof,171,Bulletproof,ぼうだん,This Pokemon is immune to bullet moves.,相手の　弾や　爆弾などの 技を　防ぐことが　できる。,○
+competitive,172,Competitive,かちき,This Pokemon's Sp. Atk is raised by 2 for each of its stats that is lowered by a foe.,能力を　下げられると 特攻が　ぐーんと　上がる。,○
+strong-jaw,173,Strong Jaw,がんじょうあご,This Pokemon's bite-based attacks have 1.5x power. Bug Bite is not boosted.,あごが　頑丈で 噛む　技の　威力が 高くなる。,○
+refrigerate,174,Refrigerate,フリーズスキン,This Pokemon's Normal-type moves become Ice type and have 1.2x power.,ノーマルタイプの　技が こおりタイプに　なる。 威力が　少し　上がる。,○
+sweet-veil,175,Sweet Veil,スイートベール,This Pokemon and its allies cannot fall asleep; those already asleep do not wake up.,味方の　ポケモンは 眠らなくなる。,○
+stance-change,176,Stance Change,バトルスイッチ,"If Aegislash, changes Forme to Blade before attacks and Shield before King's Shield.",攻撃技を　出すと　ブレードフォルムに 技　キングシールドを　出すと シールドフォルムに　変化する。,○
+gale-wings,177,Gale Wings,はやてのつばさ,"If this Pokemon is at full HP, its Flying-type moves have their priority increased by 1.",ＨＰが　満タン　だと ひこうタイプの　技を 先制で　出すことが　できる。,○
+mega-launcher,178,Mega Launcher,メガランチャー,This Pokemon's pulse moves have 1.5x power. Heal Pulse heals 3/4 target's max HP.,波動の　技の 威力が　高くなる。,○
+grass-pelt,179,Grass Pelt,くさのけがわ,"If Grassy Terrain is active, this Pokemon's Defense is multiplied by 1.5.",グラスフィールドのとき 防御が　上がる。,○
+symbiosis,180,Symbiosis,きょうせい,"If an ally uses its item, this Pokemon gives its item to that ally immediately.",味方が　道具を　使うと 自分の　持っている　道具を 味方に　渡す。,○
+tough-claws,181,Tough Claws,かたいツメ,This Pokemon's contact moves have their power multiplied by 1.3.,相手に　接触する　技の 威力が　高くなる。,○
+pixilate,182,Pixilate,フェアリースキン,This Pokemon's Normal-type moves become Fairy type and have 1.2x power.,ノーマルタイプの　技が フェアリータイプになる。 威力が　少し　上がる。,○
+gooey,183,Gooey,ぬめぬめ,Pokemon making contact with this Pokemon have their Speed lowered by 1 stage.,攻撃で　自分に　触れた　相手の 素早さを　下げる。,○
+aerilate,184,Aerilate,スカイスキン,This Pokemon's Normal-type moves become Flying type and have 1.2x power.,ノーマルタイプの　技が ひこうタイプになる。 威力が　少し　上がる。,○
+parental-bond,185,Parental Bond,おやこあい,This Pokemon's damaging moves hit twice. The second hit has its damage quartered.,親子　２匹で　２回 攻撃することが　できる。,○
+dark-aura,186,Dark Aura,ダークオーラ,"While this Pokemon is active, a Dark move used by any Pokemon has 1.33x power.",全員の　あくタイプの 技が　強くなる。,○
+fairy-aura,187,Fairy Aura,フェアリーオーラ,"While this Pokemon is active, a Fairy move used by any Pokemon has 1.33x power.",全員の　フェアリータイプの 技が　強くなる。,○
+aura-break,188,Aura Break,オーラブレイク,"While this Pokemon is active, the Dark Aura and Fairy Aura power modifier is 0.75x.",オーラの　効果を　逆転させて 威力を　下げる。,○
+primordial-sea,189,Primordial Sea,はじまりのうみ,"On switch-in, heavy rain begins until this Ability is not active in battle.",ほのおタイプの　攻撃を 受けない　天気にする。,○
+desolate-land,190,Desolate Land,おわりのだいち,"On switch-in, extremely harsh sunlight begins until this Ability is not active in battle.",みずタイプの　攻撃を 受けない　天気にする。,○
+delta-stream,191,Delta Stream,デルタストリーム,"On switch-in, strong winds begin until this Ability is not active in battle.",ひこうタイプの　弱点が なくなる　天気にする。,○
+stamina,192,Stamina,じきゅうりょく,This Pokemon's Defense is raised by 1 stage after it is damaged by a move.,攻撃を　受けると 防御が　上がる。,○
+wimp-out,193,Wimp Out,にげごし,This Pokemon switches out when it reaches 1/2 or less of its maximum HP.,ＨＰが　半分に　なると あわてて　逃げ出して 手持ちに　引っ込んで　しまう。,○
+emergency-exit,194,Emergency Exit,ききかいひ,This Pokemon switches out when it reaches 1/2 or less of its maximum HP.,ＨＰが　半分に　なると 危険を　回避するため 手持ちに　引っ込んで　しまう。,○
+water-compaction,195,Water Compaction,みずがため,This Pokemon's Defense is raised 2 stages after it is damaged by a Water-type move.,みずタイプの　技を　受けると 防御が　ぐーんと　上がる。,○
+merciless,196,Merciless,ひとでなし,This Pokemon's attacks are critical hits if the target is poisoned.,どく状態の 相手を　攻撃すると かならず　急所に　当たる。,○
+shields-down,197,Shields Down,リミットシールド,"If Minior, switch-in/end of turn it changes to Core at 1/2 max HP or less, else Meteor.",ＨＰが　半分に　なると 殻が　壊れて 攻撃的に　なる。,○
+stakeout,198,Stakeout,はりこみ,This Pokemon's offensive stat is doubled against a target that switched in this turn.,交代で　出てきた　相手に ２倍の　ダメージで　攻撃　できる。,○
+water-bubble,199,Water Bubble,すいほう,This Pokemon's Water power is 2x; it can't be burned; Fire power against it is halved.,自分に　対する　ほのおタイプの 技の　威力を　下げる。 やけど　しない。,○
+steelworker,200,Steelworker,はがねつかい,This Pokemon's offensive stat is multiplied by 1.5 while using a Steel-type attack.,はがねタイプの　技の 威力が　上がる。,○
+berserk,201,Berserk,ぎゃくじょう,This Pokemon's Sp. Atk is raised by 1 when it reaches 1/2 or less of its max HP.,相手の　攻撃で ＨＰが　半分に　なると 特攻が　上がる。,○
+slush-rush,202,Slush Rush,ゆきかき,"If Snow is active, this Pokemon's Speed is doubled.",天気が　あられ　のとき 素早さが　上がる。,○
+long-reach,203,Long Reach,えんかく,This Pokemon's attacks do not make contact with the target.,すべての　技を 相手に　接触　しないで 出すことが　できる。,○
+liquid-voice,204,Liquid Voice,うるおいボイス,This Pokemon's sound-based moves become Water type.,すべての　音技が みずタイプに　なる。,○
+triage,205,Triage,ヒーリングシフト,This Pokemon's healing moves have their priority increased by 3.,回復技を　先制で 出すことが　できる。,○
+galvanize,206,Galvanize,エレキスキン,This Pokemon's Normal-type moves become Electric type and have 1.2x power.,ノーマルタイプの　技が でんきタイプになる。 威力が　少し　上がる。,○
+surge-surfer,207,Surge Surfer,サーフテール,"If Electric Terrain is active, this Pokemon's Speed is doubled.",エレキフィールド　のとき 素早さが　２倍に　なる。,○
+schooling,208,Schooling,ぎょぐん,"If user is Wishiwashi, changes to School Form if it has > 1/4 max HP, else Solo Form.",ＨＰが　多いときは　群れて　強くなる。 ＨＰの　残りが　少なくなると 群れは　散り散りに　なってしまう。,○
+disguise,209,Disguise,ばけのかわ,"(Mimikyu only) The first hit it takes is blocked, and it takes 1/8 HP damage instead.",体を　被う　化けの皮で １回　攻撃を　防ぐことが　できる。,○
+battle-bond,210,Battle Bond,きずなへんげ,"After KOing a Pokemon: raises Attack, Sp. Atk, Speed by 1 stage. Once per battle.",相手を　倒すと　トレーナーとの キズナが　深まり　サトシゲッコウガに 変化する。みずしゅりけんが　強くなる。,○
+power-construct,211,Power Construct,スワームチェンジ,"If Zygarde 10%/50%, changes to Complete if at 1/2 max HP or less at end of turn.",ＨＰが　半分に　なると セルたちが　応援に　駆けつけ パーフェクトフォルムに　姿を　変える。,○
+corrosion,212,Corrosion,ふしょく,This Pokemon can poison or badly poison a Pokemon regardless of its typing.,はがねタイプや　どくタイプも どく状態に　することが　できる。,○
+comatose,213,Comatose,ぜったいねむり,"This Pokemon cannot be statused, and is considered to be asleep.",つねに　夢うつつの　状態で 絶対に　目覚めない。 眠ったまま　攻撃が　できる。,○
+queenly-majesty,214,Queenly Majesty,じょおうのいげん,This Pokemon and its allies are protected from opposing priority moves.,相手に　威圧感を　あたえ こちらに　むかって　先制技を 出せない　ようにする。,○
+innards-out,215,Innards Out,とびだすなかみ,"If this Pokemon is KOed with a move, that move's user loses an equal amount of HP.",相手に　倒されたとき ＨＰの　残りの　ぶんだけ 相手に　ダメージを　あたえる。,○
+dancer,216,Dancer,おどりこ,"After another Pokemon uses a dance move, this Pokemon uses the same move.",だれかが　踊り技を　使うと 自分も　それに　続いて 踊り技を　出すことが　できる。,○
+battery,217,Battery,バッテリー,This Pokemon's allies have the power of their special attacks multiplied by 1.3.,味方の　特殊技の 威力を　上げる。,○
+fluffy,218,Fluffy,もふもふ,"This Pokemon takes 1/2 damage from contact moves, 2x damage from Fire moves.",相手から　受けた　接触する　技の ダメージを　半減するが　ほのおタイプの 技の　ダメージは　２倍になる。,○
+dazzling,219,Dazzling,ビビッドボディ,This Pokemon and its allies are protected from opposing priority moves.,相手を　びっくり　させて こちらに　むかって　先制技を 出せない　ようにする。,○
+soul-heart,220,Soul-Heart,ソウルハート,This Pokemon's Special Attack is raised by 1 stage when another Pokemon faints.,ポケモンが　ひんしに　なるたびに 特攻が　上がる。,○
+tangling-hair,221,Tangling Hair,カーリーヘアー,Pokemon making contact with this Pokemon have their Speed lowered by 1 stage.,攻撃で　自分に　触れた　相手の 素早さを　下げる。,○
+receiver,222,Receiver,レシーバー,This Pokemon copies the Ability of an ally that faints.,倒された　味方の　特性を 受け継いで　同じ　特性に　なる。,○
+power-of-alchemy,223,Power of Alchemy,かがくのちから,This Pokemon copies the Ability of an ally that faints.,倒された　味方の　特性を　受け継ぎ 同じ　特性に　変わる。,○
+beast-boost,224,Beast Boost,ビーストブースト,This Pokemon's highest stat is raised by 1 if it attacks and KOes another Pokemon.,相手を　倒したとき 自分の　いちばん　高い 能力が　上がる。,○
+rks-system,225,RKS System,ＡＲシステム,"If this Pokemon is a Silvally, its type changes to match its held Memory.",持っている　メモリで 自分の　タイプが　変わる。,○
+electric-surge,226,Electric Surge,エレキメイカー,"On switch-in, this Pokemon summons Electric Terrain.",登場　したときに エレキフィールドを　はりめぐらせる。,○
+psychic-surge,227,Psychic Surge,サイコメイカー,"On switch-in, this Pokemon summons Psychic Terrain.",登場　したときに サイコフィールドを　はりめぐらせる。,○
+misty-surge,228,Misty Surge,ミストメイカー,"On switch-in, this Pokemon summons Misty Terrain.",登場　したときに ミストフィールドを　はりめぐらせる。,○
+grassy-surge,229,Grassy Surge,グラスメイカー,"On switch-in, this Pokemon summons Grassy Terrain.",登場　したときに グラスフィールドを　はりめぐらせる。,○
+full-metal-body,230,Full Metal Body,メタルプロテクト,Prevents other Pokemon from lowering this Pokemon's stat stages.,相手の　技や　特性で 能力を　下げられない。,○
+shadow-shield,231,Shadow Shield,ファントムガード,"If this Pokemon is at full HP, damage taken from attacks is halved.",ＨＰが　満タンの　ときに 受ける　ダメージが　少なくなる。,○
+prism-armor,232,Prism Armor,プリズムアーマー,This Pokemon receives 3/4 damage from supereffective attacks.,効果バツグンに　なってしまう 攻撃の　威力を 弱める　ことが　できる。,○
+neuroforce,233,Neuroforce,ブレインフォース,This Pokemon's attacks that are super effective against the target do 1.25x damage.,効果バツグンの　攻撃で 威力が　さらに　上がる。,○
+intrepid-sword,234,Intrepid Sword,ふとうのけん,"On switch-in, this Pokemon's Attack is raised by 1 stage. Once per battle.",登場　したときに 攻撃が　上がる。,○
+dauntless-shield,235,Dauntless Shield,ふくつのたて,"On switch-in, this Pokemon's Defense is raised by 1 stage. Once per battle.",登場　したときに 防御が　上がる。,○
+libero,236,Libero,リベロ,This Pokemon's type changes to the type of the move it is using. Once per switch-in.,自分が　出す　技と 同じ　タイプに　変化する。,○
+ball-fetch,237,Ball Fetch,たまひろい,No competitive use.,道具を　持っていない　場合 １回目に　投げて　失敗　した モンスターボールを　拾ってくる。,○
+cotton-down,238,Cotton Down,わたげ,"If this Pokemon is hit, it lowers the Speed of all other Pokemon on the field 1 stage.",攻撃を　受けると　わたげを　ばらまいて 自分以外の　ポケモン　すべての 素早さを　下げる。,○
+propeller-tail,239,Propeller Tail,スクリューおびれ,This Pokemon's moves cannot be redirected to a different target by any effect.,相手の　技を　引き受ける 特性や　技の 影響を　無視　できる。,○
+mirror-armor,240,Mirror Armor,ミラーアーマー,"If this Pokemon's stat stages would be lowered, the attacker's are lowered instead.",自分が　受けた 能力　ダウンの 効果　だけを　跳ね返す。,○
+gulp-missile,241,Gulp Missile,うのミサイル,"When hit after Surf/Dive, attacker takes 1/4 max HP and -1 Defense or paralysis.",なみのりか　ダイビングを　すると 獲物を　くわえてくる。　ダメージを 受けると　獲物を　吐きだして　攻撃。,○
+stalwart,242,Stalwart,すじがねいり,This Pokemon's moves cannot be redirected to a different target by any effect.,相手の　技を　引き受ける 特性や　技の 影響を　無視　できる。,○
+steam-engine,243,Steam Engine,じょうききかん,This Pokemon's Speed is raised by 6 stages after it is damaged by Fire/Water moves.,みずタイプ　ほのおタイプの 技を　受けると 素早さが　ぐぐーんと　上がる。,○
+punk-rock,244,Punk Rock,パンクロック,This Pokemon receives 1/2 damage from sound moves. Its own have 1.3x power.,音技の　威力が　上がる。 受けた　音技の ダメージは　半分に　なる。,○
+sand-spit,245,Sand Spit,すなはき,"When this Pokemon is hit by an attack, the effect of Sandstorm begins.",攻撃を　受けると 砂あらしを　起こす。,○
+ice-scales,246,Ice Scales,こおりのりんぷん,This Pokemon receives 1/2 damage from special attacks.,こおりのりんぷんに　守られて 特殊攻撃で　受ける ダメージが　半減　する。,○
+ripen,247,Ripen,じゅくせい,"When this Pokemon eats certain Berries, the effects are doubled.",熟成　させることで きのみの　効果が 倍に　なる。,○
+ice-face,248,Ice Face,アイスフェイス,"If Eiscue, the first physical hit it takes deals 0 damage. Effect is restored in Snow.",物理攻撃は　頭の　氷が みがわりに　なるが　姿も　変わる。 氷は　あられが　降ると　元に戻る。,○
+power-spot,249,Power Spot,パワースポット,This Pokemon's allies have the power of their moves multiplied by 1.3.,隣に　いるだけで 技の　威力が　上がる。,○
+mimicry,250,Mimicry,ぎたい,This Pokemon's types change to match the Terrain. Type reverts when Terrain ends.,フィールドの　状態に　あわせて ポケモンの　タイプが　変わる。,○
+screen-cleaner,251,Screen Cleaner,バリアフリー,"On switch-in, the effects of Aurora Veil, Light Screen, and Reflect end for both sides.",登場　したときに　敵と　味方の ひかりのかべ　リフレクター オーロラベールの　効果が　消える。,○
+steely-spirit,252,Steely Spirit,はがねのせいしん,This Pokemon and its allies' Steel-type moves have their power multiplied by 1.5.,味方の　はがねタイプの 攻撃の　威力が　上がる。,○
+perish-body,253,Perish Body,ほろびのボディ,Making contact with this Pokemon starts the Perish Song effect for it and the attacker.,接触する　技を　受けると お互い　３ターン　たつと　ひんしになる。 交代すると　効果は　なくなる。,○
+wandering-spirit,254,Wandering Spirit,さまようたましい,Pokemon making contact with this Pokemon have their Ability swapped with this one.,接触する　技で 攻撃　してきた　ポケモンと 特性を　入れ替える。,○
+gorilla-tactics,255,Gorilla Tactics,ごりむちゅう,"This Pokemon's Attack is 1.5x, but it can only select the first move it executes.",攻撃は　上がるが 最初に　選んだ 技しか　出せなくなる。,○
+neutralizing-gas,256,Neutralizing Gas,かがくへんかガス,"While this Pokemon is active, Abilities have no effect.",かがくへんかガスの　ポケモンが　場にいると すべての　ポケモンの　特性の 効果が　消えたり　発動　しなくなる。,○
+pastel-veil,257,Pastel Veil,パステルベール,"This Pokemon and its allies cannot be poisoned. On switch-in, cures poisoned allies.",自分も　味方も どくの　状態異常を 受けなくなる。,○
+hunger-switch,258,Hunger Switch,はらぺこスイッチ,"If Morpeko, it changes between Full Belly and Hangry Mode at the end of each turn.",ターンの　終わりに　まんぷくもよう はらぺこもよう　まんぷくもよう……と 交互に　姿を　変える。,○
+quick-draw,259,Quick Draw,クイックドロウ,This Pokemon has a 30% chance to move first in its priority bracket with attacking moves.,相手より　先に 行動できることが　ある。,○
+unseen-fist,260,Unseen Fist,ふかしのこぶし,"This Pokemon's contact moves ignore the target's protection, except Max Guard.",相手に　接触する　技なら 守りの　効果を 無視して　攻撃することが　できる。,○
+curious-medicine,261,Curious Medicine,きみょうなくすり,"On switch-in, this Pokemon's allies have their stat stages reset to 0.",登場　したときに 貝がらから　薬を　振りまいて 味方の　能力変化を　元に戻す。,○
+transistor,262,Transistor,トランジスタ,This Pokemon's offensive stat is multiplied by 1.3 while using an Electric-type attack.,でんきタイプの　技の 威力が　上がる。,○
+dragons-maw,263,Dragon's Maw,りゅうのあぎと,This Pokemon's offensive stat is multiplied by 1.5 while using a Dragon-type attack.,ドラゴンタイプの　技の 威力が　上がる。,○
+chilling-neigh,264,Chilling Neigh,しろのいななき,This Pokemon's Attack is raised by 1 stage if it attacks and KOes another Pokemon.,相手を　倒すと 冷たい　声で　いなないて 攻撃が　上がる。,○
+grim-neigh,265,Grim Neigh,くろのいななき,This Pokemon's Sp. Atk is raised by 1 stage if it attacks and KOes another Pokemon.,相手を　倒すと 恐ろしい　声で　いなないて 特攻が　上がる。,○
+as-one-glastrier,266,As One (Glastrier),じんばいったい,Combination of the Unnerve and Chilling Neigh Abilities.,バドレックスの　きんちょうかんと ブリザポスの　しろのいななきの 二つの　特性を　あわせ持つ。,○
+as-one-spectrier,267,As One (Spectrier),じんばいったい,Combination of the Unnerve and Grim Neigh Abilities.,バドレックスの　きんちょうかんと レイスポスの　くろのいななきの 二つの　特性を　あわせ持つ。,○
+lingering-aroma,268,Lingering Aroma,とれないにおい,Making contact with this Pokemon has the attacker's Ability become Lingering Aroma.,直接攻撃を受けると、相手の特性を『とれないにおい』にする(相手の本来の特性を無効化する)。,○
+seed-sower,269,Seed Sower,こぼれダネ,"When this Pokemon is hit by an attack, the effect of Grassy Terrain begins.",攻撃を受けると5ターンの間、場の状態を『グラスフィールド』にする。(ひこうタイプや特性『ふゆう』などではない地面にいるすべてのポケモンは、毎ターン最大HPの1/16ずつ回復し、またくさタイプの技の威力が1.3倍になり、技『じしん』『じならし』『マグニチュード』の受けるダメージが半減する),○
+thermal-exchange,270,Thermal Exchange,ねつこうかん,This Pokemon's Attack is raised by 1 when damaged by Fire moves; can't be burned.,ほのおタイプの攻撃技でダメージを受けると、『こうげき』ランクが1段階上がる。また、『やけど』状態にならない。,○
+anger-shell,271,Anger Shell,いかりのこうら,"At 1/2 or less of this Pokemon's max HP: +1 Atk, Sp. Atk, Spe, and -1 Def, Sp. Def.",自分の残りHPが半分より大きい時に、相手の攻撃によって残りHPが半分以下になると、自分の『ぼうぎょ』『とくぼう』ランクが1段階ずつ下がる一方、『こうげき』『とくこう』『すばやさ』ランクが1段階ずつ上がる。,○
+purifying-salt,272,Purifying Salt,きよめのしお,Ghost damage to this Pokemon dealt with a halved offensive stat; can't be statused.,状態異常にならない。技『ねむる』を使えない。また、ゴーストタイプの技の受けるダメージが半減する。,○
+well-baked-body,273,Well-Baked Body,こんがりボディ,This Pokemon's Defense is raised 2 stages if hit by a Fire move; Fire immunity.,ほのおタイプの技を受けると、ダメージを受けずに『ぼうぎょ』ランクが2段階上がる。,○
+wind-rider,274,Wind Rider,かぜのり,Attack raised by 1 if hit by a wind move or Tailwind begins. Wind move immunity.,自分の場が『おいかぜ』状態になったり、場に出た時に『こうげき』ランクが1段階上がる。また、風技『エアカッター』『エアロブラスト』『かぜおこし』『かみなりあらし』『こがらしあらし』『こごえるかぜ』『たつまき』『ねっさのあらし』『ねっぷう』『はなふぶき』『はるのあらし』『ふきとばし』『ふぶき』『ぼうふう』『ようせいのかぜ』を受けると技を無効化し、『こうげき』ランクが1段階上がる。,○
+guard-dog,275,Guard Dog,ばんけん,Immune to Intimidate. Intimidated: +1 Attack. Cannot be forced to switch out.,相手の特性『いかく』の効果を受けず、『こうげき』ランクが1段階上がる。また、相手を交代させる技『ふきとばし』『ほえる』『ドラゴンテール』『ともえなげ』や、道具『レッドカード』の効果を受けない。,○
+rocky-payload,276,Rocky Payload,いわはこび,This Pokemon's offensive stat is multiplied by 1.5 while using a Rock-type attack.,いわタイプの技の威力が1.5倍になる。,○
+wind-power,277,Wind Power,ふうりょくでんき,This Pokemon gains the Charge effect when hit by a wind move or Tailwind begins.,自分か味方が『おいかぜ』を使用した時や、風技『エアカッター』『エアロブラスト』『かぜおこし』『かみなりあらし』『こがらしあらし』『こごえるかぜ』『たつまき』『ねっさのあらし』『ねっぷう』『はなふぶき』『はるのあらし』『ふきとばし』『ふぶき』『ぼうふう』『ようせいのかぜ』を受けると『じゅうでん』状態となり、一度だけ次回使う自分のでんきタイプの技の威力が2倍になる。(技は無効化できない),○
+zero-to-hero,278,Zero to Hero,マイティチェンジ,"If this Pokemon is a Palafin in Zero Form, switching out has it change to Hero Form.",手持ちに戻ると、『マイティフォルム』にフォルムチェンジする。,○
+commander,279,Commander,しれいとう,"If ally is Dondozo: this Pokemon cannot act or be hit, +2 to all Dondozo's stats.",ダブルバトルで味方に『ヘイラッシャ』がいると口の中に入り、『ヘイラッシャ』の『こうげき』『ぼうぎょ』『とくこう』『とくぼう』『すばやさ』ランクが2段階ずつ上がる。口の中にいる間は、技を受けず、行動もできない。また自分もヘイラッシャも交代できない。ヘイラッシャが『ひんし』状態になると、もとに戻る。,○
+electromorphosis,280,Electromorphosis,でんきにかえる,This Pokemon gains the Charge effect when it takes a hit from an attack.,攻撃を受けた時に『じゅうでん』状態になり、一度だけ次回使う自分のでんきタイプの技の威力が2倍になる。,○
+protosynthesis,281,Protosynthesis,こだいかっせい,"Sunny Day active or Booster Energy used: highest stat is 1.3x, or 1.5x if Speed.",『ブーストエナジー』を持たせるか、天気が『にほんばれ』状態のとき、自分の一番高い能力が上がる。『すばやさ』の時は1.5倍になり、それ以外の時は1.3倍になる。(途中で一番高い能力が変化しても、再び特性が発生し直すまでは上昇する能力はそのままになる),○
+quark-drive,282,Quark Drive,クォークチャージ,"Electric Terrain active or Booster Energy used: highest stat is 1.3x, or 1.5x if Speed.",『ブーストエナジー』を持たせるか、場が『エレキフィールド』状態のとき、自分の一番高い能力が上がる。『すばやさ』の時は1.5倍になり、それ以外の時は1.3倍になる。(途中で一番高い能力が変化しても、再び特性が発生し直すまでは上昇する能力はそのままになる),○
+good-as-gold,283,Good as Gold,おうごんのからだ,This Pokemon is immune to Status moves.,相手や味方の変化技を受けない。,○
+beads-of-ruin,284,Beads of Ruin,わざわいのたま,Active Pokemon without this Ability have their Special Defense multiplied by 0.75.,自分以外のポケモンの『とくぼう』が3/4倍(0.75倍)になる。,○
+tablets-of-ruin,284,Tablets of Ruin,わざわいのおふだ,Active Pokemon without this Ability have their Attack multiplied by 0.75.,自分以外のポケモンの『こうげき』が3/4倍(0.75倍)になる。,○
+vessel-of-ruin,284,Vessel of Ruin,わざわいのうつわ,Active Pokemon without this Ability have their Special Attack multiplied by 0.75.,自分以外のポケモンの『とくこう』が3/4倍(0.75倍)になる。,○
+sword-of-ruin,285,Sword of Ruin,わざわいのつるぎ,Active Pokemon without this Ability have their Defense multiplied by 0.75.,自分以外のポケモンの『ぼうぎょ』が3/4倍(0.75倍)になる。,○
+orichalcum-pulse,288,Orichalcum Pulse,ひひいろのこどう,"On switch-in, summons Sunny Day. During Sunny Day, Attack is 1.3333x.",戦闘に出ると5ターンの間、天気が『にほんばれ』になる。また、天気が『にほんばれ』の時、『こうげき』が4/3倍(1.33倍)になる。,○
+hadron-engine,289,Hadron Engine,ハドロンエンジン,"On switch-in, summons Electric Terrain. During Electric Terrain, Sp. Atk is 1.3333x.",戦闘に出ると5ターンの間、場の状態を『エレキフィールド』にする(ひこうタイプや特性『ふゆう』などではない地面にいるすべてのポケモンは、『ねむり』状態にならず、またでんきタイプの技の威力が1.3倍になる)。また、場が『エレキフィールド』の時、『とくこう』が4/3倍(1.33倍)になる。,○
+opportunist,290,Opportunist,びんじょう,"When an opposing Pokemon has a stat stage raised, this Pokemon copies the effect.",相手の能力ランクが上がった時、自分も同じように能力ランクが上がる。,○
+cud-chew,291,Cud Chew,はんすう,"If this Pokemon eats a Berry, it will eat that Berry again at the end of the next turn.",『きのみ』を食べた次のターンの終了時にも、もう1度同じ『きのみ』を食べることができる。,○
+sharpness,292,Sharpness,きれあじ,This Pokemon's slicing moves have their power multiplied by 1.5.,切る技『アクアカッター』『いあいぎり』『エアカッター』『エアスラッシュ』『がんせきアックス』『きょじゅうざん』『きりさく』『クロスポイズン』『サイコカッター』『サイコブレイド』『シェルブレード』『シザークロス』『しんぴのつるぎ』『せいなるつるぎ』『ソーラーブレード』『タキオンカッター』『つじぎり』『つばめがえし』『ドゲザン』『ネズミざん』『はっぱカッター』『パワフルエッジ』『ひけん・ちえなみ』『むねんのつるぎ』『リーフブレード』『れんぞくぎり』の威力が1.5倍になる。,○
+supreme-overlord,293,Supreme Overlord,そうだいしょう,"This Pokemon's moves have 10% more power for each fainted ally, up to 5 allies.",場に出た時に、これまでに『ひんし』状態になった味方のポケモン数×10%だけ技の威力が上がる。(最大1.5倍),○
+costar,294,Costar,きょうえん,"On switch-in, this Pokemon copies all of its ally's stat stage changes.",ダブルバトルで場に出た時、味方の能力ランクの変化を自分にコピーする。,○
+toxic-debris,295,Toxic Debris,どくげしょう,"If this Pokemon is hit by a physical attack, Toxic Spikes are set on the opposing side.",物理技のダメージを受けると、相手の場を『どくびし』状態にし、相手はポケモンを交代する度に、出したポケモンが『どく』状態になる。(2度物理技を受けたあとは『もうどく』状態),○
+armor-tail,296,Armor Tail,テイルアーマー,This Pokemon and its allies are protected from opposing priority moves.,自分と味方は、相手の先制技を受けない。なお、自分が使う先制技や味方から受ける先制技には影響しない。,○
+earth-eater,297,Earth Eater,どしょく,This Pokemon heals 1/4 of its max HP when hit by Ground moves; Ground immunity.,自分と味方は、相手の先制技を受けない。なお、自分が使う先制技や味方から受ける先制技には影響しない。,○
+mycelium-might,298,Mycelium Might,きんしのちから,This Pokemon's Status moves go last in their priority bracket and ignore Abilities.,変化技を出す時、相手の特性の影響を受けない代わりに、必ず後攻になる。ただし、技の優先度は無視されない。,○
+hospitality,299,Hospitality,おもてなし,"On switch-in, this Pokemon restores 1/4 of its ally's maximum HP, rounded down.",戦闘に出た時に、自分を除く味方全体のHPをそれぞれ最大HPの1/4ずつ回復する。(ダブルバトル用),○
+minds-eye,300,Mind's Eye,しんがん,"Fighting, Normal moves hit Ghost. Accuracy can't be lowered, ignores evasiveness.",相手がゴーストタイプでも、ノーマルかくとうタイプの技が等倍で当たる。また、命中率ランクが下がらず、相手の回避率ランクの変化の影響も受けない。(なお、『きもったま』とは異なり、『いかく』の効果は受ける),○
+embody-aspect-teal,301,Embody Aspect (Teal),おもかげやどし,"On switch-in, this Pokemon's Speed is raised by 1 stage.",『みどりのめん』の時は『すばやさ』ランク、『かまどのめん』の時は『こうげき』ランク、『いどのめん』の時は『とくぼう』ランク、『いしずえのめん』の時は『ぼうぎょ』ランクが1段階上がる。(『へんしん』状態ではテラスタルできず、テラスタル状態のオーガポンを『へんしん』することはできない。また「おめん」を持たせると、道具の効果によりすべての技の威力が1.2倍になる),○
+embody-aspect-wellspring,302,Embody Aspect (Wellspring),おもかげやどし,"On switch-in, this Pokemon's Special Defense is raised by 1 stage.",『みどりのめん』の時は『すばやさ』ランク、『かまどのめん』の時は『こうげき』ランク、『いどのめん』の時は『とくぼう』ランク、『いしずえのめん』の時は『ぼうぎょ』ランクが1段階上がる。(『へんしん』状態ではテラスタルできず、テラスタル状態のオーガポンを『へんしん』することはできない。また「おめん」を持たせると、道具の効果によりすべての技の威力が1.2倍になる),○
+embody-aspect-hearthflame,303,Embody Aspect (Hearthflame),おもかげやどし,"On switch-in, this Pokemon's Attack is raised by 1 stage.",『みどりのめん』の時は『すばやさ』ランク、『かまどのめん』の時は『こうげき』ランク、『いどのめん』の時は『とくぼう』ランク、『いしずえのめん』の時は『ぼうぎょ』ランクが1段階上がる。(『へんしん』状態ではテラスタルできず、テラスタル状態のオーガポンを『へんしん』することはできない。また「おめん」を持たせると、道具の効果によりすべての技の威力が1.2倍になる),○
+embody-aspect-cornerstone,304,Embody Aspect (Cornerstone),おもかげやどし,"On switch-in, this Pokemon's Defense is raised by 1 stage.",『みどりのめん』の時は『すばやさ』ランク、『かまどのめん』の時は『こうげき』ランク、『いどのめん』の時は『とくぼう』ランク、『いしずえのめん』の時は『ぼうぎょ』ランクが1段階上がる。(『へんしん』状態ではテラスタルできず、テラスタル状態のオーガポンを『へんしん』することはできない。また「おめん」を持たせると、道具の効果によりすべての技の威力が1.2倍になる),○
+toxic-chain,305,Toxic Chain,どくのくさり,This Pokemon's attacks have a 30% chance of badly poisoning.,相手に攻撃技のダメージを与えると、たまに相手を『もうどく』状態にする。(相手が『おんみつマント』『りんぷん』の場合は発動しない),○
+supersweet-syrup,306,Supersweet Syrup,かんろなミツ,"On switch-in, this Pokemon lowers the evasiveness of opponents 1 stage. Once per battle.",戦闘に出た時に相手全体の『回避率』ランクを1段階ずつ下げる。,○
+tera-shift,307,Tera Shift,テラスチェンジ,"If this Pokemon is a Terapagos, it transforms into its Terastal Form on entry.",戦闘に出ると、『テラパゴス』ノーマルフォルムからテラスフォルム『テラパゴス(テラスタル)』になる。,○
+tera-shell,308,Tera Shell,テラスシェル,"Terapagos: If full HP, attacks taken have 0.5x effectiveness unless naturally immune.",自分の残りHPが最大値の時、タイプ相性のある技を受けると、効果がいまひとつになる。,○
+teraform-zero,309,Teraform Zero,ゼロフォーミング,Terapagos: Terastallizing ends the effects of weather and terrain. Once per battle.,『テラパゴス(テラスタル)』がテラスタルして、ステラフォルム『テラパゴス(ステラ)』になった時、天気(『にほんばれ』『あめ』『すなあらし』『ゆき』)および『エレキフィールド』『サイコフィールド』『グラスフィールド』『ミストフィールド』を消して元に戻す。(その後の天気・フィールドの変更を無効化する効果はない),○
+poison-puppeteer,310,Poison Puppeteer,どくくぐつ,"Pecharunt: If this Pokemon poisons a target, the target also becomes confused.",『モモワロウ』の技で相手を『どく』状態にした時、同時に相手を『こんらん』状態にする。,○
+aromaveil,165,Aroma Veil,アロマベール,"Protects user/allies from Attract, Disable, Encore, Heal Block, Taunt, and Torment.",,○
+aurabreak,188,Aura Break,オーラブレイク,"While this Pokemon is active, the Dark Aura and Fairy Aura power modifier is 0.75x.",,○
+ballfetch,237,Ball Fetch,たまひろい,No competitive use.,,○
+battlearmor,4,Battle Armor,カブトアーマー,This Pokemon cannot be struck by a critical hit.,,○
+beastboost,224,Beast Boost,ビーストブースト,This Pokemon's highest stat is raised by 1 if it attacks and KOes another Pokemon.,,○
+bigpecks,145,Big Pecks,はとむね,Prevents other Pokemon from lowering this Pokemon's Defense stat stage.,,○
+cheekpouch,167,Cheek Pouch,ほおぶくろ,"If this Pokemon eats a Berry, it restores 1/3 of its max HP after the Berry's effect.",,○
+clearbody,29,Clear Body,クリアボディ,Prevents other Pokemon from lowering this Pokemon's stat stages.,,○
+cloudnine,13,Cloud Nine,ノーてんき,"While this Pokemon is active, the effects of weather conditions are disabled.",,○
+colorchange,16,Color Change,へんしょく,"This Pokemon's type changes to the type of a move it's hit by, unless it has the type.",,○
+compoundeyes,14,Compound Eyes,ふくがん,This Pokemon's moves have their accuracy multiplied by 1.3.,,○
+cottondown,238,Cotton Down,わたげ,"If this Pokemon is hit, it lowers the Speed of all other Pokemon on the field 1 stage.",,○
+cursedbody,130,Cursed Body,のろわれボディ,"If this Pokemon is hit by an attack, there is a 30% chance that move gets disabled.",,○
+cutecharm,56,Cute Charm,メロメロボディ,30% chance of infatuating Pokemon of the opposite gender if they make contact.,,○
+darkaura,186,Dark Aura,ダークオーラ,"While this Pokemon is active, a Dark move used by any Pokemon has 1.33x power.",,○
+dryskin,87,Dry Skin,かんそうはだ,"This Pokemon is healed 1/4 by Water, 1/8 by Rain; is hurt 1.25x by Fire, 1/8 by Sun.",,○
+earlybird,48,Early Bird,はやおき,This Pokemon's sleep counter drops by 2 instead of 1.,,○
+effectspore,27,Effect Spore,ほうし,30% chance of poison/paralysis/sleep on others making contact with this Pokemon.,,○
+electricsurge,226,Electric Surge,エレキメイカー,"On switch-in, this Pokemon summons Electric Terrain.",,○
+emergencyexit,194,Emergency Exit,ききかいひ,This Pokemon switches out when it reaches 1/2 or less of its maximum HP.,,○
+fairyaura,187,Fairy Aura,フェアリーオーラ,"While this Pokemon is active, a Fairy move used by any Pokemon has 1.33x power.",,○
+flamebody,49,Flame Body,ほのおのからだ,30% chance a Pokemon making contact with this Pokemon will be burned.,,○
+flashfire,18,Flash Fire,もらいび,This Pokemon's Fire attacks do 1.5x damage if hit by one Fire move; Fire immunity.,,○
+flowergift,122,Flower Gift,フラワーギフト,"If user is Cherrim and Sunny Day is active, it and allies' Attack and Sp. Def are 1.5x.",,○
+furcoat,169,Fur Coat,ファーコート,This Pokemon's Defense is doubled.,,○
+grassysurge,229,Grassy Surge,グラスメイカー,"On switch-in, this Pokemon summons Grassy Terrain.",,○
+heavymetal,134,Heavy Metal,ヘヴィメタル,This Pokemon's weight is doubled.,,○
+hugepower,37,Huge Power,ちからもち,This Pokemon's Attack is doubled.,,○
+hypercutter,52,Hyper Cutter,かいりきバサミ,Prevents other Pokemon from lowering this Pokemon's Attack stat stage.,,○
+icebody,115,Ice Body,アイスボディ,"If Snow is active, this Pokemon heals 1/16 of its max HP each turn.",,○
+innardsout,215,Innards Out,とびだすなかみ,"If this Pokemon is KOed with a move, that move's user loses an equal amount of HP.",,○
+innerfocus,39,Inner Focus,せいしんりょく,This Pokemon cannot be made to flinch. Immune to Intimidate.,,○
+ironbarbs,160,Iron Barbs,てつのトゲ,Pokemon making contact with this Pokemon lose 1/8 of their max HP.,,○
+ironfist,89,Iron Fist,てつのこぶし,This Pokemon's punch-based attacks have 1.2x power. Sucker Punch is not boosted.,,○
+keeneye,51,Keen Eye,するどいめ,This Pokemon's accuracy can't be lowered by others; ignores their evasiveness stat.,,○
+leafguard,102,Leaf Guard,リーフガード,"If Sunny Day is active, this Pokemon cannot be statused and Rest will fail for it.",,○
+lightningrod,31,Lightning Rod,ひらいしん,This Pokemon draws Electric moves to itself to raise Sp. Atk by 1; Electric immunity.,,○
+magicbounce,156,Magic Bounce,マジックミラー,This Pokemon blocks certain Status moves and bounces them back to the user.,,○
+magicguard,98,Magic Guard,マジックガード,This Pokemon can only be damaged by direct attacks.,,○
+magnetpull,42,Magnet Pull,じりょく,Prevents opposing Steel-type Pokemon from choosing to switch out.,,○
+mistysurge,228,Misty Surge,ミストメイカー,"On switch-in, this Pokemon summons Misty Terrain.",,○
+moldbreaker,104,Mold Breaker,かたやぶり,This Pokemon's moves and their effects ignore the Abilities of other Pokemon.,,○
+motordrive,78,Motor Drive,でんきエンジン,This Pokemon's Speed is raised 1 stage if hit by an Electric move; Electric immunity.,,○
+naturalcure,30,Natural Cure,しぜんかいふく,This Pokemon has its non-volatile status condition cured when it switches out.,,○
+noguard,99,No Guard,ノーガード,Every move used by or against this Pokemon will always hit.,,○
+owntempo,20,Own Tempo,マイペース,This Pokemon cannot be confused. Immune to Intimidate.,,○
+perishbody,253,Perish Body,ほろびのボディ,Making contact with this Pokemon starts the Perish Song effect for it and the attacker.,,○
+poisonpoint,38,Poison Point,どくのトゲ,30% chance a Pokemon making contact with this Pokemon will be poisoned.,,○
+poisontouch,143,Poison Touch,どくしゅ,This Pokemon's contact moves have a 30% chance of poisoning.,,○
+psychicsurge,227,Psychic Surge,サイコメイカー,"On switch-in, this Pokemon summons Psychic Terrain.",,○
+quickfeet,95,Quick Feet,はやあし,"If this Pokemon is statused, its Speed is 1.5x; ignores Speed drop from paralysis.",,○
+raindish,44,Rain Dish,あめうけざら,"If Rain Dance is active, this Pokemon heals 1/16 of its max HP each turn.",,○
+rkssystem,225,RKS System,ＡＲシステム,"If this Pokemon is a Silvally, its type changes to match its held Memory.",,○
+rockhead,69,Rock Head,いしあたま,This Pokemon does not take recoil damage besides Struggle/Life Orb/crash damage.,,○
+roughskin,24,Rough Skin,さめはだ,Pokemon making contact with this Pokemon lose 1/8 of their max HP.,,○
+runaway,50,Run Away,にげあし,No competitive use.,,○
+sandforce,159,Sand Force,すなのちから,This Pokemon's Ground/Rock/Steel attacks do 1.3x in Sandstorm; immunity to it.,,○
+sandrush,146,Sand Rush,すなかき,"If Sandstorm is active, this Pokemon's Speed is doubled; immunity to Sandstorm.",,○
+sandstream,45,Sand Stream,すなおこし,"On switch-in, this Pokemon summons Sandstorm.",,○
+sandveil,8,Sand Veil,すながくれ,"If Sandstorm is active, this Pokemon's evasiveness is 1.25x; immunity to Sandstorm.",,○
+sapsipper,157,Sap Sipper,そうしょく,This Pokemon's Attack is raised 1 stage if hit by a Grass move; Grass immunity.,,○
+screencleaner,251,Screen Cleaner,バリアフリー,"On switch-in, the effects of Aurora Veil, Light Screen, and Reflect end for both sides.",,○
+serenegrace,32,Serene Grace,てんのめぐみ,This Pokemon's moves have their secondary effect chance doubled.,,○
+shadowtag,23,Shadow Tag,かげふみ,Prevents foes from choosing to switch unless they also have this Ability.,,○
+shedskin,61,Shed Skin,だっぴ,This Pokemon has a 33% chance to have its status cured at the end of each turn.,,○
+sheerforce,125,Sheer Force,ちからずく,This Pokemon's attacks with secondary effects have 1.3x power; nullifies the effects.,,○
+shellarmor,75,Shell Armor,シェルアーマー,This Pokemon cannot be struck by a critical hit.,,○
+shielddust,19,Shield Dust,りんぷん,This Pokemon is not affected by the secondary effect of another Pokemon's attack.,,○
+slushrush,202,Slush Rush,ゆきかき,"If Snow is active, this Pokemon's Speed is doubled.",,○
+snowcloak,81,Snow Cloak,ゆきがくれ,"If Snow is active, this Pokemon's evasiveness is 1.25x.",,○
+snowwarning,117,Snow Warning,ゆきふらし,"On switch-in, this Pokemon summons Snow.",,○
+solarpower,94,Solar Power,サンパワー,"If Sunny Day is active, this Pokemon's Sp. Atk is 1.5x; loses 1/8 max HP per turn.",,○
+solidrock,116,Solid Rock,ハードロック,This Pokemon receives 3/4 damage from supereffective attacks.,,○
+speedboost,3,Speed Boost,かそく,This Pokemon's Speed is raised 1 stage at the end of each full turn on the field.,,○
+stancechange,176,Stance Change,バトルスイッチ,"If Aegislash, changes Forme to Blade before attacks and Shield before King's Shield.",,○
+stickyhold,60,Sticky Hold,ねんちゃく,This Pokemon cannot lose its held item due to another Pokemon's Ability or attack.,,○
+stormdrain,114,Storm Drain,よびみず,This Pokemon draws Water moves to itself to raise Sp. Atk by 1; Water immunity.,,○
+strongjaw,173,Strong Jaw,がんじょうあご,This Pokemon's bite-based attacks have 1.5x power. Bug Bite is not boosted.,,○
+suctioncups,21,Suction Cups,きゅうばん,This Pokemon cannot be forced to switch out by another Pokemon's attack or item.,,○
+superluck,105,Super Luck,きょううん,This Pokemon's critical hit ratio is raised by 1 stage.,,○
+sweetveil,175,Sweet Veil,スイートベール,This Pokemon and its allies cannot fall asleep; those already asleep do not wake up.,,○
+swiftswim,33,Swift Swim,すいすい,"If Rain Dance is active, this Pokemon's Speed is doubled.",,○
+tangledfeet,77,Tangled Feet,ちどりあし,This Pokemon's evasiveness is doubled as long as it is confused.,,○
+thickfat,47,Thick Fat,あついしぼう,Fire-/Ice-type moves against this Pokemon deal damage with a halved offensive stat.,,○
+tintedlens,110,Tinted Lens,いろめがね,This Pokemon's attacks that are not very effective on a target deal double damage.,,○
+toughclaws,181,Tough Claws,かたいツメ,This Pokemon's contact moves have their power multiplied by 1.3.,,○
+victorystar,162,Victory Star,しょうりのほし,This Pokemon and its allies' moves have their accuracy multiplied by 1.1.,,○
+vitalspirit,72,Vital Spirit,やるき,This Pokemon cannot fall asleep. Gaining this Ability while asleep cures it.,,○
+voltabsorb,10,Volt Absorb,ちくでん,This Pokemon heals 1/4 of its max HP when hit by Electric moves; Electric immunity.,,○
+wanderingspirit,254,Wandering Spirit,さまようたましい,Pokemon making contact with this Pokemon have their Ability swapped with this one.,,○
+waterabsorb,11,Water Absorb,ちょすい,This Pokemon heals 1/4 of its max HP when hit by Water moves; Water immunity.,,○
+waterveil,41,Water Veil,みずのベール,This Pokemon cannot be burned. Gaining this Ability while burned cures it.,,○
+weakarmor,133,Weak Armor,くだけるよろい,"If a physical attack hits this Pokemon, Defense is lowered by 1, Speed is raised by 2.",,○
+whitesmoke,73,White Smoke,しろいけむり,Prevents other Pokemon from lowering this Pokemon's stat stages.,,○
+wimpout,193,Wimp Out,にげごし,This Pokemon switches out when it reaches 1/2 or less of its maximum HP.,,○
+wonderguard,25,Wonder Guard,ふしぎなまもり,This Pokemon can only be damaged by supereffective moves and indirect damage.,,○
+wonderskin,147,Wonder Skin,ミラクルスキン,Status moves with accuracy checks are 50% accurate when used on this Pokemon.,,○
+zenmode,161,Zen Mode,ダルマモード,"If Darmanitan, at end of turn changes Mode to Standard if > 1/2 max HP, else Zen.",,○
+mega-solar,311,Mega Solar,メガソーラー,"When this Pokemon uses a move, the effects are as if Sunny Day is in effect.",この特性を持つポケモンが技を使うとき天気がにほんばれ状態と同じ効果を受ける。,○
+dragonize,312,Dragonize,ドラゴンスキン,"This Pokemon's Normal-type moves become Dragon-type and have 1.2x power.",自分のノーマルタイプの技がドラゴンタイプになり威力が1.2倍になる。,○

@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Users, Gamepad2 } from 'lucide-react';
 import { usePartyStore } from '@/hooks/use-party-store';
 import { PartyCard } from '@/components/party/PartyCard';
 
@@ -31,11 +31,16 @@ export default function PartiesPage() {
   );
 
   return (
-    <div className="space-y-6 pb-24">
+    <div className="min-h-screen space-y-6 bg-gradient-to-br from-blue-50/30 to-indigo-50/30 pb-24">
       {/* ヘッダー */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">パーティ管理</h2>
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
+            <span className="inline-flex items-center justify-center rounded-lg bg-pokemon-blue/10 p-1.5">
+              <Users className="h-5 w-5 text-pokemon-blue" />
+            </span>
+            パーティ管理
+          </h2>
           <p className="mt-0.5 text-sm text-gray-400">{parties.length} パーティ登録中</p>
         </div>
       </div>
@@ -55,7 +60,9 @@ export default function PartiesPage() {
       {/* パーティ一覧 */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="mb-4 text-6xl">🎮</div>
+          <div className="mb-4">
+            <Gamepad2 className="mx-auto h-16 w-16 text-gray-300" />
+          </div>
           <h3 className="mb-2 text-lg font-bold text-gray-600">
             {query ? '一致するパーティが見つかりません' : 'パーティがまだありません'}
           </h3>

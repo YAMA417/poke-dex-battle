@@ -35,8 +35,9 @@ export function PartyCard({ party, onDuplicate, onDelete }: PartyCardProps) {
   const gradientFrom = POKEMON_TYPE_COLORS[primaryType] ?? 'bg-blue-400';
 
   return (
-    <div
-      className={`group relative overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
+    <Link
+      href={`/parties/${party.id}`}
+      className={`group relative block cursor-pointer overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
     >
       {/* カラーアクセントバー */}
       <div className={`h-1.5 w-full ${gradientFrom}`} />
@@ -45,12 +46,9 @@ export function PartyCard({ party, onDuplicate, onDelete }: PartyCardProps) {
         {/* ヘッダー */}
         <div className="mb-3 flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <Link
-              href={`/parties/${party.id}`}
-              className="block truncate font-bold text-gray-800 transition-colors hover:text-pokemon-blue"
-            >
+            <span className="block truncate font-bold text-gray-800 transition-colors group-hover:text-pokemon-blue">
               {party.name}
-            </Link>
+            </span>
             <span className="mt-0.5 block text-[11px] text-gray-400">
               {REGULATION_LABELS[party.regulation] ?? party.regulation}
             </span>
@@ -58,24 +56,43 @@ export function PartyCard({ party, onDuplicate, onDelete }: PartyCardProps) {
           {/* メニュー */}
           <div className="relative shrink-0">
             <button
-              onClick={() => setMenuOpen((v) => !v)}
+              type="button"
+              aria-label={`${party.name}のメニューを開く`}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setMenuOpen((v) => !v);
+              }}
               className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100"
             >
               <MoreVertical size={16} />
             </button>
             {menuOpen && (
               <>
-                <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setMenuOpen(false);
+                  }}
+                />
                 <div className="absolute right-0 top-full z-20 mt-1 min-w-[140px] overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl">
                   <Link
                     href={`/parties/${party.id}/edit`}
                     className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
-                    onClick={() => setMenuOpen(false)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpen(false);
+                    }}
                   >
                     <Edit size={14} /> 編集
                   </Link>
                   <button
-                    onClick={() => {
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
                       onDuplicate(party.id);
                       setMenuOpen(false);
                     }}
@@ -84,7 +101,10 @@ export function PartyCard({ party, onDuplicate, onDelete }: PartyCardProps) {
                     <Copy size={14} /> 複製
                   </button>
                   <button
-                    onClick={() => {
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
                       setDeleteDialogOpen(true);
                       setMenuOpen(false);
                     }}
@@ -159,7 +179,9 @@ export function PartyCard({ party, onDuplicate, onDelete }: PartyCardProps) {
               キャンセル
             </DialogClose>
             <button
-              onClick={() => {
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
                 onDelete(party.id);
                 setDeleteDialogOpen(false);
               }}
@@ -170,6 +192,6 @@ export function PartyCard({ party, onDuplicate, onDelete }: PartyCardProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </Link>
   );
 }

@@ -94,6 +94,7 @@ export function PokemonSearchModal({
             className="flex-1 text-sm outline-none placeholder:text-gray-400"
           />
           <button
+            type="button"
             onClick={onClose}
             aria-label="閉じる"
             className="rounded-full p-1 transition-colors hover:bg-gray-100"
@@ -120,6 +121,7 @@ export function PokemonSearchModal({
                 return (
                   <li key={sp.name}>
                     <button
+                      type="button"
                       disabled={disabled}
                       onClick={() => {
                         onSelect(sp);

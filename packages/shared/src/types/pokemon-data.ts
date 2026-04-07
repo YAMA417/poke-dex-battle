@@ -1,3 +1,5 @@
+import type { DamageEffect } from './damage-effect';
+import type { MoveFlags } from './damage';
 import type { PokemonType, Stats } from './pokemon';
 
 /**
@@ -22,6 +24,7 @@ export interface PokemonSpeciesData {
   fixedItemNameJa?: string | null;
   fixedTeraType?: string | null;
   genderRate?: number | null;
+  formType?: string;
 }
 
 /**
@@ -39,6 +42,8 @@ export interface MoveData {
   priority: number;
   target: string;
   shortDesc?: string;
+  flags?: MoveFlags;
+  damageEffect?: DamageEffect;
 }
 
 /**
@@ -49,6 +54,7 @@ export interface AbilityData {
   name: string;
   nameJa: string;
   shortDesc?: string;
+  damageEffect?: DamageEffect;
 }
 
 /**
@@ -60,6 +66,9 @@ export interface ItemData {
   nameJa: string;
   shortDesc?: string;
   desc?: string;
+  damageEffect?: DamageEffect;
+  isCompetitive?: boolean;
+  category?: string;
 }
 
 /**

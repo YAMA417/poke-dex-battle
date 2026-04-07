@@ -4,53 +4,34 @@ import { eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ pokemon: string }> }) {
-  const { pokemonId } = { pokemonId: (await params).pokemon };
-  let result = await db.select().from(learnsets).where(eq(learnsets.pokemonId, pokemonId));
+  const pokemonParam = (await params).pokemon;
 
-  // フォルムポケモンでlearnsetが無い場合、同じ図鑑番号のベースフォルムにfallback
-  if (result.length === 0 && pokemonId.includes('-')) {
-    const formPokemon = await db
-      .select({ num: pokemon.num })
-      .from(pokemon)
-      .where(eq(pokemon.id, pokemonId))
-      .limit(1);
+  // name → numeric pokemon.id
+  const pkRow = await db
+    .select({ id: pokemon.id, baseFormId: pokemon.baseFormId })
+    .from(pokemon)
+    .where(eq(pokemon.name, pokemonParam))
+    .limit(1);
 
-    if (formPokemon.length > 0) {
-      // 同じ図鑑番号のデフォルトフォルム（ハイフンなし or 最短ID）を探す
-      const siblings = await db
-        .select({ id: pokemon.id })
-        .from(pokemon)
-        .where(eq(pokemon.num, formPokemon[0].num));
+  if (pkRow.length === 0) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
 
-      // ハイフンを含まないIDがベースフォルム
-      const baseForm = siblings.find((s) => !s.id.includes('-'));
-      if (baseForm) {
-        result = await db.select().from(learnsets).where(eq(learnsets.pokemonId, baseForm.id));
-      }
-    }
+  let pokemonNumericId = pkRow[0].id;
+  let result = await db.select().from(learnsets).where(eq(learnsets.pokemonId, pokemonNumericId));
+
+  // フォルムポケモンでlearnsetが無い場合、baseFormIdにfallback
+  if (result.length === 0 && pkRow[0].baseFormId) {
+    pokemonNumericId = pkRow[0].baseFormId;
+    result = await db.select().from(learnsets).where(eq(learnsets.pokemonId, pokemonNumericId));
   }
 
   if (result.length === 0) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  const level: string[] = [];
-  const machine: string[] = [];
-  const egg: string[] = [];
+  // moveId(number) → DB IDのフラットリストで返す
+  const moveIds = [...new Set(result.map((r) => r.moveId))];
 
-  for (const row of result) {
-    switch (row.method) {
-      case 'level-up':
-        level.push(row.moveId);
-        break;
-      case 'machine':
-        machine.push(row.moveId);
-        break;
-      case 'egg':
-        egg.push(row.moveId);
-        break;
-    }
-  }
-
-  return NextResponse.json({ pokemonId, level, machine, egg });
+  return NextResponse.json({ pokemonId: pokemonParam, moves: moveIds });
 }

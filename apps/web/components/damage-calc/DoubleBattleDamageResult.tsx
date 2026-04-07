@@ -48,11 +48,11 @@ function getDamageLabel(result: DamageResultType): DamageLabel {
 function getLabelIcon(category: DamageLabelCategory) {
   switch (category) {
     case 'ko':
-      return <CheckCircle className="text-verdict-ko h-4 w-4" />;
+      return <CheckCircle className="h-4 w-4 text-verdict-ko" />;
     case 'chance':
-      return <AlertTriangle className="text-verdict-chance h-4 w-4" />;
+      return <AlertTriangle className="h-4 w-4 text-verdict-chance" />;
     case 'fail':
-      return <XCircle className="text-verdict-fail h-4 w-4" />;
+      return <XCircle className="h-4 w-4 text-verdict-fail" />;
   }
 }
 
@@ -110,6 +110,11 @@ function PatternBadge({
       <span className="font-mono text-xs tabular-nums text-muted-foreground">
         ({result.minDamage}〜{result.maxDamage})
       </span>
+      {result.multiHit && (
+        <span className="text-xs text-muted-foreground">
+          ({result.multiHit.perHit.length}回合計)
+        </span>
+      )}
     </div>
   );
 }
@@ -117,12 +122,36 @@ function PatternBadge({
 function DamageRow({ label, result }: { label: string; result: DamageResultType | null }) {
   if (!result) return null;
   return (
-    <div className="flex items-center justify-between py-1">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="font-mono text-xs tabular-nums">
-        {result.minPercent.toFixed(1)}%〜{result.maxPercent.toFixed(1)}% ({result.minDamage}〜
-        {result.maxDamage})
-      </span>
+    <div className="space-y-0.5">
+      <div className="flex items-center justify-between py-1">
+        <span className="text-xs text-muted-foreground">{label}</span>
+        <span className="font-mono text-xs tabular-nums">
+          {result.minPercent.toFixed(1)}%〜{result.maxPercent.toFixed(1)}% ({result.minDamage}〜
+          {result.maxDamage})
+        </span>
+      </div>
+      {result.multiHit && (
+        <div className="space-y-0.5 pl-4">
+          {result.multiHit.perHit.map((hit, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between text-xs text-muted-foreground"
+            >
+              <span>{i + 1}発目</span>
+              <span className="font-mono tabular-nums">
+                {hit.minDamage}〜{hit.maxDamage}
+              </span>
+            </div>
+          ))}
+          <div className="flex items-center justify-between border-t pt-0.5 text-xs font-medium">
+            <span>合計</span>
+            <span className="font-mono tabular-nums">
+              {result.minDamage}〜{result.maxDamage} ({result.minPercent.toFixed(1)}%〜
+              {result.maxPercent.toFixed(1)}%)
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

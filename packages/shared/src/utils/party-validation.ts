@@ -1,5 +1,5 @@
 import type { Stats, Move } from '../types/pokemon';
-import { MAX_EV_TOTAL, MAX_EV_PER_STAT } from '../types/party';
+import { MAX_ABILITY_POINT_TOTAL, MAX_ABILITY_POINT_PER_STAT } from '../types/party';
 
 /** バリデーション結果 */
 export interface ValidationResult {
@@ -8,16 +8,23 @@ export interface ValidationResult {
 }
 
 /**
- * 努力値の合計・各ステータス上限をバリデーション
+ * 能力ポイントの合計・各ステータス上限をバリデーション
  */
-export function validateEvs(evs: Stats): ValidationResult {
+export function validateAbilityPoints(abilityPoints: Stats): ValidationResult {
   const errors: string[] = [];
 
   const total =
-    evs.hp + evs.attack + evs.defense + evs.specialAttack + evs.specialDefense + evs.speed;
+    abilityPoints.hp +
+    abilityPoints.attack +
+    abilityPoints.defense +
+    abilityPoints.specialAttack +
+    abilityPoints.specialDefense +
+    abilityPoints.speed;
 
-  if (total > MAX_EV_TOTAL) {
-    errors.push(`努力値の合計が上限（${MAX_EV_TOTAL}）を超えています（現在: ${total}）`);
+  if (total > MAX_ABILITY_POINT_TOTAL) {
+    errors.push(
+      `能力ポイントの合計が上限（${MAX_ABILITY_POINT_TOTAL}）を超えています（現在: ${total}）`
+    );
   }
 
   const statLabels: { key: keyof Stats; label: string }[] = [
@@ -30,11 +37,11 @@ export function validateEvs(evs: Stats): ValidationResult {
   ];
 
   for (const { key, label } of statLabels) {
-    if (evs[key] < 0) {
-      errors.push(`${label}の努力値は0以上である必要があります`);
+    if (abilityPoints[key] < 0) {
+      errors.push(`${label}の能力ポイントは0以上である必要があります`);
     }
-    if (evs[key] > MAX_EV_PER_STAT) {
-      errors.push(`${label}の努力値が上限（${MAX_EV_PER_STAT}）を超えています`);
+    if (abilityPoints[key] > MAX_ABILITY_POINT_PER_STAT) {
+      errors.push(`${label}の能力ポイントが上限（${MAX_ABILITY_POINT_PER_STAT}）を超えています`);
     }
   }
 
@@ -42,26 +49,37 @@ export function validateEvs(evs: Stats): ValidationResult {
 }
 
 /**
- * EV合計を計算するユーティリティ
+ * 能力ポイント合計を計算するユーティリティ
  */
-export function calcEvTotal(evs: Stats): number {
-  return evs.hp + evs.attack + evs.defense + evs.specialAttack + evs.specialDefense + evs.speed;
+export function calcAbilityPointTotal(abilityPoints: Stats): number {
+  return (
+    abilityPoints.hp +
+    abilityPoints.attack +
+    abilityPoints.defense +
+    abilityPoints.specialAttack +
+    abilityPoints.specialDefense +
+    abilityPoints.speed
+  );
 }
 
 /**
- * 残りEVポイントを計算
+ * 残り能力ポイントを計算
  */
-export function calcEvRemaining(evs: Stats): number {
-  return MAX_EV_TOTAL - calcEvTotal(evs);
+export function calcAbilityPointRemaining(abilityPoints: Stats): number {
+  return MAX_ABILITY_POINT_TOTAL - calcAbilityPointTotal(abilityPoints);
 }
 
 /**
- * 特定ステータスのEVをクランプして返す（合計510制限を考慮）
+ * 特定ステータスの能力ポイントをクランプして返す（合計66制限を考慮）
  */
-export function clampEv(currentEvs: Stats, targetStat: keyof Stats, newValue: number): number {
-  const clampedToStat = Math.max(0, Math.min(MAX_EV_PER_STAT, newValue));
-  const otherTotal = calcEvTotal(currentEvs) - currentEvs[targetStat];
-  const maxForStat = Math.min(MAX_EV_PER_STAT, MAX_EV_TOTAL - otherTotal);
+export function clampAbilityPoint(
+  currentAbilityPoints: Stats,
+  targetStat: keyof Stats,
+  newValue: number
+): number {
+  const clampedToStat = Math.max(0, Math.min(MAX_ABILITY_POINT_PER_STAT, newValue));
+  const otherTotal = calcAbilityPointTotal(currentAbilityPoints) - currentAbilityPoints[targetStat];
+  const maxForStat = Math.min(MAX_ABILITY_POINT_PER_STAT, MAX_ABILITY_POINT_TOTAL - otherTotal);
   return Math.min(clampedToStat, Math.max(0, maxForStat));
 }
 
