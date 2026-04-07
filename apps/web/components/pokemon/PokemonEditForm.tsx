@@ -17,7 +17,9 @@ import { MoveSlotEditor } from './MoveSlotEditor';
 import { Autocomplete } from '@/components/ui/autocomplete';
 import type { AutocompleteOption } from '@/components/ui/autocomplete';
 import type { ItemRow } from '@/lib/api-adapters';
-import { Lock } from 'lucide-react';
+import { toSpeciesData } from '@/lib/api-adapters';
+import { useMegaForms } from '@/hooks/useApiData';
+import { Lock, BarChart3, Sparkles, Diamond, Swords, Shield, Package } from 'lucide-react';
 
 /** テラスタイプ選択に使用する全タイプ一覧 */
 const TYPES: PokemonType[] = [
@@ -76,6 +78,16 @@ export function PokemonEditForm({
     }
     return names;
   }, [species.fixedItem, allPokemonFixedItems]);
+
+  // メガフォーム取得（baseフォームの場合のみ）
+  const baseName = !species.formType || species.formType === 'base' ? species.name : null;
+  const { data: megaFormsRaw } = useMegaForms(baseName);
+  const megaForms = useMemo(() => {
+    if (!megaFormsRaw) return [];
+    return megaFormsRaw
+      .map((row) => toSpeciesData(row))
+      .filter((sp): sp is PokemonSpeciesData => sp !== null);
+  }, [megaFormsRaw]);
 
   // カテゴリベースの動的フィルタでアイテム候補を生成
   const itemOptions = useMemo<AutocompleteOption[]>(() => {
@@ -141,7 +153,7 @@ export function PokemonEditForm({
   return (
     <div className="space-y-4">
       {/* ── ヘッダー ── */}
-      <header className="flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow">
+      <header className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-md">
         {/* スプライト */}
         {species.spriteUrl && (
           <Image
@@ -203,30 +215,46 @@ export function PokemonEditForm({
       </header>
 
       {/* ── 2カラムレイアウト ── */}
-      <div className="grid grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         {/* 左カラム: ステータス */}
         <div className="space-y-5">
           {/* ステータスエディタ */}
           <section>
-            <h4 className="mb-2 border-b pb-1 text-sm font-bold text-gray-700">ステータス</h4>
+            <h4 className="mb-2 flex items-center gap-1.5 border-b pb-1 text-sm font-bold text-gray-700">
+              <span className="inline-flex items-center justify-center rounded-lg bg-pokemon-blue/10 p-1">
+                <BarChart3 className="h-3.5 w-3.5 text-pokemon-blue" />
+              </span>
+              ステータス
+            </h4>
             <StatEditor
               abilityPoints={pokemon.abilityPoints}
               baseStats={species.baseStats}
               nature={pokemon.nature}
               onChange={(abilityPoints) => onChange({ abilityPoints })}
+              megaForms={megaForms}
             />
           </section>
 
           {/* 性格 */}
           <section>
-            <h4 className="mb-2 border-b pb-1 text-sm font-bold text-gray-700">性格</h4>
+            <h4 className="mb-2 flex items-center gap-1.5 border-b pb-1 text-sm font-bold text-gray-700">
+              <span className="inline-flex items-center justify-center rounded-lg bg-pokemon-blue/10 p-1">
+                <Sparkles className="h-3.5 w-3.5 text-pokemon-blue" />
+              </span>
+              性格
+            </h4>
             <NatureSelector nature={pokemon.nature} onChange={(nature) => onChange({ nature })} />
           </section>
 
           {/* テラスタイプ（条件表示） */}
           {battleSystems.includes('terastal') && (
             <section>
-              <h4 className="mb-2 border-b pb-1 text-sm font-bold text-gray-700">テラスタイプ</h4>
+              <h4 className="mb-2 flex items-center gap-1.5 border-b pb-1 text-sm font-bold text-gray-700">
+                <span className="inline-flex items-center justify-center rounded-lg bg-pokemon-blue/10 p-1">
+                  <Diamond className="h-3.5 w-3.5 text-pokemon-blue" />
+                </span>
+                テラスタイプ
+              </h4>
               <div className="flex flex-wrap gap-1.5">
                 {TYPES.map((t) => (
                   <button
@@ -252,7 +280,12 @@ export function PokemonEditForm({
         <div className="space-y-5">
           {/* 技 */}
           <section>
-            <h4 className="mb-2 border-b pb-1 text-sm font-bold text-gray-700">技（最大4つ）</h4>
+            <h4 className="mb-2 flex items-center gap-1.5 border-b pb-1 text-sm font-bold text-gray-700">
+              <span className="inline-flex items-center justify-center rounded-lg bg-pokemon-blue/10 p-1">
+                <Swords className="h-3.5 w-3.5 text-pokemon-blue" />
+              </span>
+              技（最大4つ）
+            </h4>
             <MoveSlotEditor
               moves={pokemon.moves}
               species={species}
@@ -262,7 +295,12 @@ export function PokemonEditForm({
 
           {/* 特性 */}
           <section>
-            <h4 className="mb-2 border-b pb-1 text-sm font-bold text-gray-700">特性</h4>
+            <h4 className="mb-2 flex items-center gap-1.5 border-b pb-1 text-sm font-bold text-gray-700">
+              <span className="inline-flex items-center justify-center rounded-lg bg-pokemon-blue/10 p-1">
+                <Shield className="h-3.5 w-3.5 text-pokemon-blue" />
+              </span>
+              特性
+            </h4>
             <div className="flex flex-wrap gap-2">
               {species.abilities.map((ab) => (
                 <button
@@ -285,7 +323,12 @@ export function PokemonEditForm({
 
           {/* 持ち物 */}
           <section>
-            <h4 className="mb-2 border-b pb-1 text-sm font-bold text-gray-700">持ち物</h4>
+            <h4 className="mb-2 flex items-center gap-1.5 border-b pb-1 text-sm font-bold text-gray-700">
+              <span className="inline-flex items-center justify-center rounded-lg bg-pokemon-blue/10 p-1">
+                <Package className="h-3.5 w-3.5 text-pokemon-blue" />
+              </span>
+              持ち物
+            </h4>
             {species.fixedItem ? (
               <div className="flex items-center gap-1.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-500">
                 <Lock size={12} aria-hidden className="shrink-0 text-gray-400" />

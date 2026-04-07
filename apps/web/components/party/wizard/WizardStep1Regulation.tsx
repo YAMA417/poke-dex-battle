@@ -23,7 +23,7 @@ export function WizardStep1Regulation({
   onNext,
 }: WizardStep1RegulationProps): React.JSX.Element {
   return (
-    <div className="animate-fadeIn mx-auto max-w-2xl space-y-5 rounded-2xl bg-white p-6 shadow">
+    <div className="animate-fadeIn mx-auto max-w-2xl space-y-5 rounded-2xl bg-white p-6 shadow-md">
       <div>
         <h3 className="mb-1 text-lg font-bold text-gray-800">{label}</h3>
         <p className="text-sm text-gray-400">{desc}</p>

@@ -62,7 +62,7 @@ export function useItemByName(name: string | null) {
   );
 }
 
-/** メガフォーム一覧を取得（baseフォームのslug指定） */
+/** メガフォーム一覧を取得（baseフォームのname指定） */
 export function useMegaForms(baseSlug: string | null) {
   return useSWR<PokemonRow[]>(
     baseSlug ? `/api/pokemon?megaForms=${encodeURIComponent(baseSlug)}` : null,

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useMemo, useCallback, memo } from 'react';
-import type { Stats, BaseStats, Nature } from '@poke-dex-battle/shared';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import type { Stats, BaseStats, Nature, PokemonSpeciesData } from '@poke-dex-battle/shared';
 import {
   splitActualStatsByAbilityPoint,
+  calcActualStats,
   calcAbilityPointTotal,
   clampAbilityPoint,
   findClosestRealizableAbilityPoint,
@@ -42,6 +43,8 @@ interface StatEditorProps {
   baseStats: BaseStats;
   nature: Nature;
   onChange: (abilityPoints: Stats) => void;
+  /** メガシンカ / ゲンシカイキ等のフォームデータ（種族値比較表示用） */
+  megaForms?: PokemonSpeciesData[];
 }
 
 /**
@@ -53,6 +56,7 @@ export const StatEditor = memo(function StatEditor({
   baseStats,
   nature,
   onChange,
+  megaForms,
 }: StatEditorProps): React.ReactElement {
   const [actualStatInputs, setActualStatInputs] = useState<Partial<Record<keyof Stats, string>>>(
     {}
@@ -60,6 +64,23 @@ export const StatEditor = memo(function StatEditor({
   const [actualStatErrors, setActualStatErrors] = useState<Partial<Record<keyof Stats, string>>>(
     {}
   );
+  const [selectedMegaIdx, setSelectedMegaIdx] = useState(0);
+
+  // メガフォーム変更時にインデックスをリセット
+  useEffect(() => {
+    setSelectedMegaIdx(0);
+  }, [megaForms]);
+
+  // メガフォームの有無
+  const hasMega = megaForms !== undefined && megaForms.length > 0;
+  const currentMegaForm = hasMega ? (megaForms[selectedMegaIdx] ?? megaForms[0]) : null;
+  const megaBaseStats = currentMegaForm?.baseStats ?? null;
+
+  // メガ後の実数値を計算
+  const megaActualStats = useMemo(() => {
+    if (!megaBaseStats) return null;
+    return calcActualStats(megaBaseStats, abilityPoints, nature);
+  }, [megaBaseStats, abilityPoints, nature]);
 
   // 性格補正の取得
   const natureEffect = NATURE_EFFECTS_MAP[nature] ?? [];
@@ -158,6 +179,27 @@ export const StatEditor = memo(function StatEditor({
 
   return (
     <div className="space-y-3">
+      {/* メガフォームセレクタ（2つ以上のメガフォームがある場合のみ） */}
+      {hasMega && megaForms.length > 1 && (
+        <div className="flex flex-wrap gap-1">
+          {megaForms.map((form, i) => (
+            <button
+              key={form.name}
+              type="button"
+              aria-pressed={selectedMegaIdx === i}
+              onClick={() => setSelectedMegaIdx(i)}
+              className={`rounded-full border px-2 py-0.5 text-xs transition-all ${
+                selectedMegaIdx === i
+                  ? 'border-pokemon-blue bg-pokemon-blue text-white'
+                  : 'border-gray-200 text-gray-500 hover:border-pokemon-blue hover:text-pokemon-blue'
+              }`}
+            >
+              {form.nameJa}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* 能力ポイント合計バー */}
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs text-gray-600">
@@ -199,6 +241,13 @@ export const StatEditor = memo(function StatEditor({
           const error = actualStatErrors[key];
           const currentAP = abilityPoints[key];
 
+          // メガ種族値差分の計算
+          const megaStat = megaBaseStats?.[key] ?? null;
+          const baseStat = baseStats[key];
+          const megaDiff = megaStat !== null ? megaStat - baseStat : 0;
+          const megaActual = megaActualStats?.[key] ?? null;
+          const actualDiff = megaActual !== null ? megaActual - actualValue : 0;
+
           return (
             <div key={key} className={`rounded px-2 py-1 ${error ? 'bg-amber-50' : ''}`}>
               <div className="flex items-center gap-2">
@@ -223,6 +272,32 @@ export const StatEditor = memo(function StatEditor({
                     </span>
                   )}
                 </div>
+
+                {/* 種族値（メガあり時のみ表示） */}
+                {hasMega && (
+                  <>
+                    <span className="hidden w-7 shrink-0 text-right text-xs tabular-nums text-gray-400 sm:inline">
+                      {baseStat}
+                    </span>
+                    <span className="hidden w-14 shrink-0 text-right text-xs tabular-nums sm:inline">
+                      {megaDiff > 0 ? (
+                        <>
+                          <span className="font-semibold text-orange-500">{megaStat}</span>
+                          <span className="ml-0.5 text-[10px] text-orange-400">↑{megaDiff}</span>
+                        </>
+                      ) : megaDiff < 0 ? (
+                        <>
+                          <span className="font-semibold text-blue-500">{megaStat}</span>
+                          <span className="ml-0.5 text-[10px] text-blue-400">
+                            ↓{Math.abs(megaDiff)}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-gray-400">{megaStat}</span>
+                      )}
+                    </span>
+                  </>
+                )}
 
                 {/* カラーバー */}
                 <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
@@ -253,6 +328,25 @@ export const StatEditor = memo(function StatEditor({
                   aria-describedby={error ? `stat-error-${key}` : undefined}
                   aria-invalid={error ? true : undefined}
                 />
+
+                {/* メガ実数値（メガあり時のみ表示） */}
+                {hasMega && megaActual !== null && (
+                  <span className="hidden w-14 shrink-0 text-right text-xs tabular-nums sm:inline">
+                    {actualDiff > 0 ? (
+                      <>
+                        <span className="font-semibold text-orange-500">{megaActual}</span>
+                        <span className="ml-0.5 text-[10px] text-orange-400">+{actualDiff}</span>
+                      </>
+                    ) : actualDiff < 0 ? (
+                      <>
+                        <span className="font-semibold text-blue-500">{megaActual}</span>
+                        <span className="ml-0.5 text-[10px] text-blue-400">{actualDiff}</span>
+                      </>
+                    ) : (
+                      <span className="text-gray-400">{megaActual}</span>
+                    )}
+                  </span>
+                )}
 
                 {/* 能力ポイント入力 */}
                 <label className="sr-only" htmlFor={`stat-ap-${key}`}>
@@ -298,6 +392,14 @@ export const StatEditor = memo(function StatEditor({
             <span className="inline-block h-2 w-3 rounded-sm bg-orange-400" aria-hidden="true" />
             能力P増加分
           </span>
+          {hasMega && (
+            <span className="hidden items-center gap-1 sm:flex">
+              <span className="text-orange-500" aria-hidden="true">
+                ↑
+              </span>
+              メガシンカ差分（種族値・実数値）
+            </span>
+          )}
         </div>
         <button
           type="button"

@@ -36,7 +36,7 @@ export function WizardStep3Edit({
   if (pokemons.length === 0) return null;
 
   return (
-    <div className="animate-fadeIn overflow-hidden rounded-2xl bg-white shadow">
+    <div className="animate-fadeIn overflow-hidden rounded-2xl bg-white shadow-md">
       {/* ポケモン切り替えタブ */}
       <div className="flex overflow-x-auto border-b border-gray-100 bg-gray-50/50">
         {pokemons.map(({ species }, i) => (

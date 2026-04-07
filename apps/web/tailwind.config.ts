@@ -15,6 +15,11 @@ const config: Config = {
           yellow: '#FFDE00',
           red: '#FF0000',
         },
+        verdict: {
+          ko: '#059669',
+          chance: '#f59e0b',
+          fail: '#ef4444',
+        },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {

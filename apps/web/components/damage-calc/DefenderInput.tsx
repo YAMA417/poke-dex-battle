@@ -298,7 +298,7 @@ export function DefenderInput({
   );
 
   return (
-    <Card className="border-t-2 border-t-primary/60">
+    <Card className="overflow-hidden rounded-2xl border-t-2 border-t-pokemon-blue shadow-md">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
           {spriteUrl && (
