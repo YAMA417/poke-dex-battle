@@ -24,7 +24,7 @@ export function WizardStep2Selection({
   desc,
   pokemons,
   isValid,
-  mode,
+  mode: _mode,
   onReplace,
   onAdd,
   onRemove,
