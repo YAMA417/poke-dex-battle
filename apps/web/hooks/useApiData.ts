@@ -62,7 +62,7 @@ export function useItemByName(name: string | null) {
   );
 }
 
-/** メガフォーム一覧を取得（baseフォームのslug指定） */
+/** メガフォーム一覧を取得（baseフォームのname指定） */
 export function useMegaForms(baseSlug: string | null) {
   return useSWR<PokemonRow[]>(
     baseSlug ? `/api/pokemon?megaForms=${encodeURIComponent(baseSlug)}` : null,
@@ -71,15 +71,23 @@ export function useMegaForms(baseSlug: string | null) {
 }
 
 /** レギュレーション型 */
-interface RegulationData {
-  slug: string;
+export interface RegulationData {
+  id: number;
   name: string;
   battleSystems: string[];
 }
 
 /** デフォルトレギュレーションを取得 */
 export function useDefaultRegulation() {
-  return useSWR<RegulationData | null>('/api/regulations', fetcher<RegulationData | null>);
+  return useSWR<RegulationData | null>(
+    '/api/regulations?default=true',
+    fetcher<RegulationData | null>
+  );
+}
+
+/** 全レギュレーション一覧を取得 */
+export function useRegulations() {
+  return useSWR<RegulationData[]>('/api/regulations', fetcher<RegulationData[]>);
 }
 
 /** 習得技を取得（フラットなmoveId数値リスト） */

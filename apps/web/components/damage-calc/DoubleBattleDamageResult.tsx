@@ -48,11 +48,11 @@ function getDamageLabel(result: DamageResultType): DamageLabel {
 function getLabelIcon(category: DamageLabelCategory) {
   switch (category) {
     case 'ko':
-      return <CheckCircle className="text-verdict-ko h-4 w-4" />;
+      return <CheckCircle className="h-4 w-4 text-verdict-ko" />;
     case 'chance':
-      return <AlertTriangle className="text-verdict-chance h-4 w-4" />;
+      return <AlertTriangle className="h-4 w-4 text-verdict-chance" />;
     case 'fail':
-      return <XCircle className="text-verdict-fail h-4 w-4" />;
+      return <XCircle className="h-4 w-4 text-verdict-fail" />;
   }
 }
 

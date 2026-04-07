@@ -1,28 +1,27 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
-import type { Pokemon, PokemonSpeciesData, PokemonType, Stats } from '@poke-dex-battle/shared';
+import { useMemo, useEffect, useRef } from 'react';
+import Image from 'next/image';
+import type { Pokemon, PokemonSpeciesData, PokemonType } from '@poke-dex-battle/shared';
 import {
-  findClosestRealizableEv,
-  getNatureModifier,
   POKEMON_TYPE_LABELS_JA,
   ALWAYS_VISIBLE_CATEGORIES,
   BATTLE_SYSTEM_CATEGORIES,
   POKEMON_SPECIFIC_CATEGORIES,
 } from '@poke-dex-battle/shared';
 import type { ItemCategory } from '@poke-dex-battle/shared';
-import { NATURE_EFFECTS_MAP } from '@/lib/constants';
-import { EVSlider } from './EVSlider';
-import { IVInputGrid } from './IVInputGrid';
+import { POKEMON_TYPE_COLORS } from '@/lib/constants';
+import { StatEditor } from './StatEditor';
 import { NatureSelector } from './NatureSelector';
 import { MoveSlotEditor } from './MoveSlotEditor';
-import { ActualStatsDisplay } from './ActualStatsDisplay';
-import { POKEMON_TYPE_COLORS } from '@/lib/constants';
 import { Autocomplete } from '@/components/ui/autocomplete';
 import type { AutocompleteOption } from '@/components/ui/autocomplete';
 import type { ItemRow } from '@/lib/api-adapters';
-import { Lock } from 'lucide-react';
+import { toSpeciesData } from '@/lib/api-adapters';
+import { useMegaForms } from '@/hooks/useApiData';
+import { Lock, BarChart3, Sparkles, Diamond, Swords, Shield, Package } from 'lucide-react';
 
+/** テラスタイプ選択に使用する全タイプ一覧 */
 const TYPES: PokemonType[] = [
   'Normal',
   'Fire',
@@ -43,6 +42,8 @@ const TYPES: PokemonType[] = [
   'Steel',
   'Fairy',
 ];
+
+/** 性別選択肢 */
 const GENDER_OPTIONS = [
   { value: 'male', label: '♂ オス' },
   { value: 'female', label: '♀ メス' },
@@ -67,25 +68,26 @@ export function PokemonEditForm({
   onChange,
   battleSystems = [],
   allPokemonFixedItems,
-}: PokemonEditFormProps) {
-  const [actualStatInputs, setActualStatInputs] = useState<Partial<Record<keyof Stats, string>>>(
-    {}
-  );
-  const [actualStatErrors, setActualStatErrors] = useState<Partial<Record<keyof Stats, string>>>(
-    {}
-  );
-  const [isEVsOpen, setIsEVsOpen] = useState<boolean>(false);
-
+}: PokemonEditFormProps): React.ReactElement {
   // 選択中ポケモンの fixedItem（英語名）を収集（メガ・専用アイテム判定用）
   const pokemonFixedItems = useMemo(() => {
     const names = new Set<string>();
     if (species.fixedItem) names.add(species.fixedItem);
-    // allPokemonFixedItems が渡されていればそれも合算（フォームバリエーション対応）
     if (allPokemonFixedItems) {
       for (const name of allPokemonFixedItems) names.add(name);
     }
     return names;
   }, [species.fixedItem, allPokemonFixedItems]);
+
+  // メガフォーム取得（baseフォームの場合のみ）
+  const baseName = !species.formType || species.formType === 'base' ? species.name : null;
+  const { data: megaFormsRaw } = useMegaForms(baseName);
+  const megaForms = useMemo(() => {
+    if (!megaFormsRaw) return [];
+    return megaFormsRaw
+      .map((row) => toSpeciesData(row))
+      .filter((sp): sp is PokemonSpeciesData => sp !== null);
+  }, [megaFormsRaw]);
 
   // カテゴリベースの動的フィルタでアイテム候補を生成
   const itemOptions = useMemo<AutocompleteOption[]>(() => {
@@ -99,7 +101,6 @@ export function PokemonEditForm({
       // battleSystemsに応じて表示するカテゴリ
       for (const [system, categories] of Object.entries(BATTLE_SYSTEM_CATEGORIES)) {
         if (battleSystems.includes(system) && (categories as readonly string[]).includes(cat)) {
-          // ポケモン専用カテゴリの場合は対応ポケモンかチェック
           if ((POKEMON_SPECIFIC_CATEGORIES as readonly string[]).includes(cat)) {
             return pokemonFixedItems.has(item.name);
           }
@@ -146,127 +147,190 @@ export function PokemonEditForm({
       onChangeRef.current({ gender: 'unknown' });
   }, [species.genderRate, pokemon.gender]);
 
-  const natureEffect = NATURE_EFFECTS_MAP[pokemon.nature] ?? [];
-  const natureUp = natureEffect[0] as keyof Stats | undefined;
-  const natureDown = natureEffect[1] as keyof Stats | undefined;
-
-  /**
-   * 実数値入力時のハンドラー
-   * 実数値 → EV に逆算し、親に通知
-   */
-  function handleActualStatChange(stat: keyof Stats, targetStat: number) {
-    const isHp = stat === 'hp';
-    const baseStat = species.baseStats[stat];
-    const iv = pokemon.ivs[stat];
-    const natureModifier = isHp
-      ? 1
-      : getNatureModifier(pokemon.nature, stat as keyof Omit<Stats, 'hp'>);
-
-    // 最も近い実現可能な EV を取得
-    const { ev: newEv, actualStat } = findClosestRealizableEv(
-      targetStat,
-      baseStat,
-      iv,
-      pokemon.level,
-      natureModifier,
-      isHp
-    );
-
-    // 新しい EV 配置を計算して合計を確認
-    const updatedEvs = { ...pokemon.evs, [stat]: newEv };
-    const newTotal = Object.values(updatedEvs).reduce((sum, v) => sum + v, 0);
-
-    // エラーハンドリング
-    const errors: Partial<Record<keyof Stats, string>> = {};
-
-    if (targetStat < 1) {
-      errors[stat] = '1 以上の値が必要です';
-    } else if (newEv > 252) {
-      errors[stat] = `最大252EVで、実数値${actualStat}に調整しました`;
-    } else if (newTotal > 510) {
-      errors[stat] = `EV合計が超過しています（現在: ${newTotal}）`;
-    }
-
-    setActualStatErrors(errors);
-
-    // EV を親に通知
-    onChange({ evs: updatedEvs });
-  }
+  // 性別表示の生成
+  const genderDisplay = getGenderDisplay(pokemon.gender);
 
   return (
-    <div className="space-y-6">
-      {/* ── 基本情報 ── */}
-      <section className="space-y-3">
-        <h4 className="border-b pb-1 text-sm font-bold text-gray-700">基本情報</h4>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="pokemon-nickname" className="text-xs font-medium text-gray-500">
-              ニックネーム
-            </label>
-            <input
-              id="pokemon-nickname"
-              type="text"
-              value={pokemon.nickname ?? ''}
-              onChange={(e) => onChange({ nickname: e.target.value || undefined })}
-              placeholder={species.nameJa}
-              className="mt-0.5 w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
-            />
-          </div>
-          <div>
-            <label htmlFor="pokemon-level" className="text-xs font-medium text-gray-500">
-              レベル
-            </label>
-            <input
-              id="pokemon-level"
-              type="number"
-              min={1}
-              max={100}
-              value={pokemon.level}
-              onChange={(e) =>
-                onChange({ level: Math.min(100, Math.max(1, Number(e.target.value))) })
-              }
-              className="mt-0.5 w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
-            />
-          </div>
+    <div className="space-y-4">
+      {/* ── ヘッダー ── */}
+      <header className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-md">
+        {/* スプライト */}
+        {species.spriteUrl && (
+          <Image
+            src={species.spriteUrl}
+            alt={species.nameJa}
+            width={50}
+            height={50}
+            className="shrink-0"
+            unoptimized
+          />
+        )}
+
+        {/* ポケモン名 + 性別 */}
+        <div className="flex items-center gap-2">
+          <span className="text-base font-bold text-gray-800">{species.nameJa}</span>
+          {genderDisplay && (
+            <span
+              className={`text-sm font-semibold ${
+                pokemon.gender === 'male'
+                  ? 'text-blue-500'
+                  : pokemon.gender === 'female'
+                    ? 'text-pink-500'
+                    : 'text-gray-400'
+              }`}
+            >
+              {genderDisplay}
+            </span>
+          )}
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="pokemon-gender" className="text-xs font-medium text-gray-500">
-              性別
-            </label>
-            {species.genderRate === -1 ? (
-              <div className="mt-0.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-400">
-                性別なし
-              </div>
-            ) : species.genderRate === 0 ? (
-              <div className="mt-0.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-500">
-                ♂ オス（固定）
-              </div>
-            ) : species.genderRate === 8 ? (
-              <div className="mt-0.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-500">
-                ♀ メス（固定）
-              </div>
-            ) : (
-              <select
-                id="pokemon-gender"
-                value={pokemon.gender ?? 'unknown'}
-                onChange={(e) => onChange({ gender: e.target.value as Pokemon['gender'] })}
-                className="mt-0.5 w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
-              >
-                {GENDER_OPTIONS.map((g) => (
-                  <option key={g.value} value={g.value}>
-                    {g.label}
-                  </option>
+
+        {/* タイプバッジ */}
+        <div className="flex items-center gap-1">
+          {species.types.map((t) => (
+            <span
+              key={t}
+              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold text-white ${
+                POKEMON_TYPE_COLORS[t] ?? 'bg-gray-400'
+              }`}
+            >
+              {POKEMON_TYPE_LABELS_JA[t] ?? t}
+            </span>
+          ))}
+        </div>
+
+        {/* ニックネーム */}
+        <div className="ml-auto">
+          <label htmlFor="pokemon-nickname" className="sr-only">
+            ニックネーム
+          </label>
+          <input
+            id="pokemon-nickname"
+            type="text"
+            value={pokemon.nickname ?? ''}
+            onChange={(e) => onChange({ nickname: e.target.value || undefined })}
+            placeholder="ニックネーム"
+            className="w-28 rounded border border-gray-200 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
+          />
+        </div>
+      </header>
+
+      {/* ── 2カラムレイアウト ── */}
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        {/* 左カラム: ステータス */}
+        <div className="space-y-5">
+          {/* ステータスエディタ */}
+          <section>
+            <h4 className="mb-2 flex items-center gap-1.5 border-b pb-1 text-sm font-bold text-gray-700">
+              <span className="inline-flex items-center justify-center rounded-lg bg-pokemon-blue/10 p-1">
+                <BarChart3 className="h-3.5 w-3.5 text-pokemon-blue" />
+              </span>
+              ステータス
+            </h4>
+            <StatEditor
+              abilityPoints={pokemon.abilityPoints}
+              baseStats={species.baseStats}
+              nature={pokemon.nature}
+              onChange={(abilityPoints) => onChange({ abilityPoints })}
+              megaForms={megaForms}
+            />
+          </section>
+
+          {/* 性格 */}
+          <section>
+            <h4 className="mb-2 flex items-center gap-1.5 border-b pb-1 text-sm font-bold text-gray-700">
+              <span className="inline-flex items-center justify-center rounded-lg bg-pokemon-blue/10 p-1">
+                <Sparkles className="h-3.5 w-3.5 text-pokemon-blue" />
+              </span>
+              性格
+            </h4>
+            <NatureSelector nature={pokemon.nature} onChange={(nature) => onChange({ nature })} />
+          </section>
+
+          {/* テラスタイプ（条件表示） */}
+          {battleSystems.includes('terastal') && (
+            <section>
+              <h4 className="mb-2 flex items-center gap-1.5 border-b pb-1 text-sm font-bold text-gray-700">
+                <span className="inline-flex items-center justify-center rounded-lg bg-pokemon-blue/10 p-1">
+                  <Diamond className="h-3.5 w-3.5 text-pokemon-blue" />
+                </span>
+                テラスタイプ
+              </h4>
+              <div className="flex flex-wrap gap-1.5">
+                {TYPES.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => onChange({ teraType: t })}
+                    aria-pressed={pokemon.teraType === t}
+                    className={`rounded-full border-2 px-2 py-1 text-[11px] font-semibold transition-all ${POKEMON_TYPE_COLORS[t]} text-white ${
+                      pokemon.teraType === t
+                        ? 'scale-110 border-gray-900 shadow-md'
+                        : 'border-transparent hover:scale-105'
+                    }`}
+                  >
+                    {POKEMON_TYPE_LABELS_JA[t]}
+                  </button>
                 ))}
-              </select>
-            )}
-          </div>
-          <div>
-            <label htmlFor="pokemon-item" className="text-xs font-medium text-gray-500">
+              </div>
+            </section>
+          )}
+        </div>
+
+        {/* 右カラム: 構成 */}
+        <div className="space-y-5">
+          {/* 技 */}
+          <section>
+            <h4 className="mb-2 flex items-center gap-1.5 border-b pb-1 text-sm font-bold text-gray-700">
+              <span className="inline-flex items-center justify-center rounded-lg bg-pokemon-blue/10 p-1">
+                <Swords className="h-3.5 w-3.5 text-pokemon-blue" />
+              </span>
+              技（最大4つ）
+            </h4>
+            <MoveSlotEditor
+              moves={pokemon.moves}
+              species={species}
+              onChange={(moves) => onChange({ moves })}
+            />
+          </section>
+
+          {/* 特性 */}
+          <section>
+            <h4 className="mb-2 flex items-center gap-1.5 border-b pb-1 text-sm font-bold text-gray-700">
+              <span className="inline-flex items-center justify-center rounded-lg bg-pokemon-blue/10 p-1">
+                <Shield className="h-3.5 w-3.5 text-pokemon-blue" />
+              </span>
+              特性
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {species.abilities.map((ab) => (
+                <button
+                  key={ab.name}
+                  type="button"
+                  onClick={() => onChange({ ability: ab.name })}
+                  aria-pressed={pokemon.ability === ab.name}
+                  className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
+                    pokemon.ability === ab.name
+                      ? 'border-pokemon-blue bg-pokemon-blue font-semibold text-white shadow'
+                      : 'border-gray-200 text-gray-600 hover:border-pokemon-blue hover:text-pokemon-blue'
+                  }`}
+                >
+                  {ab.nameJa}
+                  {ab.isHidden && <span className="ml-1 text-[10px] opacity-70">(夢)</span>}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* 持ち物 */}
+          <section>
+            <h4 className="mb-2 flex items-center gap-1.5 border-b pb-1 text-sm font-bold text-gray-700">
+              <span className="inline-flex items-center justify-center rounded-lg bg-pokemon-blue/10 p-1">
+                <Package className="h-3.5 w-3.5 text-pokemon-blue" />
+              </span>
               持ち物
-            </label>
+            </h4>
             {species.fixedItem ? (
-              <div className="mt-0.5 flex items-center gap-1.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-500">
+              <div className="flex items-center gap-1.5 rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-500">
                 <Lock size={12} aria-hidden className="shrink-0 text-gray-400" />
                 <span>{species.fixedItemNameJa ?? species.fixedItem}</span>
               </div>
@@ -278,141 +342,78 @@ export function PokemonEditForm({
                 onSelect={(value) => onChange({ item: value || undefined })}
                 onClear={() => onChange({ item: undefined })}
                 placeholder="なし"
-                className="mt-0.5 rounded border border-gray-200 text-sm"
+                className="rounded border border-gray-200 text-sm"
               />
             )}
-          </div>
-        </div>
-      </section>
+          </section>
 
-      {/* ── 特性 ── */}
-      <section className="space-y-2">
-        <h4 className="border-b pb-1 text-sm font-bold text-gray-700">特性</h4>
-        <div className="flex flex-wrap gap-2">
-          {species.abilities.map((ab) => (
-            <button
-              key={ab.name}
-              type="button"
-              onClick={() => onChange({ ability: ab.name })}
-              className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
-                pokemon.ability === ab.name
-                  ? 'border-pokemon-blue bg-pokemon-blue font-semibold text-white shadow'
-                  : 'border-gray-200 text-gray-600 hover:border-pokemon-blue hover:text-pokemon-blue'
-              }`}
+          {/* 性別 */}
+          <section>
+            <h4 className="mb-2 border-b pb-1 text-sm font-bold text-gray-700">性別</h4>
+            {species.genderRate === -1 ? (
+              <div className="rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-400">
+                性別なし
+              </div>
+            ) : species.genderRate === 0 ? (
+              <div className="rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-500">
+                ♂ オス（固定）
+              </div>
+            ) : species.genderRate === 8 ? (
+              <div className="rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-sm text-gray-500">
+                ♀ メス（固定）
+              </div>
+            ) : (
+              <>
+                <label htmlFor="pokemon-gender" className="sr-only">
+                  性別
+                </label>
+                <select
+                  id="pokemon-gender"
+                  value={pokemon.gender ?? 'unknown'}
+                  onChange={(e) => onChange({ gender: e.target.value as Pokemon['gender'] })}
+                  className="w-full rounded border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
+                >
+                  {GENDER_OPTIONS.map((g) => (
+                    <option key={g.value} value={g.value}>
+                      {g.label}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
+          </section>
+
+          {/* メモ */}
+          <section>
+            <label
+              htmlFor="pokemon-memo"
+              className="mb-2 block border-b pb-1 text-sm font-bold text-gray-700"
             >
-              {ab.nameJa}
-              {ab.isHidden && <span className="ml-1 text-[10px] opacity-70">(夢)</span>}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* ── テラスタイプ ── */}
-      <section className="space-y-2">
-        <h4 className="border-b pb-1 text-sm font-bold text-gray-700">テラスタイプ</h4>
-        <div className="flex flex-wrap gap-1.5">
-          {TYPES.map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => onChange({ teraType: t })}
-              className={`rounded-full border-2 px-2 py-1 text-[11px] font-semibold transition-all ${POKEMON_TYPE_COLORS[t]} text-white ${pokemon.teraType === t ? 'scale-110 border-gray-900 shadow-md' : 'border-transparent hover:scale-105'}`}
-            >
-              {POKEMON_TYPE_LABELS_JA[t]}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* ── 性格 ── */}
-      <section className="space-y-2">
-        <h4 className="border-b pb-1 text-sm font-bold text-gray-700">性格</h4>
-        <NatureSelector nature={pokemon.nature} onChange={(nature) => onChange({ nature })} />
-      </section>
-
-      {/* ── 技 ── */}
-      <section className="space-y-3">
-        <h4 className="border-b pb-1 text-sm font-bold text-gray-700">技（最大4つ）</h4>
-        <MoveSlotEditor
-          moves={pokemon.moves}
-          species={species}
-          onChange={(moves) => onChange({ moves })}
-        />
-      </section>
-
-      {/* ── 個体値 ── */}
-      <section className="space-y-2">
-        <h4 className="border-b pb-1 text-sm font-bold text-gray-700">個体値 (IV)</h4>
-        <IVInputGrid ivs={pokemon.ivs} onChange={(ivs) => onChange({ ivs })} />
-      </section>
-
-      {/* ── 努力値 ── */}
-      <section className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h4 className="flex-1 border-b pb-1 text-sm font-bold text-gray-700">努力値 (EV)</h4>
-          <button
-            type="button"
-            onClick={() => setIsEVsOpen(!isEVsOpen)}
-            className="rounded bg-pokemon-blue px-3 py-1 text-xs text-white transition-colors hover:bg-pokemon-blue/90"
-          >
-            {isEVsOpen ? '非表示' : '表示'}
-          </button>
-        </div>
-        {isEVsOpen && (
-          <div className="animate-in fade-in slide-in-from-top-2">
-            <EVSlider
-              evs={pokemon.evs}
-              natureUp={natureUp}
-              natureDown={natureDown}
-              onChange={(evs) => onChange({ evs })}
+              メモ
+            </label>
+            <textarea
+              id="pokemon-memo"
+              value={pokemon.memo ?? ''}
+              onChange={(e) => onChange({ memo: e.target.value || undefined })}
+              rows={3}
+              placeholder="調整意図や技の選択理由など"
+              className="w-full resize-none rounded border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
             />
-          </div>
-        )}
-      </section>
-
-      {/* ── メモ ── */}
-      <section className="space-y-2">
-        <label
-          htmlFor="pokemon-memo"
-          className="block border-b pb-1 text-sm font-bold text-gray-700"
-        >
-          メモ
-        </label>
-        <textarea
-          id="pokemon-memo"
-          value={pokemon.memo ?? ''}
-          onChange={(e) => onChange({ memo: e.target.value || undefined })}
-          rows={3}
-          placeholder="調整意図や技の選択理由など"
-          className="w-full resize-none rounded border border-gray-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pokemon-blue"
-        />
-      </section>
-
-      {/* ── 実数値（リアルタイム） ── */}
-      <section className="space-y-2 rounded-xl bg-gray-50 p-4">
-        <ActualStatsDisplay
-          pokemon={pokemon}
-          baseStats={species.baseStats}
-          showEvContribution={true}
-          onStatChange={handleActualStatChange}
-          statErrors={actualStatErrors}
-          actualStatInputs={actualStatInputs}
-          onStatInputChange={(stat, value) => {
-            setActualStatInputs((prev) => ({ ...prev, [stat]: value }));
-            const num = parseInt(value, 10);
-            if (!isNaN(num) && num > 0) {
-              handleActualStatChange(stat, num);
-            }
-          }}
-          onStatInputBlur={(stat) => {
-            setActualStatInputs((prev) => {
-              const next = { ...prev };
-              delete next[stat];
-              return next;
-            });
-          }}
-        />
-      </section>
+          </section>
+        </div>
+      </div>
     </div>
   );
+}
+
+/** 性別表示テキストを返す */
+function getGenderDisplay(gender: Pokemon['gender']): string | null {
+  switch (gender) {
+    case 'male':
+      return '♂';
+    case 'female':
+      return '♀';
+    default:
+      return null;
+  }
 }

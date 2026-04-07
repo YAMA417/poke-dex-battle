@@ -11,7 +11,7 @@ import { POKEMON_TYPE_LABELS_JA } from '@poke-dex-battle/shared';
 import { ActualStatsDisplay } from '@/components/pokemon/ActualStatsDisplay';
 import { POKEMON_TYPE_COLORS } from '@/lib/constants';
 import { NATURE_JA } from '@/components/pokemon/NatureSelector';
-import { ChevronLeft, Edit, Trash2, Copy } from 'lucide-react';
+import { ChevronLeft, Edit, Trash2, Copy, AlertCircle, Egg } from 'lucide-react';
 
 export default function PartyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -49,7 +49,9 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
   if (!party) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="mb-4 text-5xl">😵</div>
+        <div className="mb-4">
+          <AlertCircle className="mx-auto h-12 w-12 text-gray-300" />
+        </div>
         <p className="mb-4 text-gray-500">パーティが見つかりません</p>
         <Link href="/parties" className="text-sm text-pokemon-blue hover:underline">
           ← 一覧へ戻る
@@ -71,7 +73,7 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="min-h-screen space-y-6 bg-gradient-to-br from-blue-50/30 to-indigo-50/30 pb-10">
       {/* ヘッダー */}
       <div className="flex flex-wrap items-start gap-3">
         <Link
@@ -97,7 +99,7 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
             type="button"
             aria-label="パーティを複製"
             onClick={handleDuplicate}
-            className="rounded-xl p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-xl border border-transparent p-2 text-gray-400 transition-colors hover:border-pokemon-blue hover:bg-gray-100 hover:text-pokemon-blue"
             title="複製"
           >
             <Copy size={18} />
@@ -128,7 +130,7 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
           return (
             <div
               key={pk.id}
-              className="space-y-3 rounded-2xl bg-white p-4 shadow transition-shadow hover:shadow-md"
+              className="space-y-3 rounded-2xl bg-white p-4 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
             >
               {/* ポケモン名・アイコン */}
               <div className="flex items-center gap-3">
@@ -221,7 +223,9 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
         })}
         {party.pokemons.length === 0 && (
           <div className="col-span-full flex flex-col items-center py-12 text-center text-gray-400">
-            <div className="mb-2 text-4xl">🥚</div>
+            <div className="mb-2">
+              <Egg className="mx-auto h-10 w-10 text-gray-300" />
+            </div>
             <p className="text-sm">まだポケモンが登録されていません</p>
             <Link
               href={`/parties/${id}/edit`}

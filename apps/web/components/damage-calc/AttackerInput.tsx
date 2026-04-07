@@ -23,7 +23,7 @@ import type {
 } from '@poke-dex-battle/shared';
 import {
   calcOtherStat,
-  reverseCalcOtherEv,
+  reverseCalcOtherAbilityPoint,
   getZMovePower,
   getDynamaxMovePower,
   isTeraType,
@@ -36,7 +36,7 @@ import { MoveInput } from './MoveInput';
 import {
   MegaEvolutionControl,
   NatureModifierCompact,
-  EvPreset,
+  AbilityPointPreset,
   TypeBadges,
   TerastalControl,
   ZMoveControl,
@@ -89,7 +89,6 @@ interface AttackerInputProps {
   data: AttackerData;
   onDataChange: (data: AttackerData) => void;
   idKey: string;
-  displayMode: 'compact' | 'full';
   showMega?: boolean;
   showTerastal?: boolean;
   showZMove?: boolean;
@@ -103,7 +102,6 @@ export function AttackerInput({
   data,
   onDataChange,
   idKey,
-  displayMode,
   showMega,
   showTerastal,
   showZMove,
@@ -125,13 +123,10 @@ export function AttackerInput({
   // 種族値のキャッシュ（useEffect BでpokemonData依存を外すため）
   const baseStatsRef = useRef({ atk: 0, spa: 0, def: 0 });
 
-  // EV/IV の内部 state
-  const [attackEv, setAttackEv] = useState(252);
-  const [attackIv, setAttackIv] = useState(31);
-  const [spAtkEv, setSpAtkEv] = useState(252);
-  const [spAtkIv, setSpAtkIv] = useState(31);
+  // 能力ポイントの内部 state
+  const [attackEv, setAttackEv] = useState(32);
+  const [spAtkEv, setSpAtkEv] = useState(32);
   const [defEv, setDefEv] = useState(0);
-  const [defIv, setDefIv] = useState(31);
 
   const { data: pokemonData, megaForms } = usePokemonSearch(data.pokemonName);
 
@@ -195,13 +190,13 @@ export function AttackerInput({
         defenseBaseStat: defBase,
         pokemonTypes: megaForm.types,
         abilityName: firstAbility?.nameJa ?? d.abilityName,
-        attackStat: calcOtherStat(atkBase, attackIv, attackEv, 50, d.attackModifier),
-        specialAttackStat: calcOtherStat(spAtkBase, spAtkIv, spAtkEv, 50, d.specialAttackModifier),
-        defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
+        attackStat: calcOtherStat(atkBase, attackEv, d.attackModifier),
+        specialAttackStat: calcOtherStat(spAtkBase, spAtkEv, d.specialAttackModifier),
+        defenseStat: calcOtherStat(defBase, defEv, d.defenseModifier),
         ...(fixedItemName ? { itemName: fixedItemName } : {}),
       };
     },
-    [attackIv, attackEv, spAtkIv, spAtkEv, defIv, defEv]
+    [attackEv, spAtkEv, defEv]
   );
 
   const handleMegaToggle = useCallback(
@@ -225,15 +220,9 @@ export function AttackerInput({
           defenseBaseStat: defBase,
           pokemonTypes: pokemonData.types,
           abilityName: firstAbility?.nameJa ?? '',
-          attackStat: calcOtherStat(atkBase, attackIv, attackEv, 50, d.attackModifier),
-          specialAttackStat: calcOtherStat(
-            spAtkBase,
-            spAtkIv,
-            spAtkEv,
-            50,
-            d.specialAttackModifier
-          ),
-          defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
+          attackStat: calcOtherStat(atkBase, attackEv, d.attackModifier),
+          specialAttackStat: calcOtherStat(spAtkBase, spAtkEv, d.specialAttackModifier),
+          defenseStat: calcOtherStat(defBase, defEv, d.defenseModifier),
           itemName: '',
         });
       } else {
@@ -244,7 +233,7 @@ export function AttackerInput({
         });
       }
     },
-    [megaForms, buildMegaData, pokemonData, attackIv, attackEv, spAtkIv, spAtkEv, defIv, defEv]
+    [megaForms, buildMegaData, pokemonData, attackEv, spAtkEv, defEv]
   );
 
   const handleMegaVariantChange = useCallback(
@@ -293,15 +282,15 @@ export function AttackerInput({
       defenseBaseStat: defBase,
       pokemonTypes: pokemonData.types,
       abilityName: firstAbility?.nameJa ?? '',
-      attackStat: calcOtherStat(atkBase, attackIv, attackEv, 50, d.attackModifier),
-      specialAttackStat: calcOtherStat(spAtkBase, spAtkIv, spAtkEv, 50, d.specialAttackModifier),
-      defenseStat: calcOtherStat(defBase, defIv, defEv, 50, d.defenseModifier),
+      attackStat: calcOtherStat(atkBase, attackEv, d.attackModifier),
+      specialAttackStat: calcOtherStat(spAtkBase, spAtkEv, d.specialAttackModifier),
+      defenseStat: calcOtherStat(defBase, defEv, d.defenseModifier),
       ...itemUpdate,
     });
-    // 意図的にpokemonData/EV・IVのみに依存（ref経由で最新値を参照）
+    // 意図的にpokemonDataのみに依存（ref経由で最新値を参照）
   }, [pokemonData]);
 
-  // useEffect B: EV/IV・性格補正変更時 — ステータス実数値の再計算のみ
+  // useEffect B: 能力ポイント・性格補正変更時 — ステータス実数値の再計算のみ
   // pokemonData を依存から外し、baseStatsRef 経由で種族値を参照
   // itemName は触らない（アイテム変更が上書きされるバグの修正）
   useEffect(() => {
@@ -314,12 +303,12 @@ export function AttackerInput({
 
     onDataChangeRef.current({
       ...d,
-      attackStat: calcOtherStat(atk, attackIv, attackEv, 50, d.attackModifier),
-      specialAttackStat: calcOtherStat(spa, spAtkIv, spAtkEv, 50, d.specialAttackModifier),
-      defenseStat: calcOtherStat(def, defIv, defEv, 50, d.defenseModifier),
+      attackStat: calcOtherStat(atk, attackEv, d.attackModifier),
+      specialAttackStat: calcOtherStat(spa, spAtkEv, d.specialAttackModifier),
+      defenseStat: calcOtherStat(def, defEv, d.defenseModifier),
     });
-    // 意図的にpokemonData/EV・IVのみに依存（ref経由で最新値を参照）
-  }, [attackIv, attackEv, spAtkIv, spAtkEv, defIv, defEv]);
+    // 意図的に能力ポイントのみに依存（ref経由で最新値を参照）
+  }, [attackEv, spAtkEv, defEv]);
 
   // rerender-derived-state-no-effect: ステータスはイベントハンドラで直接計算
   const isPhysical = data.moveCategory === 'Physical';
@@ -394,454 +383,359 @@ export function AttackerInput({
   const zMovePower = getZMovePower(data.movePower);
   const dynamaxMovePower = getDynamaxMovePower(data.movePower);
 
-  if (displayMode === 'compact') {
-    return (
-      <Card className="border-t-2 border-t-primary/60">
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            {spriteUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={spriteUrl}
-                alt={data.pokemonName}
-                width={40}
-                height={40}
-                className="shrink-0"
-              />
-            )}
-            <div>
-              <CardTitle className="text-base">{data.pokemonName || 'ポケモンを選択'}</CardTitle>
-              <TypeBadges types={data.pokemonTypes} />
-            </div>
+  return (
+    <Card className="overflow-hidden rounded-2xl border-t-2 border-t-pokemon-blue shadow-md">
+      <CardHeader className="pb-2">
+        <div className="flex items-center gap-2">
+          {spriteUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={spriteUrl}
+              alt={data.pokemonName}
+              width={40}
+              height={40}
+              className="shrink-0"
+            />
+          )}
+          <div>
+            <CardTitle className="text-base">{data.pokemonName || 'ポケモンを選択'}</CardTitle>
+            <TypeBadges types={data.pokemonTypes} />
           </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {/* ポケモン名 */}
-          <Autocomplete
-            id={`${idPrefix}-pokemon-name`}
-            options={pokemonOptions}
-            onSelect={(name) =>
-              onDataChange({
-                ...data,
-                pokemonName: name,
-                isMegaEvolved: false,
-                megaFormSlug: null,
-              })
-            }
-            onClear={() =>
-              onDataChange({
-                ...data,
-                pokemonName: '',
-                pokemonTypes: [],
-                abilityName: '',
-                isMegaEvolved: false,
-                megaFormSlug: null,
-              })
-            }
-            placeholder="ポケモン名"
-            value={data.pokemonName}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {/* ポケモン名 */}
+        <Autocomplete
+          id={`${idPrefix}-pokemon-name`}
+          options={pokemonOptions}
+          onSelect={(name) =>
+            onDataChange({
+              ...data,
+              pokemonName: name,
+              isMegaEvolved: false,
+              megaFormSlug: null,
+            })
+          }
+          onClear={() =>
+            onDataChange({
+              ...data,
+              pokemonName: '',
+              pokemonTypes: [],
+              abilityName: '',
+              isMegaEvolved: false,
+              megaFormSlug: null,
+            })
+          }
+          placeholder="ポケモン名"
+          value={data.pokemonName}
+        />
+
+        {/* メガシンカ / ゲンシカイキ */}
+        {showMega && megaForms.length > 0 && (
+          <MegaEvolutionControl
+            idPrefix={idPrefix}
+            isMegaEvolved={data.isMegaEvolved}
+            megaFormSlug={data.megaFormSlug}
+            megaForms={megaForms}
+            megaLabel={megaLabel}
+            onToggle={handleMegaToggle}
+            onVariantChange={handleMegaVariantChange}
           />
+        )}
 
-          {/* メガシンカ / ゲンシカイキ */}
-          {showMega && megaForms.length > 0 && (
-            <MegaEvolutionControl
-              idPrefix={idPrefix}
-              isMegaEvolved={data.isMegaEvolved}
-              megaFormSlug={data.megaFormSlug}
-              megaForms={megaForms}
-              megaLabel={megaLabel}
-              onToggle={handleMegaToggle}
-              onVariantChange={handleMegaVariantChange}
-            />
-          )}
-
-          {/* テラスタル */}
-          {showTerastal && (
-            <TerastalControl
-              idPrefix={idPrefix}
-              isTerastallized={data.isTerastallized}
-              teraType={data.teraType}
-              fixedTeraType={pokemonData?.fixedTeraType ?? null}
-              isStellarBoostUsed={data.isStellarBoostUsed}
-              showStellarBoost
-              onToggle={handleTerastalToggle}
-              onTeraTypeChange={handleTeraTypeChange}
-              onStellarBoostChange={handleStellarBoostChange}
-            />
-          )}
-
-          {/* 技名 */}
-          <MoveInput
-            pokemonName={data.pokemonName}
-            moveName={data.moveName}
-            movePower={data.movePower}
-            moveType={data.moveType}
-            moveCategory={data.moveCategory}
-            onMoveSelect={(move) => {
-              // 連続技情報を更新
-              const multiHit = move.multiHit;
-              let hitCount: number | undefined;
-              if (multiHit) {
-                const range = resolveHitCountRange(multiHit, abilityEnglishName, itemEnglishName);
-                hitCount = range.defaultCount;
-              }
-              onDataChange({
-                ...data,
-                moveName: move.name,
-                movePower: move.power,
-                moveType: move.type,
-                moveCategory: move.category,
-                moveTarget: move.target,
-                moveMultiHit: multiHit,
-                hitCount,
-              });
-            }}
-            onMovePowerChange={(power) => onDataChange({ ...data, movePower: power })}
-            onMoveTypeChange={(type) => onDataChange({ ...data, moveType: type })}
-            onMoveCategoryChange={(cat) => onDataChange({ ...data, moveCategory: cat })}
-            compact
+        {/* テラスタル */}
+        {showTerastal && (
+          <TerastalControl
+            idPrefix={idPrefix}
+            isTerastallized={data.isTerastallized}
+            teraType={data.teraType}
+            fixedTeraType={pokemonData?.fixedTeraType ?? null}
+            isStellarBoostUsed={data.isStellarBoostUsed}
+            showStellarBoost
+            onToggle={handleTerastalToggle}
+            onTeraTypeChange={handleTeraTypeChange}
+            onStellarBoostChange={handleStellarBoostChange}
           />
+        )}
 
-          {/* ヒット数選択（連続技かつZ技/ダイマックスOFFの場合のみ） */}
-          {data.moveMultiHit &&
-            !data.isZMove &&
-            !data.isDynamaxed &&
-            (() => {
-              const range = resolveHitCountRange(
-                data.moveMultiHit,
-                abilityEnglishName,
-                itemEnglishName
-              );
-              return (
-                <HitCountSelector
-                  min={range.min}
-                  max={range.max}
-                  hitCount={data.hitCount ?? range.max}
-                  onHitCountChange={(count) => onDataChange({ ...data, hitCount: count })}
-                  disabled={range.min === range.max}
-                  idPrefix={idPrefix}
-                />
-              );
-            })()}
+        {/* 技名 */}
+        <MoveInput
+          pokemonName={data.pokemonName}
+          moveName={data.moveName}
+          movePower={data.movePower}
+          moveType={data.moveType}
+          moveCategory={data.moveCategory}
+          onMoveSelect={(move) => {
+            // 連続技情報を更新
+            const multiHit = move.multiHit;
+            let hitCount: number | undefined;
+            if (multiHit) {
+              const range = resolveHitCountRange(multiHit, abilityEnglishName, itemEnglishName);
+              hitCount = range.defaultCount;
+            }
+            onDataChange({
+              ...data,
+              moveName: move.name,
+              movePower: move.power,
+              moveType: move.type,
+              moveCategory: move.category,
+              moveTarget: move.target,
+              moveMultiHit: multiHit,
+              hitCount,
+            });
+          }}
+          onMovePowerChange={(power) => onDataChange({ ...data, movePower: power })}
+          onMoveTypeChange={(type) => onDataChange({ ...data, moveType: type })}
+          onMoveCategoryChange={(cat) => onDataChange({ ...data, moveCategory: cat })}
+          compact
+        />
 
-          {/* Z技 */}
-          {showZMove && (
-            <ZMoveControl
-              idPrefix={idPrefix}
-              isZMove={data.isZMove}
-              zMovePower={zMovePower}
-              onToggle={handleZMoveToggle}
-            />
-          )}
-
-          {/* ダイマックス */}
-          {showDynamax && (
-            <DynamaxControl
-              idPrefix={idPrefix}
-              isDynamaxed={data.isDynamaxed}
-              dynamaxMovePower={dynamaxMovePower}
-              onToggle={handleDynamaxToggle}
-            />
-          )}
-
-          {/* 性格補正 + EV + 実数値 */}
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs">{statLabel}</Label>
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-muted-foreground">実数値:</span>
-                <Input
-                  type="number"
-                  min={1}
-                  value={currentStat}
-                  onChange={(e) => {
-                    const targetStat = Math.max(1, parseInt(e.target.value) || 1);
-                    if (usesDefenseAsAttack) {
-                      const newEv = reverseCalcOtherEv(
-                        targetStat,
-                        data.defenseBaseStat,
-                        defIv,
-                        50,
-                        data.defenseModifier
-                      );
-                      const actualStat = calcOtherStat(
-                        data.defenseBaseStat,
-                        defIv,
-                        newEv,
-                        50,
-                        data.defenseModifier
-                      );
-                      setDefEv(newEv);
-                      onDataChange({ ...data, defenseStat: actualStat });
-                    } else {
-                      const baseStat = isPhysical
-                        ? data.attackBaseStat
-                        : data.specialAttackBaseStat;
-                      const iv = isPhysical ? attackIv : spAtkIv;
-                      const mod = isPhysical ? data.attackModifier : data.specialAttackModifier;
-                      const newEv = reverseCalcOtherEv(targetStat, baseStat, iv, 50, mod);
-                      const actualStat = calcOtherStat(baseStat, iv, newEv, 50, mod);
-                      if (isPhysical) {
-                        setAttackEv(newEv);
-                        onDataChange({ ...data, attackStat: actualStat });
-                      } else {
-                        setSpAtkEv(newEv);
-                        onDataChange({ ...data, specialAttackStat: actualStat });
-                      }
-                    }
-                  }}
-                  className="h-6 w-16 text-right text-xs font-bold tabular-nums"
-                />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <NatureModifierCompact
-                value={currentModifier}
-                onChange={(mod) => {
-                  if (usesDefenseAsAttack) {
-                    onDataChange({
-                      ...data,
-                      defenseModifier: mod,
-                      defenseStat: calcOtherStat(data.defenseBaseStat, defIv, defEv, 50, mod),
-                    });
-                  } else if (isPhysical) {
-                    onDataChange({
-                      ...data,
-                      attackModifier: mod,
-                      attackStat: calcOtherStat(data.attackBaseStat, attackIv, attackEv, 50, mod),
-                    });
-                  } else {
-                    onDataChange({
-                      ...data,
-                      specialAttackModifier: mod,
-                      specialAttackStat: calcOtherStat(
-                        data.specialAttackBaseStat,
-                        spAtkIv,
-                        spAtkEv,
-                        50,
-                        mod
-                      ),
-                    });
-                  }
-                }}
+        {/* ヒット数選択（連続技かつZ技/ダイマックスOFFの場合のみ） */}
+        {data.moveMultiHit &&
+          !data.isZMove &&
+          !data.isDynamaxed &&
+          (() => {
+            const range = resolveHitCountRange(
+              data.moveMultiHit,
+              abilityEnglishName,
+              itemEnglishName
+            );
+            return (
+              <HitCountSelector
+                min={range.min}
+                max={range.max}
+                hitCount={data.hitCount ?? range.max}
+                onHitCountChange={(count) => onDataChange({ ...data, hitCount: count })}
+                disabled={range.min === range.max}
+                idPrefix={idPrefix}
               />
-              <span className="text-xs text-muted-foreground">EV</span>
-              <EvPreset
-                value={usesDefenseAsAttack ? defEv : isPhysical ? attackEv : spAtkEv}
-                onChange={(newEv) => {
+            );
+          })()}
+
+        {/* Z技 */}
+        {showZMove && (
+          <ZMoveControl
+            idPrefix={idPrefix}
+            isZMove={data.isZMove}
+            zMovePower={zMovePower}
+            onToggle={handleZMoveToggle}
+          />
+        )}
+
+        {/* ダイマックス */}
+        {showDynamax && (
+          <DynamaxControl
+            idPrefix={idPrefix}
+            isDynamaxed={data.isDynamaxed}
+            dynamaxMovePower={dynamaxMovePower}
+            onToggle={handleDynamaxToggle}
+          />
+        )}
+
+        {/* 性格補正 + EV + 実数値 */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">{statLabel}</Label>
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-muted-foreground">実数値:</span>
+              <Input
+                type="number"
+                min={1}
+                value={currentStat}
+                onChange={(e) => {
+                  const targetStat = Math.max(1, parseInt(e.target.value) || 1);
                   if (usesDefenseAsAttack) {
+                    const newEv = reverseCalcOtherAbilityPoint(
+                      targetStat,
+                      data.defenseBaseStat,
+                      data.defenseModifier
+                    );
+                    const actualStat = calcOtherStat(
+                      data.defenseBaseStat,
+                      newEv,
+                      data.defenseModifier
+                    );
                     setDefEv(newEv);
-                    onDataChange({
-                      ...data,
-                      defenseStat: calcOtherStat(
-                        data.defenseBaseStat,
-                        defIv,
-                        newEv,
-                        50,
-                        data.defenseModifier
-                      ),
-                    });
-                  } else if (isPhysical) {
-                    setAttackEv(newEv);
-                    onDataChange({
-                      ...data,
-                      attackStat: calcOtherStat(
-                        data.attackBaseStat,
-                        attackIv,
-                        newEv,
-                        50,
-                        data.attackModifier
-                      ),
-                    });
+                    onDataChange({ ...data, defenseStat: actualStat });
                   } else {
-                    setSpAtkEv(newEv);
-                    onDataChange({
-                      ...data,
-                      specialAttackStat: calcOtherStat(
-                        data.specialAttackBaseStat,
-                        spAtkIv,
-                        newEv,
-                        50,
-                        data.specialAttackModifier
-                      ),
-                    });
+                    const baseStat = isPhysical ? data.attackBaseStat : data.specialAttackBaseStat;
+                    const mod = isPhysical ? data.attackModifier : data.specialAttackModifier;
+                    const newEv = reverseCalcOtherAbilityPoint(targetStat, baseStat, mod);
+                    const actualStat = calcOtherStat(baseStat, newEv, mod);
+                    if (isPhysical) {
+                      setAttackEv(newEv);
+                      onDataChange({ ...data, attackStat: actualStat });
+                    } else {
+                      setSpAtkEv(newEv);
+                      onDataChange({ ...data, specialAttackStat: actualStat });
+                    }
                   }
                 }}
-                calcStatFn={(ev) => {
-                  if (usesDefenseAsAttack) {
-                    return calcOtherStat(data.defenseBaseStat, defIv, ev, 50, data.defenseModifier);
-                  }
-                  return calcOtherStat(
-                    isPhysical ? data.attackBaseStat : data.specialAttackBaseStat,
-                    isPhysical ? attackIv : spAtkIv,
-                    ev,
-                    50,
-                    isPhysical ? data.attackModifier : data.specialAttackModifier
-                  );
-                }}
+                className="h-6 w-16 text-right text-xs font-bold tabular-nums"
               />
             </div>
           </div>
-
-          {/* 能力ランク */}
-          <div className="space-y-1">
-            <Label className="text-xs">{statLabel}ランク</Label>
-            <Select
-              value={(usesDefenseAsAttack
-                ? data.defenseRank
-                : isPhysical
-                  ? data.attackRank
-                  : data.specialAttackRank
-              ).toString()}
-              onValueChange={(v: string) => {
-                const rank = parseInt(v) as StatStage;
+          <div className="flex items-center gap-2">
+            <NatureModifierCompact
+              value={currentModifier}
+              onChange={(mod) => {
                 if (usesDefenseAsAttack) {
-                  onDataChange({ ...data, defenseRank: rank });
+                  onDataChange({
+                    ...data,
+                    defenseModifier: mod,
+                    defenseStat: calcOtherStat(data.defenseBaseStat, defEv, mod),
+                  });
                 } else if (isPhysical) {
-                  onDataChange({ ...data, attackRank: rank });
+                  onDataChange({
+                    ...data,
+                    attackModifier: mod,
+                    attackStat: calcOtherStat(data.attackBaseStat, attackEv, mod),
+                  });
                 } else {
-                  onDataChange({ ...data, specialAttackRank: rank });
+                  onDataChange({
+                    ...data,
+                    specialAttackModifier: mod,
+                    specialAttackStat: calcOtherStat(data.specialAttackBaseStat, spAtkEv, mod),
+                  });
                 }
               }}
+            />
+            <span className="text-xs text-muted-foreground">能力P</span>
+            <AbilityPointPreset
+              value={usesDefenseAsAttack ? defEv : isPhysical ? attackEv : spAtkEv}
+              onChange={(newEv) => {
+                if (usesDefenseAsAttack) {
+                  setDefEv(newEv);
+                  onDataChange({
+                    ...data,
+                    defenseStat: calcOtherStat(data.defenseBaseStat, newEv, data.defenseModifier),
+                  });
+                } else if (isPhysical) {
+                  setAttackEv(newEv);
+                  onDataChange({
+                    ...data,
+                    attackStat: calcOtherStat(data.attackBaseStat, newEv, data.attackModifier),
+                  });
+                } else {
+                  setSpAtkEv(newEv);
+                  onDataChange({
+                    ...data,
+                    specialAttackStat: calcOtherStat(
+                      data.specialAttackBaseStat,
+                      newEv,
+                      data.specialAttackModifier
+                    ),
+                  });
+                }
+              }}
+              calcStatFn={(ev) => {
+                if (usesDefenseAsAttack) {
+                  return calcOtherStat(data.defenseBaseStat, ev, data.defenseModifier);
+                }
+                return calcOtherStat(
+                  isPhysical ? data.attackBaseStat : data.specialAttackBaseStat,
+                  ev,
+                  isPhysical ? data.attackModifier : data.specialAttackModifier
+                );
+              }}
+            />
+          </div>
+        </div>
+
+        {/* 能力ランク */}
+        <div className="space-y-1">
+          <Label className="text-xs">{statLabel}ランク</Label>
+          <Select
+            value={(usesDefenseAsAttack
+              ? data.defenseRank
+              : isPhysical
+                ? data.attackRank
+                : data.specialAttackRank
+            ).toString()}
+            onValueChange={(v: string) => {
+              const rank = parseInt(v) as StatStage;
+              if (usesDefenseAsAttack) {
+                onDataChange({ ...data, defenseRank: rank });
+              } else if (isPhysical) {
+                onDataChange({ ...data, attackRank: rank });
+              } else {
+                onDataChange({ ...data, specialAttackRank: rank });
+              }
+            }}
+          >
+            <SelectTrigger className="h-8 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STAT_STAGES.map((s) => (
+                <SelectItem key={s} value={s.toString()}>
+                  {s > 0 ? `+${s}` : s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* やけど */}
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id={`${idPrefix}-burned`}
+            checked={data.isBurned}
+            onCheckedChange={(checked: boolean) =>
+              onDataChange({ ...data, isBurned: checked === true })
+            }
+          />
+          <Label htmlFor={`${idPrefix}-burned`} className="cursor-pointer text-xs font-normal">
+            やけど（物理攻撃0.5倍）
+          </Label>
+        </div>
+
+        {/* 特性（メガシンカ中はロック） */}
+        <div className="space-y-1">
+          <Label className="text-xs">特性</Label>
+          <div className={data.isMegaEvolved ? 'pointer-events-none opacity-50' : ''}>
+            <Autocomplete
+              id={`${idPrefix}-ability`}
+              options={abilityOptions}
+              onSelect={(name) => onDataChange({ ...data, abilityName: name })}
+              placeholder="特性"
+              value={data.abilityName}
+            />
+          </div>
+        </div>
+
+        {/* 持ち物（メガシンカ中かつfixedItemありの場合、またはポケモン自体がfixedItemの場合はロック） */}
+        <div className="space-y-1">
+          <Label className="text-xs">持ち物</Label>
+          <div
+            className={
+              (data.isMegaEvolved && currentMegaForm?.fixedItemNameJa) ||
+              pokemonData?.fixedItemNameJa
+                ? 'pointer-events-none opacity-50'
+                : ''
+            }
+          >
+            <Select
+              value={data.itemName || '__none__'}
+              onValueChange={(v) => onDataChange({ ...data, itemName: v === '__none__' ? '' : v })}
             >
               <SelectTrigger className="h-8 text-sm">
-                <SelectValue />
+                <SelectValue placeholder="持ち物" />
               </SelectTrigger>
               <SelectContent>
-                {STAT_STAGES.map((s) => (
-                  <SelectItem key={s} value={s.toString()}>
-                    {s > 0 ? `+${s}` : s}
+                {DAMAGE_CALC_ATTACKER_ITEMS.map((item) => (
+                  <SelectItem key={item.name || '__none__'} value={item.name || '__none__'}>
+                    <div className="flex flex-col">
+                      <span>{item.nameJa}</span>
+                      {item.label && (
+                        <span className="text-xs text-muted-foreground">{item.label}</span>
+                      )}
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-
-          {/* やけど */}
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id={`${idPrefix}-burned`}
-              checked={data.isBurned}
-              onCheckedChange={(checked: boolean) =>
-                onDataChange({ ...data, isBurned: checked === true })
-              }
-            />
-            <Label htmlFor={`${idPrefix}-burned`} className="cursor-pointer text-xs font-normal">
-              やけど（物理攻撃0.5倍）
-            </Label>
-          </div>
-
-          {/* 特性（メガシンカ中はロック） */}
-          <div className="space-y-1">
-            <Label className="text-xs">特性</Label>
-            <div className={data.isMegaEvolved ? 'pointer-events-none opacity-50' : ''}>
-              <Autocomplete
-                id={`${idPrefix}-ability`}
-                options={abilityOptions}
-                onSelect={(name) => onDataChange({ ...data, abilityName: name })}
-                placeholder="特性"
-                value={data.abilityName}
-              />
-            </div>
-          </div>
-
-          {/* 持ち物（メガシンカ中かつfixedItemありの場合、またはポケモン自体がfixedItemの場合はロック） */}
-          <div className="space-y-1">
-            <Label className="text-xs">持ち物</Label>
-            <div
-              className={
-                (data.isMegaEvolved && currentMegaForm?.fixedItemNameJa) ||
-                pokemonData?.fixedItemNameJa
-                  ? 'pointer-events-none opacity-50'
-                  : ''
-              }
-            >
-              <Select
-                value={data.itemName || '__none__'}
-                onValueChange={(v) =>
-                  onDataChange({ ...data, itemName: v === '__none__' ? '' : v })
-                }
-              >
-                <SelectTrigger className="h-8 text-sm">
-                  <SelectValue placeholder="持ち物" />
-                </SelectTrigger>
-                <SelectContent>
-                  {DAMAGE_CALC_ATTACKER_ITEMS.map((item) => (
-                    <SelectItem key={item.name || '__none__'} value={item.name || '__none__'}>
-                      <div className="flex flex-col">
-                        <span>{item.nameJa}</span>
-                        {item.label && (
-                          <span className="text-xs text-muted-foreground">{item.label}</span>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // displayMode === "full" — 詳細設定（IVのみ）
-  return (
-    <Card className="border-t-2 border-t-primary/60">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm">{data.pokemonName || '攻撃側'} 詳細</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {/* 個体値 */}
-        <div className="space-y-1">
-          <Label className="text-xs">{statLabel}個体値</Label>
-          <Input
-            type="number"
-            min={0}
-            max={31}
-            value={usesDefenseAsAttack ? defIv : isPhysical ? attackIv : spAtkIv}
-            onChange={(e) => {
-              const iv = Math.max(0, Math.min(31, parseInt(e.target.value) || 0));
-              if (usesDefenseAsAttack) {
-                setDefIv(iv);
-                onDataChange({
-                  ...data,
-                  defenseStat: calcOtherStat(
-                    data.defenseBaseStat,
-                    iv,
-                    defEv,
-                    50,
-                    data.defenseModifier
-                  ),
-                });
-              } else if (isPhysical) {
-                setAttackIv(iv);
-                onDataChange({
-                  ...data,
-                  attackStat: calcOtherStat(
-                    data.attackBaseStat,
-                    iv,
-                    attackEv,
-                    50,
-                    data.attackModifier
-                  ),
-                });
-              } else {
-                setSpAtkIv(iv);
-                onDataChange({
-                  ...data,
-                  specialAttackStat: calcOtherStat(
-                    data.specialAttackBaseStat,
-                    iv,
-                    spAtkEv,
-                    50,
-                    data.specialAttackModifier
-                  ),
-                });
-              }
-            }}
-            className="h-7 text-xs"
-          />
         </div>
       </CardContent>
     </Card>

@@ -90,5 +90,13 @@
   },
   "Neuroforce": {
     "attackerModifier": { "condition": "super_effective", "multiplier": 1.25 }
+  },
+  "Dragonize": {
+    "attackerModifier": {
+      "condition": "skin_type_change",
+      "fromType": "Normal",
+      "toType": "Dragon",
+      "multiplier": 1.2
+    }
   }
 }

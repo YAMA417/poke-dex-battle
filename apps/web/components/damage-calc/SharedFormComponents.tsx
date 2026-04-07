@@ -49,9 +49,9 @@ export function NatureModifierCompact({ value, onChange }: NatureModifierCompact
   );
 }
 
-// --- 努力値プリセット（Labelなし、ボタン+Inputのみ） ---
+// --- 能力ポイン��プリセット（Labelなし、ボタン+Inputのみ） ---
 
-export function EvPreset({
+export function AbilityPointPreset({
   value,
   onChange,
   calcStatFn,
@@ -60,11 +60,11 @@ export function EvPreset({
   onChange: (ev: number) => void;
   calcStatFn?: (ev: number) => number;
 }) {
-  // +ボタン: 実数値が変わる次のEVにジャンプ
+  // +ボタン: 実数値が変わる次の能力Pにジャンプ
   const handleIncrement = () => {
-    if (!calcStatFn || value >= 252) return;
+    if (!calcStatFn || value >= 32) return;
     const currentStat = calcStatFn(value);
-    for (let ev = value + 4; ev <= 252; ev += 4) {
+    for (let ev = value + 1; ev <= 32; ev += 1) {
       if (calcStatFn(ev) !== currentStat) {
         onChange(ev);
         return;
@@ -72,11 +72,11 @@ export function EvPreset({
     }
   };
 
-  // -ボタン: 実数値が変わる前のEVにジャンプ
+  // -ボタン: 実数値が変わる前の能力Pにジャンプ
   const handleDecrement = () => {
     if (!calcStatFn || value <= 0) return;
     const currentStat = calcStatFn(value);
-    for (let ev = value - 4; ev >= 0; ev -= 4) {
+    for (let ev = value - 1; ev >= 0; ev -= 1) {
       if (calcStatFn(ev) !== currentStat) {
         onChange(ev);
         return;
@@ -91,10 +91,10 @@ export function EvPreset({
     <div className="flex items-center gap-1">
       <button
         type="button"
-        onClick={() => onChange(252)}
-        className={`${btnBase} ${value === 252 ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}`}
+        onClick={() => onChange(32)}
+        className={`${btnBase} ${value === 32 ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}`}
       >
-        252
+        32
       </button>
       <button
         type="button"
@@ -116,7 +116,7 @@ export function EvPreset({
           <button
             type="button"
             onClick={handleIncrement}
-            disabled={value >= 252}
+            disabled={value >= 32}
             className={`${btnBase} hover:bg-accent disabled:cursor-not-allowed disabled:opacity-30`}
           >
             +
@@ -126,10 +126,10 @@ export function EvPreset({
       <Input
         type="number"
         min={0}
-        max={252}
-        step={4}
+        max={32}
+        step={1}
         value={value}
-        onChange={(e) => onChange(Math.max(0, Math.min(252, parseInt(e.target.value) || 0)))}
+        onChange={(e) => onChange(Math.max(0, Math.min(32, parseInt(e.target.value) || 0)))}
         className="h-7 w-16 text-xs"
       />
     </div>

@@ -407,3 +407,5 @@ wimpout,193,Wimp Out,にげごし,This Pokemon switches out when it reaches 1/2 
 wonderguard,25,Wonder Guard,ふしぎなまもり,This Pokemon can only be damaged by supereffective moves and indirect damage.,,○
 wonderskin,147,Wonder Skin,ミラクルスキン,Status moves with accuracy checks are 50% accurate when used on this Pokemon.,,○
 zenmode,161,Zen Mode,ダルマモード,"If Darmanitan, at end of turn changes Mode to Standard if > 1/2 max HP, else Zen.",,○
+mega-solar,311,Mega Solar,メガソーラー,"When this Pokemon uses a move, the effects are as if Sunny Day is in effect.",この特性を持つポケモンが技を使うとき天気がにほんばれ状態と同じ効果を受ける。,○
+dragonize,312,Dragonize,ドラゴンスキン,"This Pokemon's Normal-type moves become Dragon-type and have 1.2x power.",自分のノーマルタイプの技がドラゴンタイプになり威力が1.2倍になる。,○
