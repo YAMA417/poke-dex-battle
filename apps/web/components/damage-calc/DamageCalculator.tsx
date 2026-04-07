@@ -184,7 +184,6 @@ export function DamageCalculator() {
   const [isLightScreen, setIsLightScreen] = useState(false);
 
   const [isDetailNumbersOpen, setIsDetailNumbersOpen] = useState(false);
-  const [isDetailSettingsOpen, setIsDetailSettingsOpen] = useState(false);
 
   // 特性→天候/フィールドの自動連動（手動変更は保持、特性由来の値が変わったときのみ自動更新）
   const prevAbilityWeatherRef = useRef<Weather>('none');
@@ -566,7 +565,6 @@ export function DamageCalculator() {
             data={attackerAData}
             onDataChange={setAttackerAData}
             idKey="attacker-a"
-            displayMode="compact"
             showMega={showMega}
             showTerastal={showTerastal}
             showZMove={showZMove}
@@ -577,7 +575,6 @@ export function DamageCalculator() {
             data={attackerBData}
             onDataChange={setAttackerBData}
             idKey="attacker-b"
-            displayMode="compact"
             showMega={showMega}
             showTerastal={showTerastal}
             showZMove={showZMove}
@@ -616,7 +613,6 @@ export function DamageCalculator() {
             data={defenderData1}
             onDataChange={setDefenderData1}
             idKey="target-1"
-            displayMode="compact"
             showMega={showMega}
             showTerastal={showTerastal}
             showDynamax={showDynamax}
@@ -626,7 +622,6 @@ export function DamageCalculator() {
             data={defenderData2}
             onDataChange={setDefenderData2}
             idKey="target-2"
-            displayMode="compact"
             showMega={showMega}
             showTerastal={showTerastal}
             showDynamax={showDynamax}
@@ -650,48 +645,6 @@ export function DamageCalculator() {
         onReflectChange={setIsReflect}
         onLightScreenChange={setIsLightScreen}
       />
-
-      {/* 詳細設定（折りたたみ）— IV、能力ランクのみ */}
-      <div>
-        <button
-          type="button"
-          onClick={() => setIsDetailSettingsOpen((prev) => !prev)}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border py-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          {isDetailSettingsOpen ? '詳細設定を隠す' : '▼ 詳細設定（個体値・ランク）'}
-        </button>
-
-        {isDetailSettingsOpen && (
-          <div className="mt-4 space-y-4 duration-200 animate-in fade-in slide-in-from-top-2">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <AttackerInput
-                data={attackerAData}
-                onDataChange={setAttackerAData}
-                idKey="attacker-a-detail"
-                displayMode="full"
-              />
-              <AttackerInput
-                data={attackerBData}
-                onDataChange={setAttackerBData}
-                idKey="attacker-b-detail"
-                displayMode="full"
-              />
-              <DefenderInput
-                data={defenderData1}
-                onDataChange={setDefenderData1}
-                idKey="target-1-detail"
-                displayMode="full"
-              />
-              <DefenderInput
-                data={defenderData2}
-                onDataChange={setDefenderData2}
-                idKey="target-2-detail"
-                displayMode="full"
-              />
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

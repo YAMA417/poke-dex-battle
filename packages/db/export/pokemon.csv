@@ -1193,7 +1193,7 @@ dracovish,882,Dracovish,ウオノラゴン,Water,Dragon,90,90,100,70,80,75,water
 arctovish,883,Arctovish,ウオチルドン,Water,Ice,90,90,100,80,90,55,waterabsorb,icebody,slushrush,175,2,normal,base,,,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/883.png,false,○
 dragonite-mega,149,Dragonite-Mega,メガカイリュー,Dragon,Flying,91,124,115,145,125,100,multiscale,,,210,2.2,normal,mega,dragonite,dragonitite,,4,,false,○
 meganium-mega,154,Meganium-Mega,メガメガニウム,Grass,Fairy,80,92,115,143,115,80,mega-solar,,,100.5,1.8,normal,mega,meganium,meganiumite,,4,,false,○
-typhlosion-mega,157,Typhlosion-Mega,メガバクフーン,Fire,Fighting,78,148,75,110,110,107,sheerforce,,,79.5,1.7,normal,mega,typhlosion,typhlosionite,,4,,false,○
+emboar-mega,500,Emboar-Mega,メガエンブオー,Fire,Fighting,110,148,75,110,110,75,mold-breaker,,,150,1.6,normal,mega,emboar,emboarite,,1,,false,○
 feraligatr-mega,160,Feraligatr-Mega,メガオーダイル,Water,Dragon,85,160,125,89,93,78,dragonize,,,88.8,2.3,normal,mega,feraligatr,feraligatrite,,4,,false,○
 froslass-mega,478,Froslass-Mega,メガユキメノコ,Ice,Ghost,70,80,70,140,100,120,snowwarning,,,26.6,1.3,normal,mega,froslass,froslassite,,4,,false,○
 chesnaught-mega,652,Chesnaught-Mega,メガブリガロン,Grass,Fighting,88,137,172,74,115,44,bulletproof,,,90,1.6,normal,mega,chesnaught,chesnaughtite,,4,,false,○
