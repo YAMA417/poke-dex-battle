@@ -409,3 +409,5 @@ wonderskin,147,Wonder Skin,ミラクルスキン,Status moves with accuracy chec
 zenmode,161,Zen Mode,ダルマモード,"If Darmanitan, at end of turn changes Mode to Standard if > 1/2 max HP, else Zen.",,○
 mega-solar,311,Mega Solar,メガソーラー,"When this Pokemon uses a move, the effects are as if Sunny Day is in effect.",この特性を持つポケモンが技を使うとき天気がにほんばれ状態と同じ効果を受ける。,○
 dragonize,312,Dragonize,ドラゴンスキン,"This Pokemon's Normal-type moves become Dragon-type and have 1.2x power.",自分のノーマルタイプの技がドラゴンタイプになり威力が1.2倍になる。,○
+piercing-drill,313,Piercing Drill,かんつうドリル,"When the Pokemon uses contact moves, it can hit even targets that are protecting themselves, dealing 1/4 of the damage.",接触技でまもる状態の相手にも攻撃でき通常の1/4のダメージを与える。,○
+spicy-spray,314,Spicy Spray,とびだすハバネロ,"When the Pokemon takes damage from a move, it burns the attacker.",攻撃技でダメージを受けると攻撃してきた相手をやけど状態にする。,○
