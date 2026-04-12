@@ -9,7 +9,7 @@ import {
 } from '../../constants/damage-calc-names';
 import { getTypeResistBerryType } from '../../constants/item-type-map';
 import { calcTypeEffectiveness } from '../../constants/types';
-import type { BattleContext, CalcMove, CalcPokemon } from '../../types/damage';
+import type { BattleContext, CalcMove, CalcPokemon, Weather } from '../../types/damage';
 import type { ModifierRule } from '../../types/damage-effect';
 import { isPokemonType } from '../../types/pokemon';
 import {
@@ -55,7 +55,14 @@ export function calculateModifier(
   }
 
   // 2. Weather (天候補正)
-  const weatherModifier = calculateWeatherModifier(move.type, context.weather || 'none');
+  // as_if_weather 特性の判定: 天候なし時に仮想天候を適用
+  const asIfWeatherRule = attacker.abilityDamageEffect?.attackerModifier;
+  const effectiveWeather: Weather =
+    asIfWeatherRule?.condition === 'as_if_weather' &&
+    (!context.weather || context.weather === 'none')
+      ? asIfWeatherRule.weather
+      : context.weather || 'none';
+  const weatherModifier = calculateWeatherModifier(move.type, effectiveWeather);
   minDamage = Math.floor(minDamage * weatherModifier);
   maxDamage = Math.floor(maxDamage * weatherModifier);
 

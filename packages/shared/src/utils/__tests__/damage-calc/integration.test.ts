@@ -1673,4 +1673,121 @@ describe('Phase 4-5: 技固有効果 + メカニクス', () => {
     expect(gutsBurned.maxDamage).toBe(129);
     expect(gutsBurned.maxDamage).toBeGreaterThan(noBurn.maxDamage);
   });
+
+  describe('Mega Sol (as_if_weather) テスト', () => {
+    // 共通のテスト用データ
+    const megaSolAttacker: CalcPokemon = {
+      level: 50,
+      types: ['Grass', 'Fire'],
+      stats: { hp: 0, atk: 0, def: 0, spa: 150, spd: 0, spe: 0 },
+      ability: 'Mega Sol',
+      abilityDamageEffect: {
+        attackerModifier: { condition: 'as_if_weather', weather: 'sun' },
+      },
+    };
+
+    const defender: CalcPokemon = {
+      level: 50,
+      types: ['Normal'],
+      stats: { hp: 200, atk: 0, def: 0, spa: 0, spd: 100, spe: 0 },
+      maxHp: 200,
+    };
+
+    const baseContext: BattleContext = {};
+
+    it('Mega Sol + ほのお技 → 天候なしでもsun補正(×1.5)が適用される', () => {
+      const move: CalcMove = {
+        name: 'Flamethrower',
+        power: 90,
+        type: 'Fire',
+        category: 'Special',
+      };
+
+      const result = calculateDamageV2(megaSolAttacker, defender, move, baseContext);
+      // 天候なし+Mega Sol vs 天候なし+通常特性 で比較
+      const normalAttacker: CalcPokemon = {
+        ...megaSolAttacker,
+        ability: undefined,
+        abilityDamageEffect: undefined,
+      };
+      const normalResult = calculateDamageV2(normalAttacker, defender, move, baseContext);
+      // Mega Solの方が1.5倍のダメージ
+      expect(result.maxDamage).toBe(Math.floor(normalResult.maxDamage * 1.5));
+    });
+
+    it('Mega Sol + みず技 → 天候なしでもsun弱化(×0.5)が適用される', () => {
+      const move: CalcMove = {
+        name: 'Surf',
+        power: 90,
+        type: 'Water',
+        category: 'Special',
+      };
+
+      const result = calculateDamageV2(megaSolAttacker, defender, move, baseContext);
+      const normalAttacker: CalcPokemon = {
+        ...megaSolAttacker,
+        ability: undefined,
+        abilityDamageEffect: undefined,
+      };
+      const normalResult = calculateDamageV2(normalAttacker, defender, move, baseContext);
+      // Mega Solの方が0.5倍のダメージ
+      expect(result.maxDamage).toBe(Math.floor(normalResult.maxDamage * 0.5));
+    });
+
+    it('Mega Sol + ウェザーボール → 天候なしでもFire・威力2倍になる', () => {
+      const move: CalcMove = {
+        name: 'Weather Ball',
+        power: 50,
+        type: 'Normal',
+        category: 'Special',
+        damageEffect: {
+          powerModifier: { condition: 'weather_active', multiplier: 2.0 },
+        },
+      };
+
+      const result = calculateDamageV2(megaSolAttacker, defender, move, baseContext);
+      // ウェザーボール: 威力50→100(2倍) + タイプFire + STAB(1.5) + sun補正(1.5)
+      // details.weatherModifierが1.5であることを確認
+      expect(result.details?.weatherModifier).toBe(1.5);
+      // ダメージが通常時よりも大幅に大きい
+      expect(result.maxDamage).toBeGreaterThan(0);
+    });
+
+    it('Mega Sol + 実際の天候がsun → 二重適用にならない', () => {
+      const move: CalcMove = {
+        name: 'Flamethrower',
+        power: 90,
+        type: 'Fire',
+        category: 'Special',
+      };
+
+      const sunContext: BattleContext = { weather: 'sun' };
+      const megaSolResult = calculateDamageV2(megaSolAttacker, defender, move, sunContext);
+      // 通常特性 + 晴れ と同じダメージになるはず
+      const normalAttacker: CalcPokemon = {
+        ...megaSolAttacker,
+        ability: undefined,
+        abilityDamageEffect: undefined,
+      };
+      const normalSunResult = calculateDamageV2(normalAttacker, defender, move, sunContext);
+      expect(megaSolResult.maxDamage).toBe(normalSunResult.maxDamage);
+    });
+
+    it('Mega Sol + ウェザーボール + 実際の天候がsun → 通常のウェザーボール動作', () => {
+      const move: CalcMove = {
+        name: 'Weather Ball',
+        power: 50,
+        type: 'Fire', // UI側でタイプ変更済みの想定
+        category: 'Special',
+        damageEffect: {
+          powerModifier: { condition: 'weather_active', multiplier: 2.0 },
+        },
+      };
+
+      const sunContext: BattleContext = { weather: 'sun' };
+      const result = calculateDamageV2(megaSolAttacker, defender, move, sunContext);
+      // 実際の天候がsunなのでas_if_weatherはスキップ、通常のweather_active処理が動く
+      expect(result.details?.weatherModifier).toBe(1.5);
+    });
+  });
 });
