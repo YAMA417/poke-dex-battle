@@ -152,6 +152,10 @@ export function evaluateAttackerModifier(
     case 'critical_boost':
       // calculate-modifier.ts 側で個別処理するため、ここでは何もしない
       break;
+
+    case 'as_if_weather':
+      // calculate-modifier.ts / index.ts 側で個別処理するため、ここでは何もしない
+      break;
   }
   return 1.0;
 }

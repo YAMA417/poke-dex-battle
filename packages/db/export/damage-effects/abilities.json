@@ -98,5 +98,9 @@
       "toType": "Dragon",
       "multiplier": 1.2
     }
+  },
+  "Mega Sol": {
+    "_comment": "技使用時に晴れ状態と同じ効果を受ける。ソーラービーム溜めなし、ほのお技1.5倍、みず技0.5倍。ダメージ計算エンジン側での専用処理が必要",
+    "attackerModifier": { "condition": "as_if_weather", "weather": "sun" }
   }
 }

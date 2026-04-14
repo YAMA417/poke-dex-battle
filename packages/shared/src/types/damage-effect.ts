@@ -1,4 +1,5 @@
 import type { PokemonType } from './pokemon';
+import type { Weather } from './damage';
 
 // === 技の威力補正ルール ===
 
@@ -46,7 +47,8 @@ export type ModifierRule =
   | { condition: 'unconditional'; multiplier: number }
   | { condition: 'weather_and_type'; weather: string; types: PokemonType[]; multiplier: number }
   | { condition: 'not_very_effective_boost'; multiplier: number }
-  | { condition: 'critical_boost'; multiplier: number };
+  | { condition: 'critical_boost'; multiplier: number }
+  | { condition: 'as_if_weather'; weather: Weather };
 
 // === damage_effect カラムの型 ===
 
