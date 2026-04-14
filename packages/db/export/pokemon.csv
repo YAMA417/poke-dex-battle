@@ -603,8 +603,8 @@ florges,671,Florges,フラージェス,Fairy,,78,65,68,112,154,75,flower-veil,,s
 skiddo,672,Skiddo,メェークル,Grass,,66,65,48,62,57,52,sap-sipper,,grass-pelt,31,0.9,normal,base,,,,4,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/672.png,true,○
 gogoat,673,Gogoat,ゴーゴート,Grass,,123,100,62,97,81,68,sap-sipper,,grass-pelt,91,1.7,normal,base,,,,4,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/673.png,false,○
 espurr,677,Espurr,ニャスパー,Psychic,,62,48,54,63,60,68,keen-eye,infiltrator,own-tempo,3.5,0.3,normal,base,,,,4,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/677.png,true,○
-meowstic,678,Meowstic,ニャオニクス,Psychic,,74,48,76,83,81,104,keen-eye,infiltrator,prankster,8.5,0.6,normal,base,,,,4,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/678.png,false,○
-meowstic-f,678,Meowstic-F,ニャオニクス（メスのすがた）,Psychic,,74,48,76,83,81,104,keen-eye,infiltrator,competitive,8.5,0.6,normal,variant,meowstic,,,4,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10025.png,false,○
+meowstic,678,Meowstic,ニャオニクス（オスのすがた）,Psychic,,74,48,76,83,81,104,keen-eye,infiltrator,prankster,8.5,0.6,normal,base,,,,0,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/678.png,false,○
+meowstic-f,678,Meowstic-F,ニャオニクス（メスのすがた）,Psychic,,74,48,76,83,81,104,keen-eye,infiltrator,competitive,8.5,0.6,normal,variant,meowstic,,,8,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10025.png,false,○
 inkay,686,Inkay,マーイーカ,Dark,Psychic,53,54,53,37,46,45,contrary,suction-cups,infiltrator,3.5,0.4,normal,base,,,,4,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/686.png,true,○
 malamar,687,Malamar,カラマネロ,Dark,Psychic,86,92,88,68,75,73,contrary,suction-cups,infiltrator,47,1.5,normal,base,,,,4,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/687.png,false,○
 skrelp,690,Skrelp,クズモー,Poison,Water,50,60,60,60,60,30,poison-point,poison-touch,adaptability,7.3,0.5,normal,base,,,,4,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/690.png,true,○
@@ -776,8 +776,8 @@ wyrdeer,899,Wyrdeer,アヤシシ,Normal,Psychic,103,105,72,105,75,65,intimidate,
 kleavor,900,Kleavor,バサギリ,Bug,Rock,70,135,95,45,70,85,swarm,sheer-force,sharpness,89,1.8,normal,base,,,,4,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/900.png,false,○
 ursaluna,901,Ursaluna,ガチグマ,Ground,Normal,130,140,105,45,80,50,guts,bulletproof,unnerve,290,2.4,normal,base,,,,4,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/901.png,false,
 ursaluna-bloodmoon,901,Ursaluna-Bloodmoon,ガチグマ（アカツキ）,Ground,Normal,113,70,120,135,65,52,minds-eye,,,333,2.7,normal,variant,ursaluna,,,4,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10272.png,false,
-basculegion,902,Basculegion,イダイトウ,Water,Ghost,120,112,65,80,75,78,swift-swim,adaptability,mold-breaker,110,3,normal,base,,,,4,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/902.png,false,○
-basculegion-f,902,Basculegion-F,イダイトウ（メスのすがた）,Water,Ghost,120,92,65,100,75,78,swift-swim,adaptability,mold-breaker,110,3,normal,variant,basculegion,,,4,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10248.png,false,○
+basculegion,902,Basculegion,イダイトウ（オスのすがた）,Water,Ghost,120,112,65,80,75,78,swift-swim,adaptability,mold-breaker,110,3,normal,base,,,,0,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/902.png,false,○
+basculegion-f,902,Basculegion-F,イダイトウ（メスのすがた）,Water,Ghost,120,92,65,100,75,78,swift-swim,adaptability,mold-breaker,110,3,normal,variant,basculegion,,,8,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10248.png,false,○
 sneasler,903,Sneasler,オオニューラ,Fighting,Poison,80,130,60,40,80,120,pressure,unburden,poison-touch,43,1.3,normal,base,,,,4,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/903.png,false,○
 overqwil,904,Overqwil,ハリーマン,Dark,Poison,85,115,95,65,65,85,poison-point,swift-swim,intimidate,60.5,2.5,normal,base,,,,4,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/904.png,false,○
 enamorus,905,Enamorus,ラブトロス,Fairy,Flying,74,115,70,135,80,106,cute-charm,,contrary,48,1.6,sub_legendary,base,,,,8,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/905.png,false,○
@@ -1103,7 +1103,7 @@ beheeyem,606,Beheeyem,オーベム,Psychic,,75,75,75,125,95,40,telepathy,synchro
 shelmet,616,Shelmet,チョボマキ,Bug,,50,40,85,40,65,25,hydration,shellarmor,overcoat,7.7,0.4,normal,base,,,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/616.png,true,○
 accelgor,617,Accelgor,アギルダー,Bug,,80,70,40,100,60,145,hydration,stickyhold,unburden,25.3,0.8,normal,base,,,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/617.png,false,○
 stunfisk,618,Stunfisk,マッギョ,Ground,Electric,109,66,84,81,99,32,static,limber,sandveil,11,0.7,normal,base,,,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/618.png,false,○
-stunfisk-galar,618,Stunfisk-Galar,マッギョ(ガラル),Ground,Steel,109,81,99,66,84,32,mimicry,,,20.5,0.7,normal,variant,stunfisk,,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10182.png,false,○
+stunfisk-galar,618,Stunfisk-Galar,マッギョ(ガラル),Ground,Steel,109,81,99,66,84,32,mimicry,,,20.5,0.7,normal,variant,stunfisk,,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10180.png,false,○
 druddigon,621,Druddigon,クリムガン,Dragon,,77,120,90,60,90,48,roughskin,sheerforce,moldbreaker,139,1.6,normal,base,,,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/621.png,false,○
 bouffalant,626,Bouffalant,バッフロン,Normal,,95,110,95,40,95,55,reckless,sapsipper,soundproof,94.6,1.6,normal,base,,,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/626.png,false,○
 heatmor,631,Heatmor,クイタラン,Fire,,85,97,66,105,66,65,gluttony,flashfire,whitesmoke,58,1.4,normal,base,,,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/631.png,false,○
@@ -1211,7 +1211,7 @@ chimecho-mega,358,Mega Chimecho,メガチリーン,Psychic,Steel,75,50,110,135,1
 excadrill-mega,530,Mega Excadrill,メガドリュウズ,Ground,Steel,110,165,100,65,65,103,piercing-drill,,,40.4,0.7,normal,mega,excadrill,excadrillite,,4,,false,○
 chandelure-mega,609,Mega Chandelure,メガシャンデラ,Ghost,Fire,60,75,110,175,110,90,infiltrator,,,34.3,1,normal,mega,chandelure,chandelurite,,4,,false,○
 golurk-mega,623,Mega Golurk,メガゴルーグ,Ground,Ghost,89,159,105,70,105,55,unseen-fist,,,330,2.8,normal,mega,golurk,golurkite,,-1,,false,○
-meowstic-mega,678,Mega Meowstic,メガニャオニクス,Psychic,,74,48,76,143,101,124,trace,,,8.5,0.6,normal,mega,meowstic,meowsticite,,4,,false,○
+meowstic-mega,678,Mega Meowstic,メガニャオニクス,Psychic,,74,48,76,143,101,124,trace,,,8.5,0.6,normal,mega,meowstic,meowsticite,,0,,false,○
 crabominable-mega,740,Mega Crabominable,メガケケンカニ,Fighting,Ice,97,157,122,62,107,33,iron-fist,,,180,1.7,normal,mega,crabominable,crabominabite,,4,,false,○
 drampa-mega,780,Mega Drampa,メガジジーロン,Normal,Dragon,78,85,110,160,116,36,berserk,,,185,3,normal,mega,drampa,drampite,,4,,false,○
 scovillain-mega,952,Mega Scovillain,メガスコヴィラン,Grass,Fire,65,138,85,138,85,75,spicy-spray,,,15,0.9,normal,mega,scovillain,scovillainite,,4,,false,○
