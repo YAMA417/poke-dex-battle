@@ -113,7 +113,7 @@ export function BattleConditionInput({
           <div className="flex items-center space-x-2 pb-1">
             <Checkbox id="reflect" checked={isReflect} onCheckedChange={onReflectChange} />
             <Label htmlFor="reflect" className="cursor-pointer text-xs font-normal">
-              リフレクター（物理0.5倍）
+              リフレクター（物理2/3倍）
             </Label>
           </div>
 
@@ -125,7 +125,7 @@ export function BattleConditionInput({
               onCheckedChange={onLightScreenChange}
             />
             <Label htmlFor="lightScreen" className="cursor-pointer text-xs font-normal">
-              ひかりのかべ（特殊0.5倍）
+              ひかりのかべ（特殊2/3倍）
             </Label>
           </div>
         </div>

@@ -7,7 +7,7 @@ import {
   items,
   regulations,
 } from '@poke-dex-battle/db/schema';
-import { ilike, or, asc, eq, and, inArray } from 'drizzle-orm';
+import { ilike, or, asc, eq, and, inArray, sql } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 type AbilityInfo = { name: string; nameJa: string };
@@ -65,6 +65,17 @@ export async function GET(request: Request) {
 
   const [abilityMap, itemMap] = await Promise.all([getAbilityMap(), getItemMap()]);
 
+  // フォルムタイプの並び順: base → variant → mega → primal → tera → battle_only
+  const formTypeOrder = sql`CASE ${pokemon.formType}
+    WHEN 'base' THEN 0
+    WHEN 'variant' THEN 1
+    WHEN 'mega' THEN 2
+    WHEN 'primal' THEN 3
+    WHEN 'tera' THEN 4
+    WHEN 'battle_only' THEN 5
+    ELSE 99
+  END`;
+
   // メガフォーム検索: baseフォームのnameを指定してメガ/ゲンシカイキフォームを返す
   if (megaFormsBase) {
     const baseRow = await db
@@ -79,7 +90,7 @@ export async function GET(request: Request) {
       .where(
         and(inArray(pokemon.formType, ['mega', 'primal']), eq(pokemon.baseFormId, baseRow[0].id))
       )
-      .orderBy(asc(pokemon.name));
+      .orderBy(asc(pokemon.num), formTypeOrder, asc(pokemon.name));
     return NextResponse.json(enrichPokemon(results, abilityMap, itemMap));
   }
 
@@ -122,7 +133,7 @@ export async function GET(request: Request) {
             )
           : eq(regulationPokemon.regulationId, regulationId)
       )
-      .orderBy(asc(pokemon.num));
+      .orderBy(asc(pokemon.num), formTypeOrder, asc(pokemon.name));
 
     // innerJoin は { pokemon: ..., regulation_pokemon: ... } を返す
     const pokemonRows = results.map((r) => r.pokemon);
@@ -135,10 +146,13 @@ export async function GET(request: Request) {
       .select()
       .from(pokemon)
       .where(or(ilike(pokemon.nameJa, `%${q}%`), ilike(pokemon.name, `%${q}%`)))
-      .orderBy(asc(pokemon.num));
+      .orderBy(asc(pokemon.num), formTypeOrder, asc(pokemon.name));
     return NextResponse.json(enrichPokemon(results, abilityMap, itemMap));
   }
 
-  const all = await db.select().from(pokemon).orderBy(asc(pokemon.num));
+  const all = await db
+    .select()
+    .from(pokemon)
+    .orderBy(asc(pokemon.num), formTypeOrder, asc(pokemon.name));
   return NextResponse.json(enrichPokemon(all, abilityMap, itemMap));
 }
