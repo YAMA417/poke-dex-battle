@@ -115,8 +115,8 @@ expert-belt,268,Expert Belt,たつじんのおび,Holder's attacks that are supe
 light-clay,269,Light Clay,ひかりのねんど,"Holder's use of Aurora Veil, Light Screen, or Reflect lasts 8 turns instead of 5.",持たせた　ポケモンが　ひかりのかべや リフレクターを　使ったとき いつもよりも　長く　残る。,,○,held
 life-orb,270,Life Orb,いのちのたま,"Holder's attacks do 1.3x damage, and it loses 1/10 its max HP after the attack.",持たせると　攻撃する　たびに ＨＰが　少し　減ってしまうが 技の　威力が　あがる。,,○,held
 power-herb,271,Power Herb,パワフルハーブ,Holder's two-turn moves complete in one turn (except Sky Drop). Single use.,持たせた　ポケモンは　１度だけ １ターン目に　ちからを　ためる技を すぐに　使うことが　できる。,,○,held
-toxic-orb,272,Toxic Orb,どくどくだま,"At the end of every turn, this item attempts to badly poison the holder.",触ると　毒をだす　不思議な玉。 持たせると　戦闘中に 猛毒の　状態に　なる。,,○,held
-flame-orb,273,Flame Orb,かえんだま,"At the end of every turn, this item attempts to burn the holder.",触ると　熱をだす　不思議な玉。 持たせると　戦闘中に やけどの　状態に　なる。,,○,held
+toxic-orb,272,Toxic Orb,どくどくだま,"At the end of every turn, this item attempts to badly poison the holder.",触ると　毒をだす　不思議な玉。 持たせると　戦闘中に 猛毒の　状態に　なる。,,,held
+flame-orb,273,Flame Orb,かえんだま,"At the end of every turn, this item attempts to burn the holder.",触ると　熱をだす　不思議な玉。 持たせると　戦闘中に やけどの　状態に　なる。,,,held
 quick-powder,274,Quick Powder,スピードパウダー,"If held by a Ditto that hasn't Transformed, its Speed is doubled.",メタモンに　持たせると　素早さが あがる　不思議な粉。 とても　こまかくて　硬い。,,○,held
 focus-sash,275,Focus Sash,きあいのタスキ,"If holder's HP is full, will survive an attack that would KO it with 1 HP. Single use.",持たせると　ＨＰが　満タンのとき ひんしになりそうな　技を　受けても ＨＰ１で　１度だけ　耐える。,,○,held
 zoom-lens,276,Zoom Lens,フォーカスレンズ,The accuracy of attacks by the holder is 1.2x if it moves after its target.,持たせた　ポケモンが　相手よりも 行動するのが　遅いとき 技が　命中しやすくなる。,,○,held
@@ -226,7 +226,7 @@ sablenite,754,Sablenite,ヤミラミナイト,"If held by a Sableye, this item a
 altarianite,755,Altarianite,チルタリスナイト,"If held by an Altaria, this item allows it to Mega Evolve in battle.",チルタリスに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○,mega-stone
 galladite,756,Galladite,エルレイドナイト,"If held by a Gallade, this item allows it to Mega Evolve in battle.",エルレイドに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○,mega-stone
 audinite,757,Audinite,タブンネナイト,"If held by an Audino, this item allows it to Mega Evolve in battle.",タブンネに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○,mega-stone
-metagrossite,758,Metagrossite,メタグロスナイト,"If held by a Metagross, this item allows it to Mega Evolve in battle.",メタグロスに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○,mega-stone
+metagrossite,758,Metagrossite,メタグロスナイト,"If held by a Metagross, this item allows it to Mega Evolve in battle.",メタグロスに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,,mega-stone
 sharpedonite,759,Sharpedonite,サメハダナイト,"If held by a Sharpedo, this item allows it to Mega Evolve in battle.",サメハダーに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○,mega-stone
 slowbronite,760,Slowbronite,ヤドランナイト,"If held by a Slowbro, this item allows it to Mega Evolve in battle.",ヤドランに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○,mega-stone
 steelixite,761,Steelixite,ハガネールナイト,"If held by a Steelix, this item allows it to Mega Evolve in battle.",ハガネールに　持たせておくと 戦いのとき　メガシンカが　できる 不思議な　メガストーンの　一種。,,○,mega-stone
@@ -334,5 +334,18 @@ delphoxite,2415,Delphoxite,マフォクシーナイト,"If held by a Delphox, th
 greninjaite,2416,Greninjaite,ゲッコウガナイト,"If held by a Greninja, this item allows it to Mega Evolve in battle.",ゲッコウガに持たせておくと戦いのときメガシンカができる不思議なメガストーンの一種。,,○,mega-stone
 floettite,2417,Floettite,フラエッテナイト,"If held by a Floette-Eternal, this item allows it to Mega Evolve in battle.",フラエッテに持たせておくと戦いのときメガシンカができる不思議なメガストーンの一種。,,○,mega-stone
 hawluchite,2418,Hawluchite,ルチャブルナイト,"If held by a Hawlucha, this item allows it to Mega Evolve in battle.",ルチャブルに持たせておくと戦いのときメガシンカができる不思議なメガストーンの一種。,,○,mega-stone
-raichunite-x,2419,Raichunite X,ライチュウナイトＸ,"If held by an Alolan Raichu, this item allows it to Mega Evolve in battle.",ライチュウに持たせておくと戦いのときメガシンカができる不思議なメガストーンの一種。,,○,mega-stone
-raichunite-y,2420,Raichunite Y,ライチュウナイトＹ,"If held by an Alolan Raichu, this item allows it to Mega Evolve in battle.",ライチュウに持たせておくと戦いのときメガシンカができる不思議なメガストーンの一種。,,○,mega-stone
+raichunite-x,2419,Raichunite X,ライチュウナイトＸ,"If held by an Alolan Raichu, this item allows it to Mega Evolve in battle.",ライチュウに持たせておくと戦いのときメガシンカができる不思議なメガストーンの一種。,,,mega-stone
+raichunite-y,2420,Raichunite Y,ライチュウナイトＹ,"If held by an Alolan Raichu, this item allows it to Mega Evolve in battle.",ライチュウに持たせておくと戦いのときメガシンカができる不思議なメガストーンの一種。,,,mega-stone
+clefableite,2421,Clefableite,ピクシーナイト,"If held by a Clefable, this item allows it to Mega Evolve in battle.",ピクシーに持たせるとメガシンカできる。,,○,mega-stone
+victreebelite,2422,Victreebelite,ウツボットナイト,"If held by a Victreebel, this item allows it to Mega Evolve in battle.",ウツボットに持たせるとメガシンカできる。,,○,mega-stone
+starmieite,2423,Starmieite,スターミーナイト,"If held by a Starmie, this item allows it to Mega Evolve in battle.",スターミーに持たせるとメガシンカできる。,,○,mega-stone
+skarmoryite,2424,Skarmoryite,エアームドナイト,"If held by a Skarmory, this item allows it to Mega Evolve in battle.",エアームドに持たせるとメガシンカできる。,,○,mega-stone
+chimechoite,2425,Chimechoite,チリーンナイト,"If held by a Chimecho, this item allows it to Mega Evolve in battle.",チリーンに持たせるとメガシンカできる。,,○,mega-stone
+excadrillite,2426,Excadrillite,ドリュウズナイト,"If held by an Excadrill, this item allows it to Mega Evolve in battle.",ドリュウズに持たせるとメガシンカできる。,,○,mega-stone
+chandelurite,2427,Chandelurite,シャンデラナイト,"If held by a Chandelure, this item allows it to Mega Evolve in battle.",シャンデラに持たせるとメガシンカできる。,,○,mega-stone
+golurkite,2428,Golurkite,ゴルーグナイト,"If held by a Golurk, this item allows it to Mega Evolve in battle.",ゴルーグに持たせるとメガシンカできる。,,○,mega-stone
+meowsticite,2429,Meowsticite,ニャオニクスナイト,"If held by a Meowstic, this item allows it to Mega Evolve in battle.",ニャオニクスに持たせるとメガシンカできる。,,○,mega-stone
+crabominabite,2430,Crabominabite,ケケンカニナイト,"If held by a Crabominable, this item allows it to Mega Evolve in battle.",ケケンカニに持たせるとメガシンカできる。,,○,mega-stone
+drampite,2431,Drampite,ジジーロンナイト,"If held by a Drampa, this item allows it to Mega Evolve in battle.",ジジーロンに持たせるとメガシンカできる。,,○,mega-stone
+scovillainite,2432,Scovillainite,スコヴィランナイト,"If held by a Scovillain, this item allows it to Mega Evolve in battle.",スコヴィランに持たせるとメガシンカできる。,,○,mega-stone
+glimmorite,2433,Glimmorite,キラフロルナイト,"If held by a Glimmora, this item allows it to Mega Evolve in battle.",キラフロルに持たせるとメガシンカできる。,,○,mega-stone

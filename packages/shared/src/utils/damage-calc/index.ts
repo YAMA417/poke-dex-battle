@@ -1,6 +1,6 @@
 import { ABILITY_PARENTAL_BOND } from '../../constants/damage-calc-names';
 import type { BattleContext, CalcMove, CalcPokemon, DamageResult } from '../../types/damage';
-import { isPokemonType } from '../../types/pokemon';
+import { isPokemonType, type PokemonType } from '../../types/pokemon';
 import { abilityIs, moveIs } from '../normalize-id';
 import { calculateBaseDamage } from './calculate-base-damage';
 import { calculateModifier } from './calculate-modifier';
@@ -117,6 +117,23 @@ export function calculateDamageV2(
   // フォトンゲイザー: こうげき > とくこう の場合は物理技になる
   if (moveIs(effectiveMove.name, 'Photon Geyser') && attacker.stats.atk > attacker.stats.spa) {
     effectiveMove = { ...effectiveMove, category: 'Physical' };
+  }
+
+  // Mega Sol (as_if_weather) + ウェザーボール: 天候なし時にタイプ変更 + 威力2倍
+  const asIfWeatherRule = attacker.abilityDamageEffect?.attackerModifier;
+  if (
+    asIfWeatherRule?.condition === 'as_if_weather' &&
+    (!context.weather || context.weather === 'none') &&
+    moveIs(effectiveMove.name, 'Weather Ball')
+  ) {
+    const weatherTypeMap: Record<string, PokemonType> = {
+      sun: 'Fire',
+      rain: 'Water',
+      sandstorm: 'Rock',
+      snow: 'Ice',
+    };
+    const newType = weatherTypeMap[asIfWeatherRule.weather] ?? effectiveMove.type;
+    effectiveMove = { ...effectiveMove, type: newType, power: effectiveMove.power * 2 };
   }
 
   // HPを決定（ダイマックス時は2倍）
