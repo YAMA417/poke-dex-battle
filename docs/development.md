@@ -139,13 +139,35 @@ feat: PokéAPIからデータ取得・キャッシュ機能
 
 ---
 
+## マージ戦略
+
+ブランチごとにマージ方式を使い分ける。
+
+| マージ先 | マージ方式 | 理由 |
+| -------- | ---------- | ---- |
+| feature/fix → develop | Squash and merge | 履歴を簡潔に保つ |
+| develop → main（リリースPR） | Create a merge commit | develop と main の履歴を一致させ、後続のリリースPRで競合を起こさない |
+
+### Squash merge を develop→main で使ってはいけない理由
+
+リリースPRを squash merge すると、main 側に「全変更を1コミットへ圧縮した別SHA」が作られる。develop には元のコミット群が残るため、Git は両者を別系統と認識し、後続のリリースPRで広範囲の競合が発生する（実例: PR #33 を squash → PR #40 で競合発生）。
+
+### GitHub設定
+
+- リポジトリ Settings で「Allow merge commits」「Allow squash merging」を**両方有効**にしておく
+- マージ方式の選択は運用ルールで担保（GitHubはブランチ単位の強制ができない）
+
+---
+
 ## 開発フロー
 
 ### 1. ブランチを切る
 
+featureブランチは develop から切る。
+
 ```bash
-git checkout main
-git pull origin main
+git checkout develop
+git pull origin develop
 git checkout -b feat/your-feature
 ```
 
@@ -172,7 +194,8 @@ git push origin feat/your-feature
 ### 5. レビュー・マージ
 
 - レビューのフィードバックに対応
-- 承認後、mainブランチにマージ
+- 承認後、developブランチへ Squash and merge
+- main への反映は `develop → main` のリリースPRをまとめて作成し、Create a merge commit でマージする
 
 ---
 
@@ -382,4 +405,4 @@ import styles from './styles.module.css';
 
 ---
 
-**最終更新**: 2026-03-15
+**最終更新**: 2026-04-26
