@@ -139,23 +139,30 @@ feat: PokéAPIからデータ取得・キャッシュ機能
 
 ---
 
-## マージ戦略
+## ブランチ戦略 — GitHub Flow
 
-ブランチごとにマージ方式を使い分ける。
+このプロジェクトは **GitHub Flow** を採用する。
+
+- 長寿命ブランチは `main` のみ。`main` は常にデプロイ可能な状態を保つ
+- 開発は `main` から切った短命の feature ブランチで行う
+- 完了したら PR を作成し、`main` へマージ（squash）
+- マージで Vercel が本番に自動デプロイされる
+
+### なぜ GitHub Flow か
+
+過去に「main + develop + feature」の簡略 Git Flow を採用していたが、1人開発・連続デリバリー（Vercel）という前提では、`develop` を介在させるメリットより back-merge コンフリクトのコストが大きいと判断したため、2026-05-09 に GitHub Flow へ移行した（Git Flow 提唱者本人も Web サービス用途では GitHub Flow を推奨している）。
+
+### マージ戦略
 
 | マージ先 | マージ方式 | 理由 |
 | -------- | ---------- | ---- |
-| feature/fix → develop | Squash and merge | 履歴を簡潔に保つ |
-| develop → main（リリースPR） | Create a merge commit | develop と main の履歴を一致させ、後続のリリースPRで競合を起こさない |
+| feature/fix → main | **Squash and merge** | main 履歴を issue 単位に集約し、リバート単位を明確にする |
 
-### Squash merge を develop→main で使ってはいけない理由
+### GitHub 設定
 
-リリースPRを squash merge すると、main 側に「全変更を1コミットへ圧縮した別SHA」が作られる。develop には元のコミット群が残るため、Git は両者を別系統と認識し、後続のリリースPRで広範囲の競合が発生する（実例: PR #33 を squash → PR #40 で競合発生）。
-
-### GitHub設定
-
-- リポジトリ Settings で「Allow merge commits」「Allow squash merging」を**両方有効**にしておく
-- マージ方式の選択は運用ルールで担保（GitHubはブランチ単位の強制ができない）
+- 「Allow squash merging」を有効
+- 「Allow merge commits」「Allow rebase merging」は無効推奨（誤操作防止）
+- `main` ブランチに保護を設定し、PR 必須にする
 
 ---
 
@@ -163,11 +170,11 @@ feat: PokéAPIからデータ取得・キャッシュ機能
 
 ### 1. ブランチを切る
 
-featureブランチは develop から切る。
+feature ブランチは `main` から切る。
 
 ```bash
-git checkout develop
-git pull origin develop
+git checkout main
+git pull origin main
 git checkout -b feat/your-feature
 ```
 
@@ -185,17 +192,42 @@ git commit -m "feat: 機能の説明"
 git push origin feat/your-feature
 ```
 
-### 4. Pull Request作成
+### 4. Pull Request 作成
 
-- GitHubでPRを作成
+- GitHub で PR を作成（base=`main`）
 - 上記のテンプレートに従って説明を記述
-- レビュアーをアサイン（チーム開発の場合）
 
 ### 5. レビュー・マージ
 
-- レビューのフィードバックに対応
-- 承認後、developブランチへ Squash and merge
-- main への反映は `develop → main` のリリースPRをまとめて作成し、Create a merge commit でマージする
+- 承認後、`main` へ **Squash and merge**
+- マージ後、ローカル feature ブランチを削除（`git branch -d feat/your-feature`）
+- Vercel 本番デプロイを確認
+
+---
+
+## スプリント運用
+
+このプロジェクトは **1スプリント = 1週間（月〜日）** で運用する。スプリントは「期間とゴールの管理単位」であり、ブランチ戦略（GitHub Flow）とは独立した概念。
+
+### 想定稼働
+
+- 月〜金: 各 1〜2h
+- 土: 6h
+- 日: 自由 + 週次振り返り
+
+### スプリント運用フロー
+
+1. **週初（日曜夜 or 月曜の最初）** に `docs/sprints/_template.md` をコピーして `docs/sprints/YYYY-MM-DD.md`（その週の月曜日付）を作成
+2. ゴール / 対象 issue / 日別計画を埋める
+3. 月曜以降、計画に沿って feature ブランチで作業
+4. スプリント末（土〜日）に PR をマージし、Vercel 本番反映を確認
+5. 日曜の振り返り欄（KPT）を埋める。次スプリントへの持ち越しを記録
+
+### スプリントファイル
+
+- 配置: `docs/sprints/`
+- 命名: `YYYY-MM-DD.md`（その週の月曜日付）
+- テンプレ: `docs/sprints/_template.md`
 
 ---
 
