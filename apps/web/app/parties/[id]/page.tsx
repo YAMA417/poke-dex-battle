@@ -125,12 +125,13 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
 
       {/* ポケモングリッド */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {party.pokemons.map((pk) => {
+        {party.pokemons.map((pk, pokemonIdx) => {
           const species = allPokemonByName.get(pk.speciesName) ?? null;
           return (
-            <div
+            <Link
               key={pk.id}
-              className="space-y-3 rounded-2xl bg-white p-4 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+              href={`/parties/${id}/edit?pokemonIdx=${pokemonIdx}`}
+              className="block space-y-3 rounded-2xl bg-white p-4 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
             >
               {/* ポケモン名・アイコン */}
               <div className="flex items-center gap-3">
@@ -218,7 +219,7 @@ export default function PartyDetailPage({ params }: { params: Promise<{ id: stri
                   showEvContribution={true}
                 />
               )}
-            </div>
+            </Link>
           );
         })}
         {party.pokemons.length === 0 && (
