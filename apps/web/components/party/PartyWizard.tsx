@@ -51,7 +51,11 @@ interface PartyWizardProps {
   initialEditingIdx?: number;
 }
 
-export function PartyWizard({ mode, initialPartyId, initialEditingIdx }: PartyWizardProps): React.JSX.Element {
+export function PartyWizard({
+  mode,
+  initialPartyId,
+  initialEditingIdx,
+}: PartyWizardProps): React.JSX.Element {
   const router = useRouter();
   const { createParty, updateParty, addPokemon, removePokemon, getParty } = usePartyStore();
 
