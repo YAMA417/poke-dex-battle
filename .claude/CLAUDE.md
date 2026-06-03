@@ -1,4 +1,5 @@
 @package.json
+@../../.github/copilot-instructions.md
 
 # CLAUDE.md
 
@@ -6,7 +7,7 @@
 
 - 応答は日本語、コミットメッセージも日本語（Conventional Commits のプレフィックスは英語）
 - コメント・ログ出力も日本語
-- コーディング規約は `.github/copilot-instructions.md` を参照
+- コーディング規約は上記 `@.github/copilot-instructions.md` を参照
 - `packages/shared/` に新モジュール追加時は同階層にテストファイルを作成
 
 ## 構成

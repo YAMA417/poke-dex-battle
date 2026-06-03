@@ -46,6 +46,9 @@ yarn-error.*
 coverage/
 .playwright-mcp/
 
+# Linter caches
+.eslintcache
+
 # TypeScript
 *.tsbuildinfo
 
@@ -61,9 +64,16 @@ expo-env.d.ts
 *.mobileprovision
 .metro-health-check*
 
-# .claude（CLAUDE.mdのみトラッキング）
-.claude/*
-!.claude/CLAUDE.md
+# .claude — 公式想定（team-shared が default）に揃え、個人/キャッシュのみ ignore
+.claude/settings.local.json
+.claude/.credentials.json
+.claude/checkpoints/
+.claude/projects/
+.claude/todos/
+.claude/shell-snapshots/
+.claude/statsig/
+.claude/ide/
+.claude/plans/
 
 # .agent（ANTIGRAVITY.mdのみトラッキング）
 .agent/*
