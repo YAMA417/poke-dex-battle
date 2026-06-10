@@ -6,8 +6,16 @@ import { usePartyStore } from '@/hooks/use-party-store';
 import { PartyWizard } from '@/components/party/PartyWizard';
 import { ChevronLeft } from 'lucide-react';
 
-export default function EditPartyPage({ params }: { params: Promise<{ id: string }> }) {
+export default function EditPartyPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ pokemonIdx?: string }>;
+}) {
   const { id } = use(params);
+  const { pokemonIdx } = use(searchParams);
+  const initialEditingIdx = pokemonIdx !== undefined ? Number(pokemonIdx) : undefined;
   const { getParty } = usePartyStore();
   const party = getParty(id);
 
@@ -36,7 +44,7 @@ export default function EditPartyPage({ params }: { params: Promise<{ id: string
           <p className="text-xs text-gray-400">{party.name}</p>
         </div>
       </div>
-      <PartyWizard mode="edit" initialPartyId={id} />
+      <PartyWizard mode="edit" initialPartyId={id} initialEditingIdx={initialEditingIdx} />
     </div>
   );
 }

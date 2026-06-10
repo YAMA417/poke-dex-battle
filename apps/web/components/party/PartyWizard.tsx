@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Pokemon, PokemonSpeciesData } from '@poke-dex-battle/shared';
 import { isPokemonType } from '@poke-dex-battle/shared';
@@ -48,9 +48,14 @@ const STEPS: { label: string; desc: string }[] = [
 interface PartyWizardProps {
   mode: 'create' | 'edit';
   initialPartyId?: string;
+  initialEditingIdx?: number;
 }
 
-export function PartyWizard({ mode, initialPartyId }: PartyWizardProps): React.JSX.Element {
+export function PartyWizard({
+  mode,
+  initialPartyId,
+  initialEditingIdx,
+}: PartyWizardProps): React.JSX.Element {
   const router = useRouter();
   const { createParty, updateParty, addPokemon, removePokemon, getParty } = usePartyStore();
 
@@ -137,6 +142,16 @@ export function PartyWizard({ mode, initialPartyId }: PartyWizardProps): React.J
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [editingIdx, setEditingIdx] = useState<number>(0);
+
+  // initialEditingIdx が指定された場合、ポケモン読み込み完了後に Step3 へジャンプ
+  const jumpedToStep3 = useRef(false);
+  useEffect(() => {
+    if (pokemonsInitialized && initialEditingIdx !== undefined && !jumpedToStep3.current) {
+      jumpedToStep3.current = true;
+      setEditingIdx(initialEditingIdx);
+      setStep(3);
+    }
+  }, [pokemonsInitialized, initialEditingIdx]);
 
   // Step2: 差し替えモード用 state
   const [replacingIdx, setReplacingIdx] = useState<number | null>(null);
